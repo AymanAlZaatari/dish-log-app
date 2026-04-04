@@ -422,6 +422,9 @@ export default function DishTrackerWebApp() {
   const [search, setSearch] = useState("");
   const [dishReportSearch, setDishReportSearch] = useState("");
   const [showDishNameSuggestions, setShowDishNameSuggestions] = useState(false);
+  const [restaurantSearch, setRestaurantSearch] = useState("");
+  const [restaurantAreaFilter, setRestaurantAreaFilter] = useState("all");
+  const [restaurantCuisineFilter, setRestaurantCuisineFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("all");
   const [cuisineFilter, setCuisineFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -584,6 +587,31 @@ export default function DishTrackerWebApp() {
       return true;
     });
   }, [data.dishes, restaurantsById, search, areaFilter, cuisineFilter, statusFilter]);
+
+  const filteredRestaurants = useMemo(() => {
+    const q = restaurantSearch.trim().toLowerCase();
+
+    return data.restaurants.filter((restaurant) => {
+      const restaurantBranches = data.branches.filter((branch) => branch.restaurantId === restaurant.id);
+      const restaurantDishes = data.dishes.filter((dish) => dish.restaurantId === restaurant.id);
+
+      const haystack = [
+        restaurant.name,
+        restaurant.area,
+        restaurant.cuisine,
+        restaurant.locationText,
+        restaurant.notes,
+        restaurant.recommendedBy,
+        ...restaurantBranches.flatMap((branch) => [branch.name, branch.area, branch.locationText, branch.notes]),
+        ...restaurantDishes.flatMap((dish) => [dish.name, dish.notes, dish.recommendedBy, ...(dish.tags || [])]),
+      ].join(" ").toLowerCase();
+
+      if (q && !haystack.includes(q)) return false;
+      if (restaurantAreaFilter !== "all" && restaurant.area !== restaurantAreaFilter) return false;
+      if (restaurantCuisineFilter !== "all" && restaurant.cuisine !== restaurantCuisineFilter) return false;
+      return true;
+    });
+  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCuisineFilter, restaurantSearch]);
 
   const dashboardStats = useMemo(() => {
     const triedDishes = data.dishes.filter((d) => !d.isWishlist).length;
@@ -1341,8 +1369,23 @@ export default function DishTrackerWebApp() {
               </div>
             </div>
 
+            <div className="rounded-3xl bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold text-slate-900">Restaurant Library</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Search and filter restaurants by name, branch, dish, area, or cuisine.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-4">
+                <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search restaurants, branches, dishes..." value={restaurantSearch} onChange={(e) => setRestaurantSearch(e.target.value)} /></div>
+                <Select value={restaurantAreaFilter} onValueChange={setRestaurantAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
+                <Select value={restaurantCuisineFilter} onValueChange={setRestaurantCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
+              </div>
+            </div>
+
             <div className={`${SECTION_CONTAINER} grid gap-5 lg:grid-cols-2`}>
-              {data.restaurants.map((restaurant) => {
+              {filteredRestaurants.map((restaurant) => {
                 const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
                 const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
                 const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
@@ -1365,8 +1408,8 @@ export default function DishTrackerWebApp() {
                     </CardHeader>
                     <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
                       <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
-                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Restaurant rating:</span><Stars value={restaurant.rating} /></div>
-                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Avg dish rating:</span>{avgDishRating ? <Stars value={avgDishRating} /> : <span>—</span>}</div>
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Restaurant rating:</span>{restaurant.rating ? <><span>({Number(restaurant.rating).toFixed(1)})</span><Stars value={restaurant.rating} /></> : <span>—</span>}</div>
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Avg dish rating:</span>{avgDishRating ? <><span>({avgDishRating.toFixed(1)})</span><Stars value={avgDishRating} /></> : <span>—</span>}</div>
                         {restaurant.locationText && <div><span className="font-medium text-slate-900">Location:</span> {restaurant.locationText}</div>}
                         {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
                         {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-4 w-4" /> Open Maps Link</a>}
@@ -1380,6 +1423,11 @@ export default function DishTrackerWebApp() {
                   </Card>
                 );
               })}
+              {filteredRestaurants.length === 0 && (
+                <Card className="rounded-3xl border-2 border-dashed border-slate-300 bg-white shadow-sm lg:col-span-2">
+                  <CardContent className="p-6 text-sm text-slate-500">No restaurants match the current filters.</CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
