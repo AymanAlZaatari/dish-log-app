@@ -1341,16 +1341,16 @@ export default function DishTrackerWebApp() {
               </div>
             </div>
 
-            <div className={`${SECTION_CONTAINER} grid gap-4 lg:grid-cols-2`}>
+            <div className={`${SECTION_CONTAINER} grid gap-5 lg:grid-cols-2`}>
               {data.restaurants.map((restaurant) => {
                 const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
                 const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
                 const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
                 return (
-                  <Card key={restaurant.id} className="rounded-3xl border-0 shadow-sm">
-                    <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                  <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
+                    <CardHeader className="px-6 pt-6 flex flex-row items-start justify-between gap-4 space-y-0">
                       <div>
-                        <CardTitle className="text-xl">{restaurant.name}</CardTitle>
+                        <CardTitle className="text-2xl font-bold tracking-tight">{restaurant.name}</CardTitle>
                         <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
                           {restaurant.area && <Badge variant="secondary">{restaurant.area}</Badge>}
                           {restaurant.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
@@ -1363,16 +1363,18 @@ export default function DishTrackerWebApp() {
                         <Button variant="ghost" size="icon" onClick={() => deleteRestaurant(restaurant.id)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3 text-sm text-slate-600">
-                      <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Restaurant rating:</span><Stars value={restaurant.rating} /></div>
-                      <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Avg dish rating:</span>{avgDishRating ? <Stars value={avgDishRating} /> : <span>—</span>}</div>
-                      {restaurant.locationText && <div>Location: {restaurant.locationText}</div>}
-                      {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
-                      {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-4 w-4" /> Open Maps Link</a>}
-                      {restaurant.notes && <div>{restaurant.notes}</div>}
-                      <div>
-                        <div className="mb-2 font-medium text-slate-900">Branches</div>
-                        {branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => editBranch(branch)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteBranch(branch.id)}><X className="h-4 w-4" /></Button></div></div>)}</div>}
+                    <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
+                      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Restaurant rating:</span><Stars value={restaurant.rating} /></div>
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Avg dish rating:</span>{avgDishRating ? <Stars value={avgDishRating} /> : <span>—</span>}</div>
+                        {restaurant.locationText && <div><span className="font-medium text-slate-900">Location:</span> {restaurant.locationText}</div>}
+                        {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
+                        {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-4 w-4" /> Open Maps Link</a>}
+                      </div>
+                      {restaurant.notes && <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{restaurant.notes}</div>}
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="mb-3 font-medium text-slate-900">Branches</div>
+                        {branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => editBranch(branch)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteBranch(branch.id)}><X className="h-4 w-4" /></Button></div></div>)}</div>}
                       </div>
                     </CardContent>
                   </Card>
