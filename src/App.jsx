@@ -785,13 +785,14 @@ export default function DishTrackerWebApp() {
               <h1 className="text-3xl font-bold tracking-tight">Dish Tracker</h1>
               <p className="mt-1 text-sm text-slate-600">Track restaurants, dishes, branches, and every tasting experience.</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => exportData(data)}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
-              <Button variant="outline" onClick={() => importRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import JSON</Button>
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
+              <Button variant="outline" className="order-5 w-full justify-center sm:w-auto" onClick={() => exportData(data)}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
+              <Button variant="outline" className="order-4 w-full justify-center sm:w-auto" onClick={() => importRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import JSON</Button>
               <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
 
+
               <Dialog open={restaurantOpen} onOpenChange={(open) => { setRestaurantOpen(open); if (!open) resetRestaurantForm(); }}>
-                <DialogTrigger asChild><Button><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
+                <DialogTrigger asChild><Button variant="outline" className="order-2 w-full justify-center sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-2xl">
                   <DialogHeader><DialogTitle>{restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"}</DialogTitle></DialogHeader>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -827,7 +828,7 @@ export default function DishTrackerWebApp() {
               </Dialog>
 
               <Dialog open={dishOpen} onOpenChange={(open) => { setDishOpen(open); if (!open) resetDishForm(); }}>
-                <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Dish</Button></DialogTrigger>
+                <DialogTrigger asChild><Button className="order-1 w-full justify-center sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Dish</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <DialogHeader><DialogTitle>{dishForm.id ? "Edit Dish" : "Add Dish"}</DialogTitle></DialogHeader>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -946,7 +947,7 @@ export default function DishTrackerWebApp() {
               </Dialog>
 
               <Dialog open={experienceOpen} onOpenChange={(open) => { setExperienceOpen(open); if (!open) resetExperienceForm(); }}>
-                <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Experience</Button></DialogTrigger>
+                <DialogTrigger asChild><Button variant="outline" className="order-3 w-full justify-center sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Experience</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <DialogHeader><DialogTitle>{experienceForm.id ? "Edit Experience" : "Log Dish Experience"}</DialogTitle></DialogHeader>
                   <div className="grid gap-4 md:grid-cols-2">
