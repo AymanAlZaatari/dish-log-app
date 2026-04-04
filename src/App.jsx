@@ -333,6 +333,10 @@ function average(list) {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
+function normalizeDishName(name) {
+  return name.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 function TagInput({ label, color = "slate", values, setValues, inputValue, setInputValue, suggestions = [] }) {
   const filteredSuggestions = suggestions
     .filter((s) => inputValue.trim() && s.toLowerCase().includes(inputValue.trim().toLowerCase()) && !values.includes(s))
@@ -393,6 +397,8 @@ export default function DishTrackerWebApp() {
   const [data, setData] = useState(loadData);
   const [tab, setTab] = useState("dashboard");
   const [search, setSearch] = useState("");
+  const [dishReportSearch, setDishReportSearch] = useState("");
+  const [showDishNameSuggestions, setShowDishNameSuggestions] = useState(false);
   const [areaFilter, setAreaFilter] = useState("all");
   const [cuisineFilter, setCuisineFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -438,6 +444,96 @@ export default function DishTrackerWebApp() {
       data.dishes.map((dish) => [dish.id, data.experiences.filter((e) => e.dishId === dish.id)])
     );
   }, [data.dishes, data.experiences]);
+
+  const dishCatalogMatches = useMemo(() => {
+    const query = normalizeDishName(dishForm.name || "");
+    if (!query) return [];
+
+    return data.dishes
+      .filter((dish) => dish.id !== dishForm.id)
+      .filter((dish) => normalizeDishName(dish.name).includes(query))
+      .sort((a, b) => {
+        const aCurrent = a.restaurantId === dishForm.restaurantId ? 1 : 0;
+        const bCurrent = b.restaurantId === dishForm.restaurantId ? 1 : 0;
+        if (aCurrent !== bCurrent) return bCurrent - aCurrent;
+
+        const aExact = normalizeDishName(a.name) === query ? 1 : 0;
+        const bExact = normalizeDishName(b.name) === query ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 8);
+  }, [data.dishes, dishForm.id, dishForm.name, dishForm.restaurantId]);
+
+  const dishComparisonGroups = useMemo(() => {
+    const groups = new Map();
+
+    data.dishes.forEach((dish) => {
+      const key = normalizeDishName(dish.name);
+      if (!key) return;
+
+      const existing = groups.get(key);
+      if (existing) {
+        existing.items.push(dish);
+      } else {
+        groups.set(key, { key, label: dish.name.trim(), items: [dish] });
+      }
+    });
+
+    return Array.from(groups.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [data.dishes]);
+
+  const dishComparisonSuggestions = useMemo(() => {
+    const query = normalizeDishName(dishReportSearch || "");
+    if (!query) return dishComparisonGroups.slice(0, 8);
+
+    return dishComparisonGroups
+      .filter((group) => normalizeDishName(group.label).includes(query))
+      .slice(0, 8);
+  }, [dishComparisonGroups, dishReportSearch]);
+
+  const activeDishComparison = useMemo(() => {
+    const query = normalizeDishName(dishReportSearch || "");
+    if (!query) return null;
+
+    return dishComparisonGroups.find((group) => group.key === query)
+      || dishComparisonGroups.find((group) => group.key.includes(query))
+      || null;
+  }, [dishComparisonGroups, dishReportSearch]);
+
+  const activeDishComparisonRows = useMemo(() => {
+    if (!activeDishComparison) return [];
+
+    return activeDishComparison.items
+      .map((dish) => {
+        const restaurant = restaurantsById[dish.restaurantId];
+        const branch = dish.branchId ? branchesById[dish.branchId] : null;
+        const experiences = [...(dishExperienceMap[dish.id] || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const latestExperience = experiences[0] || null;
+        const avgRating = average(experiences.map((experience) => experience.rating));
+        const bestRating = experiences.length ? Math.max(...experiences.map((experience) => Number(experience.rating || 0))) : null;
+
+        return {
+          dish,
+          restaurant,
+          branch,
+          experiences,
+          latestExperience,
+          avgRating,
+          bestRating,
+        };
+      })
+      .sort((a, b) => {
+        const avgDiff = (b.avgRating ?? -1) - (a.avgRating ?? -1);
+        if (avgDiff !== 0) return avgDiff;
+
+        const latestDiff = (b.latestExperience?.rating ?? -1) - (a.latestExperience?.rating ?? -1);
+        if (latestDiff !== 0) return latestDiff;
+
+        return b.experiences.length - a.experiences.length;
+      });
+  }, [activeDishComparison, branchesById, dishExperienceMap, restaurantsById]);
 
   const computedDishRating = (dishId) => average((dishExperienceMap[dishId] || []).map((e) => e.rating));
 
@@ -496,6 +592,7 @@ export default function DishTrackerWebApp() {
   function resetDishForm() {
     setDishForm(emptyDishForm);
     setDuplicateDishSuggestion(null);
+    setShowDishNameSuggestions(false);
     setShowInlineRestaurantForDish(false);
     setInlineRestaurantForDish(inlineRestaurantFormDefault);
     setLogExperienceWithDish(true);
@@ -724,6 +821,7 @@ export default function DishTrackerWebApp() {
   function editDish(d) {
     setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", recommendationInput: "", alertInput: "", tagInput: "" });
     setDuplicateDishSuggestion(null);
+    setShowDishNameSuggestions(false);
     setLogExperienceWithDish(false);
     setExperienceForm(emptyExperienceForm);
     setDishOpen(true);
@@ -766,6 +864,24 @@ export default function DishTrackerWebApp() {
   const branchOptionsForDish = data.branches.filter((b) => b.restaurantId === effectiveDishRestaurantId);
   const branchOptionsForDishExperience = data.branches.filter((b) => b.restaurantId === effectiveDishRestaurantId);
   const branchOptionsForExperience = data.branches.filter((b) => b.restaurantId === experienceForm.restaurantId);
+
+  function openExistingDish(dish) {
+    editDish(dish);
+  }
+
+  function selectDishNameSuggestion(dish) {
+    if (dish.restaurantId === dishForm.restaurantId) {
+      setShowDishNameSuggestions(false);
+      editDish(dish);
+      return;
+    }
+
+    setShowDishNameSuggestions(false);
+    setDishForm((prev) => ({
+      ...prev,
+      name: dish.name,
+    }));
+  }
 
   useEffect(() => {
     if (!dishForm.restaurantId || !dishForm.name.trim()) {
@@ -866,7 +982,56 @@ export default function DishTrackerWebApp() {
                         </div>
                       )}
                     </Field>
-                    <Field label="Dish name"><Input value={dishForm.name} onChange={(e) => setDishForm({ ...dishForm, name: e.target.value })} /></Field>
+                    <div className="relative md:col-span-2">
+                      <Field label="Dish name">
+                        <Input
+                          value={dishForm.name}
+                          onChange={(e) => {
+                            setDishForm({ ...dishForm, name: e.target.value });
+                            setShowDishNameSuggestions(true);
+                          }}
+                          onFocus={() => setShowDishNameSuggestions(true)}
+                          onBlur={() => window.setTimeout(() => setShowDishNameSuggestions(false), 150)}
+                          placeholder="Start typing a dish name"
+                        />
+                      </Field>
+                      {showDishNameSuggestions && dishCatalogMatches.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-2xl border bg-white shadow-lg">
+                          {dishCatalogMatches.map((dish) => {
+                            const restaurant = restaurantsById[dish.restaurantId];
+                            const branch = dish.branchId ? branchesById[dish.branchId] : null;
+                            const avgRating = computedDishRating(dish.id);
+                            const isCurrentRestaurant = dish.restaurantId === dishForm.restaurantId;
+
+                            return (
+                              <button
+                                key={dish.id}
+                                type="button"
+                                className="flex w-full items-start justify-between gap-3 border-b px-4 py-3 text-left last:border-b-0 hover:bg-slate-50"
+                                onClick={() => selectDishNameSuggestion(dish)}
+                              >
+                                <div>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-medium text-slate-900">{dish.name}</span>
+                                    {isCurrentRestaurant && <Badge variant="secondary">Current restaurant</Badge>}
+                                    {!isCurrentRestaurant && <Badge variant="outline">Use name here</Badge>}
+                                    {dish.isWishlist && <Badge>Wishlist</Badge>}
+                                  </div>
+                                  <div className="mt-1 text-sm text-slate-600">
+                                    {restaurant?.name || "Unknown restaurant"}
+                                    {branch ? ` • ${branch.name}` : ""}
+                                    {avgRating ? ` • Avg ${avgRating.toFixed(1)}/5` : ""}
+                                  </div>
+                                </div>
+                                <div className="shrink-0 text-xs text-slate-500">
+                                  {isCurrentRestaurant ? "Open existing" : "Copy name"}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                     {duplicateDishSuggestion && (
                       <div className="md:col-span-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                         This dish already exists in this restaurant. You probably want to log a new experience instead.
@@ -1192,11 +1357,116 @@ export default function DishTrackerWebApp() {
           </TabsContent>
 
           <TabsContent value="dishes" className="space-y-6">
-            <div className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-5">
-              <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search dishes, tags, restaurants..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-              <Select value={areaFilter} onValueChange={setAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
-              <Select value={cuisineFilter} onValueChange={setCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem><SelectItem value="tried">Tried</SelectItem><SelectItem value="wishlist">Wishlist</SelectItem></SelectContent></Select>
+            <Card className="rounded-3xl border border-amber-200 bg-amber-50/60 shadow-sm">
+              <CardHeader>
+                <CardTitle>Dish Comparison Across Restaurants</CardTitle>
+                <div className="text-sm text-slate-600">
+                  Compare one dish across every restaurant you have logged so you can decide where you liked it most.
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Type a dish name like Tawouk"
+                    value={dishReportSearch}
+                    onChange={(e) => setDishReportSearch(e.target.value)}
+                  />
+                  {dishComparisonSuggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {dishComparisonSuggestions.map((group) => (
+                        <button
+                          key={group.key}
+                          type="button"
+                          className="rounded-full border px-3 py-1 text-xs text-slate-600"
+                          onClick={() => setDishReportSearch(group.label)}
+                        >
+                          {group.label} ({group.items.length})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {!activeDishComparison ? (
+                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                    Start typing a dish name to compare the same dish across restaurants.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <div className="text-lg font-semibold text-slate-900">{activeDishComparison.label}</div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {activeDishComparisonRows.length} restaurant{activeDishComparisonRows.length === 1 ? "" : "s"} tracked for this dish.
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-2xl border">
+                      <table className="min-w-full text-sm">
+                        <thead className="bg-slate-50 text-left text-slate-600">
+                          <tr>
+                            <th className="px-4 py-3 font-medium">Restaurant</th>
+                            <th className="px-4 py-3 font-medium">Average</th>
+                            <th className="px-4 py-3 font-medium">Latest</th>
+                            <th className="px-4 py-3 font-medium">Best</th>
+                            <th className="px-4 py-3 font-medium">Experiences</th>
+                            <th className="px-4 py-3 font-medium">Latest notes</th>
+                            <th className="px-4 py-3 font-medium"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeDishComparisonRows.map(({ dish, restaurant, branch, experiences, latestExperience, avgRating, bestRating }) => (
+                            <tr key={dish.id} className="border-t align-top">
+                              <td className="px-4 py-3">
+                                <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
+                                <div className="mt-1 text-xs text-slate-500">
+                                  {restaurant?.area || "No area"}
+                                  {restaurant?.cuisine ? ` • ${restaurant.cuisine}` : ""}
+                                  {branch ? ` • ${branch.name}` : ""}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">{avgRating ? avgRating.toFixed(1) : "—"}</td>
+                              <td className="px-4 py-3">
+                                {latestExperience?.rating ?? "—"}
+                                {latestExperience?.date ? <div className="mt-1 text-xs text-slate-500">{latestExperience.date}</div> : null}
+                              </td>
+                              <td className="px-4 py-3">{bestRating || "—"}</td>
+                              <td className="px-4 py-3">
+                                {experiences.length}
+                                {latestExperience?.price != null ? <div className="mt-1 text-xs text-slate-500">Latest price: {latestExperience.price}</div> : null}
+                              </td>
+                              <td className="max-w-xs px-4 py-3 text-slate-600">
+                                {latestExperience?.notes || dish.notes || "—"}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => openExistingDish(dish)}>Open</Button>
+                                  <Button variant="ghost" size="sm" onClick={() => prepareLogExperience(dish.restaurantId, dish.id)}>Log</Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="rounded-3xl bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold text-slate-900">Dish Library</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Browse, filter, and manage all saved dishes across restaurants.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-5">
+                <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search dishes, tags, restaurants..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+                <Select value={areaFilter} onValueChange={setAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
+                <Select value={cuisineFilter} onValueChange={setCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem><SelectItem value="tried">Tried</SelectItem><SelectItem value="wishlist">Wishlist</SelectItem></SelectContent></Select>
+              </div>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">

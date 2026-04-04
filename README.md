@@ -15,6 +15,17 @@ npm run dev
 npm run build
 ```
 
+## Git pre-push build check
+
+This repo can block `git push` when the production build fails.
+
+To enable the tracked hook locally:
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-push
+```
+
 ## Deploy to GitHub Pages
 
 ### Option 1: Drag and drop the built site into any static host

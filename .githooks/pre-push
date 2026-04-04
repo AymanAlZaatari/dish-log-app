@@ -1,13 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 echo "Running pre-push build check..."
 npm run build
-status=$?
-
-if [ $status -ne 0 ]; then
-  echo "Build failed. Push aborted."
-  exit $status
-fi
-
-echo "Build passed. Proceeding with push."
-exit 0
