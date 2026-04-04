@@ -111,6 +111,29 @@ const VALUE_OPTIONS = [
   "Great value",
   "Excellent value",
 ];
+const TOP_NAV_STYLES = {
+  dashboard: "bg-sky-50 text-sky-900 border-sky-200 data-[state=active]:bg-sky-100 data-[state=active]:text-sky-950 data-[state=active]:ring-2 data-[state=active]:ring-sky-300",
+  restaurants: "bg-emerald-50 text-emerald-900 border-emerald-200 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-950 data-[state=active]:ring-2 data-[state=active]:ring-emerald-300",
+  dishes: "bg-amber-50 text-amber-900 border-amber-200 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-950 data-[state=active]:ring-2 data-[state=active]:ring-amber-300",
+  experiences: "bg-rose-50 text-rose-900 border-rose-200 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-950 data-[state=active]:ring-2 data-[state=active]:ring-rose-300",
+  settings: "bg-violet-50 text-violet-900 border-violet-200 data-[state=active]:bg-violet-100 data-[state=active]:text-violet-950 data-[state=active]:ring-2 data-[state=active]:ring-violet-300",
+};
+const DASHBOARD_CARD_STYLES = {
+  Restaurants: "border-emerald-200 bg-emerald-50",
+  Dishes: "border-amber-200 bg-amber-50",
+  Experiences: "border-rose-200 bg-rose-50",
+  Tried: "border-sky-200 bg-sky-50",
+  Wishlist: "border-pink-200 bg-pink-50",
+  "Avg Dish Rating": "border-violet-200 bg-violet-50",
+};
+const SECTION_CONTAINER = "rounded-[2rem] border border-slate-200 bg-slate-100/70 p-4 md:p-5";
+const TOP_ACTION_BUTTON_STYLES = {
+  addDish: "border-amber-300 bg-amber-500 text-white hover:bg-amber-600",
+  addRestaurant: "border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100",
+  addExperience: "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100",
+  import: "border-sky-200 bg-sky-50 text-sky-900 hover:bg-sky-100",
+  export: "border-violet-200 bg-violet-50 text-violet-900 hover:bg-violet-100",
+};
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -902,13 +925,13 @@ export default function DishTrackerWebApp() {
               <p className="mt-1 text-sm text-slate-600">Track restaurants, dishes, branches, and every tasting experience.</p>
             </div>
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
-              <Button variant="outline" className="order-5 w-full justify-center sm:w-auto" onClick={() => exportData(data)}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
-              <Button variant="outline" className="order-4 w-full justify-center sm:w-auto" onClick={() => importRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import JSON</Button>
+              <Button variant="outline" className={`order-5 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.export}`} onClick={() => exportData(data)}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
+              <Button variant="outline" className={`order-4 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.import}`} onClick={() => importRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import JSON</Button>
               <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
 
 
               <Dialog open={restaurantOpen} onOpenChange={(open) => { setRestaurantOpen(open); if (!open) resetRestaurantForm(); }}>
-                <DialogTrigger asChild><Button variant="outline" className="order-2 w-full justify-center sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
+                <DialogTrigger asChild><Button variant="outline" className={`order-2 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addRestaurant}`}><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-2xl">
                   <DialogHeader><DialogTitle>{restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"}</DialogTitle></DialogHeader>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -944,7 +967,7 @@ export default function DishTrackerWebApp() {
               </Dialog>
 
               <Dialog open={dishOpen} onOpenChange={(open) => { setDishOpen(open); if (!open) resetDishForm(); }}>
-                <DialogTrigger asChild><Button className="order-1 w-full justify-center sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Dish</Button></DialogTrigger>
+                <DialogTrigger asChild><Button className={`order-1 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addDish}`}><Plus className="mr-2 h-4 w-4" /> Add Dish</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <DialogHeader><DialogTitle>{dishForm.id ? "Edit Dish" : "Add Dish"}</DialogTitle></DialogHeader>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -1112,7 +1135,7 @@ export default function DishTrackerWebApp() {
               </Dialog>
 
               <Dialog open={experienceOpen} onOpenChange={(open) => { setExperienceOpen(open); if (!open) resetExperienceForm(); }}>
-                <DialogTrigger asChild><Button variant="outline" className="order-3 w-full justify-center sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Experience</Button></DialogTrigger>
+                <DialogTrigger asChild><Button variant="outline" className={`order-3 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addExperience}`}><Plus className="mr-2 h-4 w-4" /> Add Experience</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <DialogHeader><DialogTitle>{experienceForm.id ? "Edit Experience" : "Log Dish Experience"}</DialogTitle></DialogHeader>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -1209,11 +1232,11 @@ export default function DishTrackerWebApp() {
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 gap-2 rounded-2xl bg-transparent p-0 md:grid-cols-5">
-            <TabsTrigger value="dashboard" className="rounded-2xl bg-white shadow-sm">Dashboard</TabsTrigger>
-            <TabsTrigger value="restaurants" className="rounded-2xl bg-white shadow-sm">Restaurants</TabsTrigger>
-            <TabsTrigger value="dishes" className="rounded-2xl bg-white shadow-sm">Dishes</TabsTrigger>
-            <TabsTrigger value="experiences" className="rounded-2xl bg-white shadow-sm">Experiences</TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-2xl bg-white shadow-sm">Settings</TabsTrigger>
+            <TabsTrigger value="dashboard" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.dashboard}`}>Dashboard</TabsTrigger>
+            <TabsTrigger value="restaurants" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.restaurants}`}>Restaurants</TabsTrigger>
+            <TabsTrigger value="dishes" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.dishes}`}>Dishes</TabsTrigger>
+            <TabsTrigger value="experiences" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.experiences}`}>Experiences</TabsTrigger>
+            <TabsTrigger value="settings" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.settings}`}>Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
@@ -1226,11 +1249,11 @@ export default function DishTrackerWebApp() {
                 ["Wishlist", dashboardStats.wishlistDishes, <Heart className="h-5 w-5" key="e" />],
                 ["Avg Dish Rating", dashboardStats.avgDishRating.toFixed(1), <Filter className="h-5 w-5" key="f" />],
               ].map(([label, value, icon]) => (
-                <Card key={label} className="rounded-3xl border-0 shadow-sm"><CardContent className="flex items-center justify-between p-5"><div><div className="text-sm text-slate-500">{label}</div><div className="mt-1 text-2xl font-bold">{value}</div></div><div className="text-slate-400">{icon}</div></CardContent></Card>
+                <Card key={label} className={`rounded-3xl border shadow-sm ${DASHBOARD_CARD_STYLES[label] || "border-slate-200 bg-white"}`}><CardContent className="flex items-center justify-between p-5"><div><div className="text-sm text-slate-600">{label}</div><div className="mt-1 text-2xl font-bold">{value}</div></div><div className="text-slate-500">{icon}</div></CardContent></Card>
               ))}
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className={`${SECTION_CONTAINER} grid gap-6 xl:grid-cols-2`}>
               <Card className="rounded-3xl border-0 shadow-sm">
                 <CardHeader><CardTitle>Recent Experiences</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
@@ -1288,35 +1311,37 @@ export default function DishTrackerWebApp() {
           </TabsContent>
 
           <TabsContent value="restaurants" className="space-y-6">
-            <div className="flex flex-wrap gap-2">
-              <Dialog open={branchOpen} onOpenChange={(open) => { setBranchOpen(open); if (!open) resetBranchForm(); }}>
-                <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Branch</Button></DialogTrigger>
-                <DialogContent className="sm:max-w-2xl">
-                  <DialogHeader><DialogTitle>{branchForm.id ? "Edit Branch" : "Add Branch"}</DialogTitle></DialogHeader>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Restaurant">
-                      <Select value={branchForm.restaurantId} onValueChange={(value) => setBranchForm({ ...branchForm, restaurantId: value })}>
-                        <SelectTrigger><SelectValue placeholder="Select restaurant" /></SelectTrigger>
-                        <SelectContent>{data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </Field>
-                    <Field label="Branch name"><Input value={branchForm.name} onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })} /></Field>
-                    <Field label="Area">
-                      <Select value={branchForm.area || "__none"} onValueChange={(value) => setBranchForm({ ...branchForm, area: value === "__none" ? "" : value })}>
-                        <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
-                        <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </Field>
-                    <Field label="Location text"><Input value={branchForm.locationText} onChange={(e) => setBranchForm({ ...branchForm, locationText: e.target.value })} /></Field>
-                    <Field label="Google Maps link"><Input value={branchForm.mapsLink} onChange={(e) => setBranchForm({ ...branchForm, mapsLink: e.target.value })} /></Field>
-                    <div className="md:col-span-2"><Field label="Notes"><Textarea value={branchForm.notes} onChange={(e) => setBranchForm({ ...branchForm, notes: e.target.value })} rows={4} /></Field></div>
-                  </div>
-                  <div className="mt-4 flex justify-end"><Button onClick={saveBranch}>{branchForm.id ? "Save Changes" : "Save Branch"}</Button></div>
-                </DialogContent>
-              </Dialog>
+            <div className={SECTION_CONTAINER}>
+              <div className="flex flex-wrap gap-2">
+                <Dialog open={branchOpen} onOpenChange={(open) => { setBranchOpen(open); if (!open) resetBranchForm(); }}>
+                  <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Branch</Button></DialogTrigger>
+                  <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader><DialogTitle>{branchForm.id ? "Edit Branch" : "Add Branch"}</DialogTitle></DialogHeader>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label="Restaurant">
+                        <Select value={branchForm.restaurantId} onValueChange={(value) => setBranchForm({ ...branchForm, restaurantId: value })}>
+                          <SelectTrigger><SelectValue placeholder="Select restaurant" /></SelectTrigger>
+                          <SelectContent>{data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Branch name"><Input value={branchForm.name} onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })} /></Field>
+                      <Field label="Area">
+                        <Select value={branchForm.area || "__none"} onValueChange={(value) => setBranchForm({ ...branchForm, area: value === "__none" ? "" : value })}>
+                          <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
+                          <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Location text"><Input value={branchForm.locationText} onChange={(e) => setBranchForm({ ...branchForm, locationText: e.target.value })} /></Field>
+                      <Field label="Google Maps link"><Input value={branchForm.mapsLink} onChange={(e) => setBranchForm({ ...branchForm, mapsLink: e.target.value })} /></Field>
+                      <div className="md:col-span-2"><Field label="Notes"><Textarea value={branchForm.notes} onChange={(e) => setBranchForm({ ...branchForm, notes: e.target.value })} rows={4} /></Field></div>
+                    </div>
+                    <div className="mt-4 flex justify-end"><Button onClick={saveBranch}>{branchForm.id ? "Save Changes" : "Save Branch"}</Button></div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className={`${SECTION_CONTAINER} grid gap-4 lg:grid-cols-2`}>
               {data.restaurants.map((restaurant) => {
                 const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
                 const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
@@ -1469,7 +1494,7 @@ export default function DishTrackerWebApp() {
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <div className={`${SECTION_CONTAINER} grid gap-4 lg:grid-cols-2 xl:grid-cols-3`}>
               {filteredDishes.map((dish) => {
                 const restaurant = restaurantsById[dish.restaurantId];
                 const branch = dish.branchId ? branchesById[dish.branchId] : null;
@@ -1513,7 +1538,7 @@ export default function DishTrackerWebApp() {
           </TabsContent>
 
           <TabsContent value="experiences" className="space-y-4">
-            <div className="space-y-3">
+            <div className={`${SECTION_CONTAINER} space-y-3`}>
               {[...data.experiences].sort((a, b) => new Date(b.date) - new Date(a.date)).map((experience) => {
                 const dish = dishesById[experience.dishId];
                 const restaurant = restaurantsById[experience.restaurantId];
@@ -1549,25 +1574,31 @@ export default function DishTrackerWebApp() {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
-            <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Cuisine</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><div className="flex justify-end"><Button onClick={addCuisine}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
-              <CardContent><div className="flex flex-wrap gap-2">{data.cuisines.map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}</div></CardContent>
-            </Card>
+            <div className={SECTION_CONTAINER}>
+              <Card className="rounded-3xl border-0 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Cuisine</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><div className="flex justify-end"><Button onClick={addCuisine}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
+                <CardContent><div className="flex flex-wrap gap-2">{data.cuisines.map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}</div></CardContent>
+              </Card>
+            </div>
 
-            <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Area</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><div className="flex justify-end"><Button onClick={addArea}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
-              <CardContent><div className="flex flex-wrap gap-2">{areaOptions.map((area) => <Badge key={area} variant="secondary">{area}</Badge>)}</div></CardContent>
-            </Card>
+            <div className={SECTION_CONTAINER}>
+              <Card className="rounded-3xl border-0 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Area</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><div className="flex justify-end"><Button onClick={addArea}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
+                <CardContent><div className="flex flex-wrap gap-2">{areaOptions.map((area) => <Badge key={area} variant="secondary">{area}</Badge>)}</div></CardContent>
+              </Card>
+            </div>
 
-            <Card className="rounded-3xl border-0 shadow-sm">
-              <CardHeader><CardTitle>Data Notes</CardTitle></CardHeader>
-              <CardContent className="space-y-3 text-sm text-slate-600">
-                <div>Your data is saved locally in the browser using JSON-backed local storage.</div>
-                <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
-                <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
-                <div>You can later host this as a static site on GitHub Pages with no backend cost.</div>
-              </CardContent>
-            </Card>
+            <div className={SECTION_CONTAINER}>
+              <Card className="rounded-3xl border-0 shadow-sm">
+                <CardHeader><CardTitle>Data Notes</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm text-slate-600">
+                  <div>Your data is saved locally in the browser using JSON-backed local storage.</div>
+                  <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
+                  <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
+                  <div>You can later host this as a static site on GitHub Pages with no backend cost.</div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
