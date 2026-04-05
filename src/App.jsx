@@ -1679,36 +1679,80 @@ export default function DishTrackerWebApp() {
 
           <TabsContent value="experiences" className="space-y-4">
             <div className={`${SECTION_CONTAINER} space-y-3`}>
-              {[...data.experiences].sort((a, b) => new Date(b.date) - new Date(a.date)).map((experience) => {
-                const dish = dishesById[experience.dishId];
-                const restaurant = restaurantsById[experience.restaurantId];
-                const branch = experience.branchId ? branchesById[experience.branchId] : null;
-                return (
-                  <Card key={experience.id} className="rounded-3xl border-0 shadow-sm">
-                    <CardContent className="p-5">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="space-y-2">
-                          <div className="text-lg font-semibold">{dish?.name || "Unknown dish"}</div>
-                          <div className="text-sm text-slate-500">{restaurant?.name} • {experience.date}</div>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary">{experience.orderType}</Badge>
-                            {branch && <Badge variant="secondary">{branch.name}</Badge>}
-                            {experience.price != null && <Badge variant="outline">Price: {experience.price}</Badge>}
-                            {experience.valueForMoney ? <Badge variant="outline">Value: {experience.valueForMoney}</Badge> : null}
-                          </div>
-                          {experience.notes && <div className="text-sm text-slate-700">{experience.notes}</div>}
-                          {experience.images?.length > 0 && (
-                            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                              {experience.images.map((img) => <div key={img.id} className="overflow-hidden rounded-2xl border"><img src={img.dataUrl} alt={img.name} className="h-24 w-full object-cover" /></div>)}
+              <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white">
+                <table className="min-w-full text-sm">
+                  <thead className="border-b border-slate-200 bg-slate-50 text-center text-sm font-semibold uppercase tracking-wide text-slate-600">
+                    <tr>
+                      <th className="px-5 py-3">Dish</th>
+                      <th className="px-5 py-3">Restaurant</th>
+                      <th className="px-5 py-3">Price</th>
+                      <th className="px-5 py-3">Value</th>
+                      <th className="px-5 py-3">Rating</th>
+                      <th className="px-5 py-3 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                  {[...data.experiences].sort((a, b) => new Date(b.date) - new Date(a.date)).map((experience) => {
+                    const dish = dishesById[experience.dishId];
+                    const restaurant = restaurantsById[experience.restaurantId];
+                    const branch = experience.branchId ? branchesById[experience.branchId] : null;
+                    return (
+                      <tr key={experience.id} className="align-top odd:bg-white even:bg-slate-50/70">
+                        <td className="px-5 py-4">
+                          <div className="min-w-0 space-y-2">
+                            <div>
+                              <div className="text-lg font-semibold text-slate-900">{dish?.name || "Unknown dish"}</div>
+                              <div className="text-sm text-slate-500">{experience.date}</div>
                             </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3"><Stars value={experience.rating} /><Button variant="ghost" size="icon" onClick={() => editExperience(experience)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteExperience(experience.id)}><Trash2 className="h-4 w-4" /></Button></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="secondary">{experience.orderType}</Badge>
+                              {branch && <Badge variant="secondary">{branch.name}</Badge>}
+                            </div>
+                            {(experience.notes || experience.images?.length > 0) && (
+                              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                                {experience.notes ? <div className="text-sm text-slate-700">{experience.notes}</div> : null}
+                                {experience.images?.length > 0 && (
+                                  <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+                                    {experience.images.map((img) => <div key={img.id} className="overflow-hidden rounded-2xl border bg-white"><img src={img.dataUrl} alt={img.name} className="h-24 w-full object-cover" /></div>)}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-slate-700">
+                          <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
+                          {restaurant?.area || restaurant?.cuisine ? (
+                            <div className="mt-1 text-sm text-slate-500">
+                              {restaurant?.area || "No area"}
+                              {restaurant?.cuisine ? ` • ${restaurant.cuisine}` : ""}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="px-5 py-4 text-center text-slate-700">
+                          {experience.price != null ? experience.price : "—"}
+                        </td>
+                        <td className="px-5 py-4 text-center text-slate-700">
+                          {experience.valueForMoney || "—"}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            {experience.rating != null ? <span className="text-sm text-slate-600">({Number(experience.rating).toFixed(1)})</span> : null}
+                            <Stars value={experience.rating} />
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => editExperience(experience)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                            <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => deleteExperience(experience.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  </tbody>
+                </table>
+              </div>
               {data.experiences.length === 0 && <Card className="rounded-3xl border-0 shadow-sm"><CardContent className="p-6 text-sm text-slate-500">No experiences logged yet.</CardContent></Card>}
             </div>
           </TabsContent>
