@@ -30,7 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const STORAGE_KEY = "dish-tracker-webapp-v2";
-const APP_VERSION = "v0.1.5";
+const APP_VERSION = "v0.1.8";
 const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 const PORTION_SIZES = [
   "Taster",
@@ -2178,6 +2178,7 @@ export default function DishTrackerWebApp() {
                 const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
                 const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
                 const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
+                const avgDishPrice = average(data.experiences.filter((experience) => experience.restaurantId === restaurant.id).map((experience) => experience.price));
                 return (
                   <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
                     <CardHeader className="px-6 pt-6 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
@@ -2197,8 +2198,18 @@ export default function DishTrackerWebApp() {
                     </CardHeader>
                     <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
                       <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
-                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Restaurant rating:</span>{restaurant.rating ? <><span>({Number(restaurant.rating).toFixed(1)})</span><Stars value={restaurant.rating} /></> : <span>—</span>}</div>
-                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Avg dish rating:</span>{avgDishRating ? <><span>({avgDishRating.toFixed(1)})</span><Stars value={avgDishRating} /></> : <span>—</span>}</div>
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
+                          <span>Rest. Score:</span>
+                          {restaurant.rating ? <><span>({Number(restaurant.rating).toFixed(1)})</span><Stars value={restaurant.rating} /></> : <span>—</span>}
+                        </div>
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(avgDishRating)}`}>
+                          <span>Avg dish rating:</span>
+                          {avgDishRating ? <><span>({avgDishRating.toFixed(1)})</span><Stars value={avgDishRating} /></> : <span>—</span>}
+                        </div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.8rem] font-semibold text-emerald-800">
+                          <span>Avg dish price:</span>
+                          <span>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
+                        </div>
                         {restaurant.locationText && <div><span className="font-medium text-slate-900">Location:</span> {restaurant.locationText}</div>}
                         {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
                         {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-5 w-5 text-red-500" /> Open Maps Link</a>}
