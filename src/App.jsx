@@ -1527,10 +1527,10 @@ export default function DishTrackerWebApp() {
                 const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
                 return (
                   <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
-                    <CardHeader className="px-6 pt-6 flex flex-row items-start justify-between gap-4 space-y-0">
+                    <CardHeader className="px-6 pt-6 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
                       <div>
                         <CardTitle className="text-2xl font-bold tracking-tight">{restaurant.name}</CardTitle>
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+                        <div className="mt-3 flex flex-wrap gap-2.5 text-xs text-slate-600">
                           {restaurant.area && <Badge variant="secondary">{restaurant.area}</Badge>}
                           {restaurant.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
                           {restaurant.halalChecked && <Badge variant="outline">Halal checked</Badge>}
@@ -1538,8 +1538,8 @@ export default function DishTrackerWebApp() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => editRestaurant(restaurant)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => deleteRestaurant(restaurant.id)}><Trash2 className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="sm" onClick={() => editRestaurant(restaurant)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                        <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => deleteRestaurant(restaurant.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
                       </div>
                     </CardHeader>
                     <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
@@ -1548,7 +1548,7 @@ export default function DishTrackerWebApp() {
                         <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Avg dish rating:</span>{avgDishRating ? <><span>({avgDishRating.toFixed(1)})</span><Stars value={avgDishRating} /></> : <span>—</span>}</div>
                         {restaurant.locationText && <div><span className="font-medium text-slate-900">Location:</span> {restaurant.locationText}</div>}
                         {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
-                        {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-4 w-4" /> Open Maps Link</a>}
+                        {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-5 w-5 text-red-500" /> Open Maps Link</a>}
                       </div>
                       {restaurant.notes && <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{restaurant.notes}</div>}
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
