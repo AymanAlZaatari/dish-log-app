@@ -445,6 +445,7 @@ export default function DishTrackerWebApp() {
   const [restaurantSearch, setRestaurantSearch] = useState("");
   const [restaurantAreaFilter, setRestaurantAreaFilter] = useState("all");
   const [restaurantCuisineFilter, setRestaurantCuisineFilter] = useState("all");
+  const [restaurantKidsFilter, setRestaurantKidsFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("all");
   const [cuisineFilter, setCuisineFilter] = useState("all");
   const [restaurantFilter, setRestaurantFilter] = useState("all");
@@ -653,9 +654,10 @@ export default function DishTrackerWebApp() {
       if (q && !haystack.includes(q)) return false;
       if (restaurantAreaFilter !== "all" && restaurant.area !== restaurantAreaFilter) return false;
       if (restaurantCuisineFilter !== "all" && restaurant.cuisine !== restaurantCuisineFilter) return false;
+      if (restaurantKidsFilter === "kids" && !restaurant.kidsFriendly) return false;
       return true;
     });
-  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCuisineFilter, restaurantSearch]);
+  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCuisineFilter, restaurantKidsFilter, restaurantSearch]);
 
   const dashboardStats = useMemo(() => {
     const triedDishes = data.dishes.filter((d) => !d.isWishlist).length;
@@ -1510,10 +1512,11 @@ export default function DishTrackerWebApp() {
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-5">
                 <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search restaurants, branches, dishes..." value={restaurantSearch} onChange={(e) => setRestaurantSearch(e.target.value)} /></div>
                 <Select value={restaurantAreaFilter} onValueChange={setRestaurantAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{restaurantFilterAreaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
                 <Select value={restaurantCuisineFilter} onValueChange={setRestaurantCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{restaurantFilterCuisineOptions.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
+                <Select value={restaurantKidsFilter} onValueChange={setRestaurantKidsFilter}><SelectTrigger><SelectValue placeholder="Kids friendly" /></SelectTrigger><SelectContent><SelectItem value="all">All restaurants</SelectItem><SelectItem value="kids">Kids friendly only</SelectItem></SelectContent></Select>
               </div>
             </div>
 
@@ -1531,7 +1534,7 @@ export default function DishTrackerWebApp() {
                           {restaurant.area && <Badge variant="secondary">{restaurant.area}</Badge>}
                           {restaurant.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
                           {restaurant.halalChecked && <Badge variant="outline">Halal checked</Badge>}
-                          {restaurant.kidsFriendly && <Badge variant="outline">Kids friendly</Badge>}
+                          {restaurant.kidsFriendly && <Badge className="!border-blue-200 !bg-blue-100 !text-blue-700">Kids friendly</Badge>}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1693,11 +1696,11 @@ export default function DishTrackerWebApp() {
                         <div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => editDish(dish)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteDish(dish.id)}><Trash2 className="h-4 w-4" /></Button></div>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {dish.isWishlist ? <Badge>Wishlist</Badge> : <Badge variant="secondary">Tried</Badge>}
+                        {dish.isWishlist ? <Badge className="!border-amber-200 !bg-amber-100 !text-amber-800">Wishlist</Badge> : <Badge className="!border-emerald-200 !bg-emerald-100 !text-emerald-800">Tried</Badge>}
                         {restaurant?.area && <Badge variant="secondary">{restaurant.area}</Badge>}
                         {restaurant?.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
                         {branch && <Badge variant="secondary">Branch: {branch.name}</Badge>}
-                        {dish.portionSize && <Badge variant="outline">{dish.portionSize}</Badge>}
+                        {dish.portionSize && dish.portionSize !== "Adult" && <Badge variant="outline">{dish.portionSize}</Badge>}
                         {(dish.tags || []).map((tag) => <Badge key={tag} variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>)}
                       </div>
                     </CardHeader>
