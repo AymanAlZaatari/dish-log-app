@@ -1368,11 +1368,11 @@ export default function DishTrackerWebApp() {
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 gap-2 rounded-2xl bg-transparent p-0 md:grid-cols-5">
-            <TabsTrigger value="dashboard" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.dashboard}`}>Dashboard</TabsTrigger>
-            <TabsTrigger value="restaurants" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.restaurants}`}>Restaurants</TabsTrigger>
-            <TabsTrigger value="dishes" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.dishes}`}>Dishes</TabsTrigger>
-            <TabsTrigger value="experiences" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.experiences}`}>Experiences</TabsTrigger>
-            <TabsTrigger value="settings" className={`rounded-2xl border shadow-sm transition-colors ${TOP_NAV_STYLES.settings}`}>Settings</TabsTrigger>
+            <TabsTrigger value="dashboard" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.dashboard}`}>Dashboard</TabsTrigger>
+            <TabsTrigger value="restaurants" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.restaurants}`}>Restaurants</TabsTrigger>
+            <TabsTrigger value="dishes" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.dishes}`}>Dishes</TabsTrigger>
+            <TabsTrigger value="experiences" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.experiences}`}>Experiences</TabsTrigger>
+            <TabsTrigger value="settings" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.settings}`}>Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
