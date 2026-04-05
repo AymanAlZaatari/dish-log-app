@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import {
   Plus,
   Search,
@@ -17,6 +19,7 @@ import {
   Pencil,
   Eye,
   Image as ImageIcon,
+  LogOut,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,9 +31,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { auth, db, hasFirebaseConfig } from "./lib/firebase";
 
 const STORAGE_KEY = "dish-tracker-webapp-v2";
-const APP_VERSION = "v0.1.12";
+const APP_VERSION = "v0.2.0";
+const CLOUD_DOC_VERSION = 1;
 const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 const PORTION_SIZES = [
   "Taster",
@@ -135,6 +140,7 @@ const TOP_ACTION_BUTTON_STYLES = {
   addExperience: "!border-rose-200 !bg-rose-50 !text-rose-900 hover:!bg-rose-100",
   import: "!border-sky-200 !bg-sky-50 !text-sky-900 hover:!bg-sky-100",
   export: "!border-violet-200 !bg-violet-50 !text-violet-900 hover:!bg-violet-100",
+  auth: "!border-slate-300 !bg-slate-100 !text-slate-800 hover:!bg-slate-200",
 };
 const SAVE_BUTTON_STYLE = "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700";
 const CANCEL_BUTTON_STYLE = "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200";
@@ -1012,8 +1018,89 @@ function tagChipStyle(colorValue) {
   };
 }
 
-export default function DishTrackerWebApp() {
-  const [data, setData] = useState(loadData);
+function serializeData(data) {
+  return JSON.stringify(data);
+}
+
+function cloudDataDoc(userId) {
+  return doc(db, "userData", userId);
+}
+
+function SetupRequiredScreen() {
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8">
+      <div className="mx-auto max-w-3xl">
+        <Card className="rounded-3xl border border-amber-200 bg-white p-8 shadow-sm">
+          <CardHeader className="space-y-3 px-0 pt-0">
+            <Badge className="w-fit !border-amber-200 !bg-amber-100 !text-amber-800">{APP_VERSION}</Badge>
+            <CardTitle className="text-3xl font-bold tracking-tight">Firebase Setup Required</CardTitle>
+            <div className="text-sm text-slate-600">
+              Add your Firebase web app environment variables, then restart `npm run dev`.
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4 px-0 pb-0 text-sm text-slate-600">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="font-medium text-slate-900">Required `.env.local` keys</div>
+              <pre className="mt-3 overflow-x-auto text-xs leading-6 text-slate-700">{`VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...`}</pre>
+            </div>
+            <div>Manual account creation is still handled in the Firebase Authentication console.</div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function AuthScreen({ email, password, authError, isSigningIn, onEmailChange, onPasswordChange, onSubmit }) {
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8">
+      <div className="mx-auto max-w-md">
+        <Card className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <CardHeader className="space-y-3 px-0 pt-0">
+            <Badge className="w-fit !border-slate-200 !bg-slate-100 !text-slate-700">{APP_VERSION}</Badge>
+            <CardTitle className="text-3xl font-bold tracking-tight">Sign In</CardTitle>
+            <div className="text-sm text-slate-600">Use the manually-created Firebase account for this app.</div>
+          </CardHeader>
+          <CardContent className="space-y-4 px-0 pb-0">
+            <Field label="Email">
+              <Input type="email" value={email} onChange={(e) => onEmailChange(e.target.value)} placeholder="name@example.com" />
+            </Field>
+            <Field label="Password">
+              <Input type="password" value={password} onChange={(e) => onPasswordChange(e.target.value)} placeholder="Password" />
+            </Field>
+            {authError ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{authError}</div> : null}
+            <Button type="button" className="w-full" onClick={onSubmit} disabled={isSigningIn}>
+              {isSigningIn ? "Signing In..." : "Sign In"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function LoadingScreen({ title, body }) {
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8">
+      <div className="mx-auto max-w-md">
+        <Card className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <CardHeader className="space-y-3 px-0 py-0">
+            <Badge className="w-fit !border-slate-200 !bg-slate-100 !text-slate-700">{APP_VERSION}</Badge>
+            <CardTitle className="text-3xl font-bold tracking-tight">{title}</CardTitle>
+            <div className="text-sm text-slate-600">{body}</div>
+          </CardHeader>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout }) {
   const [tab, setTab] = useState("dashboard");
   const [search, setSearch] = useState("");
   const [dishReportSearch, setDishReportSearch] = useState("");
@@ -1051,10 +1138,6 @@ export default function DishTrackerWebApp() {
   const [logExperienceWithDish, setLogExperienceWithDish] = useState(true);
 
   const importRef = useRef(null);
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
 
   const restaurantsById = useMemo(() => Object.fromEntries(data.restaurants.map((r) => [r.id, r])), [data.restaurants]);
   const branchesById = useMemo(() => Object.fromEntries(data.branches.map((b) => [b.id, b])), [data.branches]);
@@ -1690,8 +1773,17 @@ export default function DishTrackerWebApp() {
               </div>
               <h1 className="text-3xl font-bold tracking-tight">Dish Tracker</h1>
               <p className="mt-1 text-sm text-slate-600">Track restaurants, dishes, branches, and every tasting experience.</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 font-semibold text-slate-700">
+                  {userEmail}
+                </span>
+                <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 font-semibold text-sky-800">
+                  {cloudStatus}
+                </span>
+              </div>
             </div>
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
+              <Button variant="outline" className={`order-6 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.auth}`} onClick={onLogout}><LogOut className="mr-2 h-4 w-4" /> Sign Out</Button>
               <Button variant="outline" className={`order-5 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.export}`} onClick={() => exportData(data)}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
               <Button variant="outline" className={`order-4 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.import}`} onClick={() => importRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import JSON</Button>
               <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
@@ -2581,10 +2673,10 @@ export default function DishTrackerWebApp() {
               <Card className="rounded-3xl border-0 shadow-sm">
                 <CardHeader><CardTitle>Data Notes</CardTitle></CardHeader>
                 <CardContent className="space-y-3 text-sm text-slate-600">
-                  <div>Your data is saved locally in the browser using JSON-backed local storage.</div>
+                  <div>Your data is saved to Firebase Cloud Firestore and synced per signed-in user.</div>
                   <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
                   <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
-                  <div>You can later host this as a static site on GitHub Pages with no backend cost.</div>
+                  <div>The browser local copy is kept only as a migration and backup convenience, not as the primary source of truth.</div>
                   <div className="pt-2">
                     <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={seedSampleData}>
                       <Download className="mr-2 h-4 w-4" /> Load Seed Data
@@ -2597,5 +2689,171 @@ export default function DishTrackerWebApp() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+export default function DishTrackerWebApp() {
+  const [authUser, setAuthUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [data, setData] = useState(() => createSampleData());
+  const [cloudReady, setCloudReady] = useState(false);
+  const [cloudStatus, setCloudStatus] = useState("Waiting for sign-in");
+
+  const lastRemoteDataRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (!hasFirebaseConfig || !auth) return undefined;
+
+    return onAuthStateChanged(auth, (user) => {
+      setAuthUser(user);
+      setAuthReady(true);
+      setAuthError("");
+      setCloudReady(false);
+      setCloudStatus(user ? "Loading cloud data..." : "Waiting for sign-in");
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!authUser || !db) return undefined;
+
+    const unsubscribe = onSnapshot(cloudDataDoc(authUser.uid), async (snapshot) => {
+      if (snapshot.exists() && snapshot.data()?.data) {
+        const remoteData = migrateData(snapshot.data().data);
+        lastRemoteDataRef.current = serializeData(remoteData);
+        setData(remoteData);
+        setCloudReady(true);
+        setCloudStatus("Cloud sync active");
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteData));
+        }
+        return;
+      }
+
+      const localData = loadData();
+      const serialized = serializeData(localData);
+      lastRemoteDataRef.current = serialized;
+      setData(localData);
+      setCloudReady(true);
+      setCloudStatus("Migrating local data...");
+
+      try {
+        await setDoc(cloudDataDoc(authUser.uid), {
+          data: localData,
+          version: CLOUD_DOC_VERSION,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+        setCloudStatus("Cloud sync active");
+      } catch (error) {
+        console.error(error);
+        setCloudStatus("Migration failed");
+      }
+    }, (error) => {
+      console.error(error);
+      setCloudReady(true);
+      setCloudStatus("Cloud load failed");
+    });
+
+    return () => unsubscribe();
+  }, [authUser]);
+
+  useEffect(() => {
+    if (!authUser || !cloudReady || !db) return undefined;
+
+    const serialized = serializeData(data);
+    if (serialized === lastRemoteDataRef.current) return undefined;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        setCloudStatus("Saving...");
+        await setDoc(cloudDataDoc(authUser.uid), {
+          data,
+          version: CLOUD_DOC_VERSION,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+        lastRemoteDataRef.current = serialized;
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+        setCloudStatus("Cloud sync active");
+      } catch (error) {
+        console.error(error);
+        setCloudStatus("Save failed");
+      }
+    }, 500);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [authUser, cloudReady, data]);
+
+  async function handleEmailPasswordSignIn() {
+    if (!auth || !email.trim() || !password) return;
+
+    setIsSigningIn(true);
+    setAuthError("");
+
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+    } catch (error) {
+      console.error(error);
+      setAuthError("Sign-in failed. Check the email/password and try again.");
+    } finally {
+      setIsSigningIn(false);
+    }
+  }
+
+  async function handleLogout() {
+    if (!auth) return;
+    await signOut(auth);
+    setData(createSampleData());
+    lastRemoteDataRef.current = null;
+    setCloudStatus("Signed out");
+  }
+
+  if (!hasFirebaseConfig) {
+    return <SetupRequiredScreen />;
+  }
+
+  if (!authReady) {
+    return <LoadingScreen title="Starting App" body="Checking your Firebase session..." />;
+  }
+
+  if (!authUser) {
+    return (
+      <AuthScreen
+        email={email}
+        password={password}
+        authError={authError}
+        isSigningIn={isSigningIn}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={handleEmailPasswordSignIn}
+      />
+    );
+  }
+
+  if (!cloudReady) {
+    return <LoadingScreen title="Loading Data" body="Syncing your dishes, restaurants, and experiences from Firebase..." />;
+  }
+
+  return (
+    <DishTrackerAppContent
+      data={data}
+      setData={setData}
+      userEmail={authUser.email || "Signed-in user"}
+      cloudStatus={cloudStatus}
+      onLogout={handleLogout}
+    />
   );
 }
