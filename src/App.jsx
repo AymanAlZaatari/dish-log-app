@@ -30,7 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const STORAGE_KEY = "dish-tracker-webapp-v2";
-const APP_VERSION = "v0.1.8";
+const APP_VERSION = "v0.1.12";
 const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 const PORTION_SIZES = [
   "Taster",
@@ -924,6 +924,16 @@ function ratingPillClass(value) {
   if (value >= 3.75) return "border-emerald-200 bg-emerald-50 text-emerald-800";
   if (value >= 2.75) return "border-amber-200 bg-amber-50 text-amber-800";
   if (value >= 1.75) return "border-rose-200 bg-rose-50 text-rose-800";
+  return "border-red-300 bg-red-100 text-red-900";
+}
+
+function valuePillClass(value) {
+  if (!value) return "border-slate-200 bg-slate-50 text-slate-700";
+  if (value === "Excellent value") return "border-emerald-300 bg-emerald-100 text-emerald-900";
+  if (value === "Great value") return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  if (value === "Good value") return "border-sky-200 bg-sky-50 text-sky-800";
+  if (value === "Okay value") return "border-amber-200 bg-amber-50 text-amber-800";
+  if (value === "Bad value") return "border-rose-200 bg-rose-50 text-rose-800";
   return "border-red-300 bg-red-100 text-red-900";
 }
 
@@ -2418,7 +2428,10 @@ export default function DishTrackerWebApp() {
                     </CardHeader>
                     <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
                       <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Dish rating:</span>{avgRating ? <><span>({avgRating.toFixed(1)})</span><Stars value={avgRating} /></> : <span>—</span>}</div>
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(avgRating)}`}>
+                          <span>Dish rating:</span>
+                          {avgRating ? <><span>({avgRating.toFixed(1)})</span><Stars value={avgRating} /></> : <span>—</span>}
+                        </div>
                         {dish.recommendedBy ? <div><span className="font-medium text-slate-900">Recommended by:</span> {dish.recommendedBy}</div> : null}
                       </div>
                       {dish.recommendations?.length ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div><span className="font-medium text-slate-900">Recommendations:</span><div className="mt-2 flex flex-wrap gap-2">{dish.recommendations.map((item) => <Badge key={item} className="!border-blue-200 !bg-blue-100 !text-blue-700">{item}</Badge>)}</div></div></div> : null}
@@ -2489,14 +2502,16 @@ export default function DishTrackerWebApp() {
                           ) : null}
                         </td>
                         <td className="px-5 py-4 text-center text-slate-700">
-                          {experience.price != null ? experience.price : "—"}
+                          {experience.price != null ? `$${Number(experience.price).toFixed(1)}` : "—"}
                         </td>
                         <td className="px-5 py-4 text-center text-slate-700">
-                          {experience.valueForMoney || "—"}
+                          <div className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${valuePillClass(experience.valueForMoney)}`}>
+                            {experience.valueForMoney || "—"}
+                          </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            {experience.rating != null ? <span className="text-sm text-slate-600">({Number(experience.rating).toFixed(1)})</span> : null}
+                          <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(experience.rating)}`}>
+                            {experience.rating != null ? <span>({Number(experience.rating).toFixed(1)})</span> : <span>—</span>}
                             <Stars value={experience.rating} />
                           </div>
                         </td>
