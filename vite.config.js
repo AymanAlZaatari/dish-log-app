@@ -15,5 +15,5 @@ export default defineConfig({
       interval: 300,
     },
   },
-  base: '/dish-tracker/',
+  base: '/dish-log-app/',
 })
