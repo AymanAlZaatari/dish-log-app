@@ -1,20 +1,27 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useContext, useEffect, useId, useMemo, useState } from 'react'
 
 const SelectContext = createContext(null)
 
-export function Select({ value, onValueChange, children }) {
+export function Select({ value, onValueChange, id, name, children }) {
   const [items, setItems] = useState([])
-  const contextValue = useMemo(() => ({ value, onValueChange, items, setItems }), [value, onValueChange, items])
+  const fallbackId = useId().replace(/:/g, '')
+  const contextValue = useMemo(
+    () => ({ value, onValueChange, items, setItems, id: id || fallbackId, name: name || id || fallbackId }),
+    [fallbackId, id, items, name, onValueChange, value]
+  )
   return <SelectContext.Provider value={contextValue}>{children}</SelectContext.Provider>
 }
 
-export function SelectTrigger({ className = '', children }) {
+export function SelectTrigger({ className = '', children, ...props }) {
   const ctx = useContext(SelectContext)
   return (
     <select
+      id={props.id || ctx?.id}
+      name={props.name || ctx?.name}
       className={['w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm', className].join(' ').trim()}
       value={ctx?.value ?? ''}
       onChange={(e) => ctx?.onValueChange?.(e.target.value)}
+      {...props}
     >
       {ctx?.items.map((item) => (
         <option key={item.value} value={item.value} disabled={item.disabled}>
