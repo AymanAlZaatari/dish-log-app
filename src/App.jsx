@@ -1570,13 +1570,7 @@ export default function DishTrackerWebApp() {
                   )}
                 </div>
 
-                <div className="border-t border-amber-200" />
-
-                {!activeDishComparison ? (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-                    Start typing a dish name to compare the same dish across restaurants.
-                  </div>
-                ) : (
+                {activeDishComparison ? (
                   <div className="space-y-4">
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                       <div className="text-xl font-bold tracking-tight text-slate-900">{activeDishComparison.label}</div>
@@ -1634,13 +1628,15 @@ export default function DishTrackerWebApp() {
                       </table>
                     </div>
                   </div>
-                )}
+                ) : null}
               </CardContent>
             </Card>
 
+            <div className="border-t border-slate-200" />
+
             <div className="rounded-3xl bg-white p-5 shadow-sm">
               <div className="mb-4">
-                <h2 className="text-xl font-semibold text-slate-900">Dish Library</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dish Library</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Browse, filter, and manage all saved dishes across restaurants.
                 </p>
