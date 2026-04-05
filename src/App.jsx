@@ -360,6 +360,11 @@ function normalizeDishName(name) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function hasValidRating(value) {
+  const num = Number(value);
+  return !Number.isNaN(num) && num >= 1 && num <= 5;
+}
+
 function TagInput({ label, color = "slate", values, setValues, inputValue, setInputValue, suggestions = [] }) {
   const filteredSuggestions = suggestions
     .filter((s) => inputValue.trim() && s.toLowerCase().includes(inputValue.trim().toLowerCase()) && !values.includes(s))
@@ -440,6 +445,8 @@ export default function DishTrackerWebApp() {
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
   const [dishForm, setDishForm] = useState(emptyDishForm);
   const [experienceForm, setExperienceForm] = useState(emptyExperienceForm);
+  const [experienceFormError, setExperienceFormError] = useState("");
+  const [experienceRatingError, setExperienceRatingError] = useState("");
   const [newCuisine, setNewCuisine] = useState("");
   const [newArea, setNewArea] = useState("");
   const [duplicateDishSuggestion, setDuplicateDishSuggestion] = useState(null);
@@ -644,12 +651,16 @@ export default function DishTrackerWebApp() {
     setDishForm(emptyDishForm);
     setDuplicateDishSuggestion(null);
     setShowDishNameSuggestions(false);
+    setExperienceFormError("");
+    setExperienceRatingError("");
     setShowInlineRestaurantForDish(false);
     setInlineRestaurantForDish(inlineRestaurantFormDefault);
     setLogExperienceWithDish(true);
   }
   function resetExperienceForm() {
     setExperienceForm(emptyExperienceForm);
+    setExperienceFormError("");
+    setExperienceRatingError("");
     setShowInlineRestaurantForExperience(false);
     setInlineRestaurantForExperience(inlineRestaurantFormDefault);
   }
@@ -758,7 +769,12 @@ export default function DishTrackerWebApp() {
       portionSize: dishForm.portionSize,
     };
 
-    const shouldLogExperience = !dishForm.isWishlist && logExperienceWithDish && experienceForm.rating;
+    if (!dishForm.isWishlist && logExperienceWithDish && !hasValidRating(experienceForm.rating)) {
+      setExperienceRatingError("Rating is required. Enter a value from 1 to 5.");
+      return;
+    }
+
+    const shouldLogExperience = !dishForm.isWishlist && logExperienceWithDish;
     const experiencePayload = shouldLogExperience
       ? {
           id: uid(),
@@ -788,6 +804,9 @@ export default function DishTrackerWebApp() {
 
   function saveExperience() {
     let restaurantId = experienceForm.restaurantId;
+    const selectedDish = dishesById[experienceForm.dishId];
+
+    setExperienceFormError("");
 
     if (showInlineRestaurantForExperience) {
       if (!inlineRestaurantForExperience.name.trim()) return;
@@ -800,7 +819,25 @@ export default function DishTrackerWebApp() {
       }));
     }
 
-    if (!experienceForm.dishId || !restaurantId) return;
+    if (!experienceForm.dishId) {
+      setExperienceFormError("Select a dish before saving the experience.");
+      return;
+    }
+
+    if (!restaurantId && selectedDish?.restaurantId) {
+      restaurantId = selectedDish.restaurantId;
+    }
+
+    if (!restaurantId) {
+      setExperienceFormError("Select a restaurant before saving the experience.");
+      return;
+    }
+
+    if (!hasValidRating(experienceForm.rating)) {
+      setExperienceRatingError("Rating is required. Enter a value from 1 to 5.");
+      return;
+    }
+
     const payload = {
       id: experienceForm.id || uid(),
       dishId: experienceForm.dishId,
@@ -873,16 +910,25 @@ export default function DishTrackerWebApp() {
     setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", recommendationInput: "", alertInput: "", tagInput: "" });
     setDuplicateDishSuggestion(null);
     setShowDishNameSuggestions(false);
+    setExperienceFormError("");
+    setExperienceRatingError("");
     setLogExperienceWithDish(false);
     setExperienceForm(emptyExperienceForm);
     setDishOpen(true);
   }
-  function editExperience(e) { setExperienceForm({ ...emptyExperienceForm, ...e, branchId: e.branchId || "none", rating: e.rating ?? "", price: e.price ?? "", valueForMoney: e.valueForMoney || "" }); setExperienceOpen(true); }
+  function editExperience(e) { setExperienceFormError(""); setExperienceRatingError(""); setExperienceForm({ ...emptyExperienceForm, ...e, branchId: e.branchId || "none", rating: e.rating ?? "", price: e.price ?? "", valueForMoney: e.valueForMoney || "" }); setExperienceOpen(true); }
 
   function prepareLogExperience(restaurantId, dishId) {
+    setExperienceFormError("");
+    setExperienceRatingError("");
     setExperienceForm({ ...emptyExperienceForm, restaurantId, dishId, branchId: "none" });
     setExperienceOpen(true);
     setTab("dishes");
+  }
+
+  function openNewExperienceDialog() {
+    resetExperienceForm();
+    setExperienceOpen(true);
   }
 
   function importJson(event) {
@@ -942,6 +988,30 @@ export default function DishTrackerWebApp() {
     const duplicate = data.dishes.find((d) => d.restaurantId === dishForm.restaurantId && d.name.trim().toLowerCase() === dishForm.name.trim().toLowerCase() && d.id !== dishForm.id);
     setDuplicateDishSuggestion(duplicate || null);
   }, [dishForm.restaurantId, dishForm.name, dishForm.id, data.dishes]);
+
+  useEffect(() => {
+    if (showInlineRestaurantForExperience) return;
+    if (!experienceForm.restaurantId || !experienceForm.dishId) return;
+
+    const selectedDish = dishesById[experienceForm.dishId];
+    if (!selectedDish) return;
+
+    if (selectedDish.restaurantId !== experienceForm.restaurantId) {
+      setExperienceForm((prev) => ({ ...prev, dishId: "", branchId: "none" }));
+      setExperienceFormError("The selected dish does not belong to this restaurant. Please select a matching dish.");
+    }
+  }, [dishesById, experienceForm.dishId, experienceForm.restaurantId, showInlineRestaurantForExperience]);
+
+  useEffect(() => {
+    if (showInlineRestaurantForExperience) return;
+    if (!experienceForm.restaurantId || experienceForm.dishId) return;
+
+    const restaurantDishes = data.dishes.filter((dish) => dish.restaurantId === experienceForm.restaurantId);
+    if (restaurantDishes.length === 1) {
+      setExperienceForm((prev) => ({ ...prev, dishId: restaurantDishes[0].id }));
+      setExperienceFormError("");
+    }
+  }, [data.dishes, experienceForm.dishId, experienceForm.restaurantId, showInlineRestaurantForExperience]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -1129,7 +1199,10 @@ export default function DishTrackerWebApp() {
                               <SelectContent>{ORDER_TYPES.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
                             </Select>
                           </Field>
-                          <Field label="Rating (1-5)"><Input type="number" min="1" max="5" value={experienceForm.rating} onChange={(e) => setExperienceForm({ ...experienceForm, rating: e.target.value })} /></Field>
+                          <div>
+                            <Field label="Rating (1-5) *"><Input type="number" min="1" max="5" required value={experienceForm.rating} onChange={(e) => { setExperienceForm({ ...experienceForm, rating: e.target.value }); if (hasValidRating(e.target.value)) setExperienceRatingError(""); }} className={experienceRatingError ? "border-red-400 focus-visible:ring-red-400" : ""} /></Field>
+                            {experienceRatingError ? <div className="mt-2 text-sm text-red-600">{experienceRatingError}</div> : null}
+                          </div>
                           <Field label="Price"><Input type="number" value={experienceForm.price} onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })} /></Field>
                           <Field label="Value for money">
                             <Select value={experienceForm.valueForMoney || "__none"} onValueChange={(value) => setExperienceForm({ ...experienceForm, valueForMoney: value === "__none" ? "" : value })}>
@@ -1163,16 +1236,20 @@ export default function DishTrackerWebApp() {
               </Dialog>
 
               <Dialog open={experienceOpen} onOpenChange={(open) => { setExperienceOpen(open); if (!open) resetExperienceForm(); }}>
-                <DialogTrigger asChild><Button variant="outline" className={`order-3 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addExperience}`}><Plus className="mr-2 h-4 w-4" /> Add Experience</Button></DialogTrigger>
+                <Button type="button" variant="outline" className={`order-3 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addExperience}`} onClick={openNewExperienceDialog}><Plus className="mr-2 h-4 w-4" /> Add Experience</Button>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <DialogHeader><DialogTitle>{experienceForm.id ? "Edit Experience" : "Log Dish Experience"}</DialogTitle></DialogHeader>
+                  {experienceFormError ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{experienceFormError}</div> : null}
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Restaurant">
                       {!showInlineRestaurantForExperience ? (
                         <>
-                          <Select value={experienceForm.restaurantId} onValueChange={(value) => setExperienceForm({ ...experienceForm, restaurantId: value, dishId: "", branchId: "none" })}>
+                          <Select value={experienceForm.restaurantId || "__none"} onValueChange={(value) => { setExperienceForm({ ...experienceForm, restaurantId: value === "__none" ? "" : value, dishId: "", branchId: "none" }); setExperienceFormError(""); }}>
                             <SelectTrigger><SelectValue placeholder="Select restaurant" /></SelectTrigger>
-                            <SelectContent>{data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}</SelectContent>
+                            <SelectContent>
+                              <SelectItem value="__none">Select restaurant</SelectItem>
+                              {data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}
+                            </SelectContent>
                           </Select>
                           <button type="button" className="mt-2 text-sm text-blue-600 underline" onClick={() => { setShowInlineRestaurantForExperience(true); setExperienceForm({ ...experienceForm, restaurantId: "", dishId: "", branchId: "none" }); }}>
                             Add a new restaurant now
@@ -1202,10 +1279,16 @@ export default function DishTrackerWebApp() {
                       )}
                     </Field>
                     <Field label="Dish">
-                      <Select value={experienceForm.dishId} onValueChange={(value) => setExperienceForm({ ...experienceForm, dishId: value })}>
+                      <Select value={experienceForm.dishId || "__none"} onValueChange={(value) => { setExperienceForm((prev) => ({ ...prev, dishId: value === "__none" ? "" : value, restaurantId: prev.restaurantId || dishesById[value]?.restaurantId || "" })); setExperienceFormError(""); }} disabled={!showInlineRestaurantForExperience && !experienceForm.restaurantId}>
                         <SelectTrigger><SelectValue placeholder="Select dish" /></SelectTrigger>
-                        <SelectContent>{dishOptionsForExperience.map((dish) => <SelectItem key={dish.id} value={dish.id}>{dish.name}</SelectItem>)}</SelectContent>
+                        <SelectContent>
+                          <SelectItem value="__none">Select dish</SelectItem>
+                          {dishOptionsForExperience.map((dish) => <SelectItem key={dish.id} value={dish.id}>{dish.name}</SelectItem>)}
+                        </SelectContent>
                       </Select>
+                      {!showInlineRestaurantForExperience && !!experienceForm.restaurantId && dishOptionsForExperience.length === 0 ? (
+                        <div className="mt-2 text-sm text-amber-700">No dishes exist for this restaurant yet.</div>
+                      ) : null}
                     </Field>
                     <Field label="Branch (optional)">
                       <Select value={experienceForm.branchId} onValueChange={(value) => setExperienceForm({ ...experienceForm, branchId: value })}>
@@ -1223,7 +1306,10 @@ export default function DishTrackerWebApp() {
                         <SelectContent>{ORDER_TYPES.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
                       </Select>
                     </Field>
-                    <Field label="Rating (1-5)"><Input type="number" min="1" max="5" value={experienceForm.rating} onChange={(e) => setExperienceForm({ ...experienceForm, rating: e.target.value })} /></Field>
+                    <div>
+                      <Field label="Rating (1-5) *"><Input type="number" min="1" max="5" required value={experienceForm.rating} onChange={(e) => { setExperienceForm({ ...experienceForm, rating: e.target.value }); if (hasValidRating(e.target.value)) setExperienceRatingError(""); }} className={experienceRatingError ? "border-red-400 focus-visible:ring-red-400" : ""} /></Field>
+                      {experienceRatingError ? <div className="mt-2 text-sm text-red-600">{experienceRatingError}</div> : null}
+                    </div>
                     <Field label="Price"><Input type="number" value={experienceForm.price} onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })} /></Field>
                     <Field label="Value for money">
                       <Select value={experienceForm.valueForMoney || "__none"} onValueChange={(value) => setExperienceForm({ ...experienceForm, valueForMoney: value === "__none" ? "" : value })}>
@@ -1299,13 +1385,13 @@ export default function DishTrackerWebApp() {
                           </div>
                           <div className="flex items-center gap-2"><Stars value={experience.rating} /><Button variant="ghost" size="icon" onClick={() => deleteExperience(experience.id)}><Trash2 className="h-4 w-4" /></Button></div>
                         </div>
-                        {(experience.price || experience.valueForMoney || experience.notes || experience.images?.length) && (
+                        {((experience.price != null && experience.price !== "") || experience.valueForMoney || experience.notes || experience.images?.length > 0) && (
                           <div className="mt-3 text-sm text-slate-600">
-                            {experience.price ? `Price: ${experience.price}` : ""}
-                            {experience.price && experience.valueForMoney ? " • " : ""}
+                            {experience.price != null && experience.price !== "" ? `Price: ${experience.price}` : ""}
+                            {experience.price != null && experience.price !== "" && experience.valueForMoney ? " • " : ""}
                             {experience.valueForMoney ? `Value: ${experience.valueForMoney}` : ""}
                             {experience.notes ? <div className="mt-2">{experience.notes}</div> : null}
-                            {experience.images?.length ? <div className="mt-2 text-xs text-slate-500">{experience.images.length} image(s)</div> : null}
+                            {experience.images?.length > 0 ? <div className="mt-2 text-xs text-slate-500">{experience.images.length} image(s)</div> : null}
                           </div>
                         )}
                       </div>
@@ -1433,14 +1519,14 @@ export default function DishTrackerWebApp() {
 
           <TabsContent value="dishes" className="space-y-6">
             <Card className="rounded-3xl border border-amber-200 bg-amber-50/60 shadow-sm">
-              <CardHeader>
-                <CardTitle>Dish Comparison Across Restaurants</CardTitle>
+              <CardHeader className="px-6 pt-6">
+                <CardTitle className="text-2xl font-bold tracking-tight text-amber-950">Dish Comparison Across Restaurants</CardTitle>
                 <div className="text-sm text-slate-600">
                   Compare one dish across every restaurant you have logged so you can decide where you liked it most.
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+              <CardContent className="px-6 pb-6 space-y-5">
+                <div className="space-y-3 rounded-2xl border border-amber-200 bg-white/70 p-4">
                   <Input
                     placeholder="Type a dish name like Tawouk"
                     value={dishReportSearch}
@@ -1462,20 +1548,22 @@ export default function DishTrackerWebApp() {
                   )}
                 </div>
 
+                <div className="border-t border-amber-200" />
+
                 {!activeDishComparison ? (
-                  <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                     Start typing a dish name to compare the same dish across restaurants.
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <div className="text-lg font-semibold text-slate-900">{activeDishComparison.label}</div>
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div className="text-xl font-bold tracking-tight text-slate-900">{activeDishComparison.label}</div>
                       <div className="mt-1 text-sm text-slate-600">
                         {activeDishComparisonRows.length} restaurant{activeDishComparisonRows.length === 1 ? "" : "s"} tracked for this dish.
                       </div>
                     </div>
 
-                    <div className="overflow-x-auto rounded-2xl border">
+                    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
                       <table className="min-w-full text-sm">
                         <thead className="bg-slate-50 text-left text-slate-600">
                           <tr>
@@ -1544,18 +1632,18 @@ export default function DishTrackerWebApp() {
               </div>
             </div>
 
-            <div className={`${SECTION_CONTAINER} grid gap-4 lg:grid-cols-2 xl:grid-cols-3`}>
+            <div className={`${SECTION_CONTAINER} grid gap-5 lg:grid-cols-2 xl:grid-cols-3`}>
               {filteredDishes.map((dish) => {
                 const restaurant = restaurantsById[dish.restaurantId];
                 const branch = dish.branchId ? branchesById[dish.branchId] : null;
                 const experiences = dishExperienceMap[dish.id] || [];
                 const avgRating = computedDishRating(dish.id);
                 return (
-                  <Card key={dish.id} className="rounded-3xl border-0 shadow-sm">
-                    <CardHeader className="space-y-3">
+                  <Card key={dish.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
+                    <CardHeader className="px-6 pt-6 space-y-3">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <CardTitle className="text-xl">{dish.name}</CardTitle>
+                          <CardTitle className="text-2xl font-bold tracking-tight">{dish.name}</CardTitle>
                           <div className="mt-1 text-sm text-slate-500">{restaurant?.name || "Unknown restaurant"}</div>
                         </div>
                         <div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => editDish(dish)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteDish(dish.id)}><Trash2 className="h-4 w-4" /></Button></div>
@@ -1569,13 +1657,15 @@ export default function DishTrackerWebApp() {
                         {(dish.tags || []).map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3 text-sm text-slate-600">
-                      <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Dish rating:</span>{avgRating ? <Stars value={avgRating} /> : <span>—</span>}</div>
-                      {dish.recommendedBy ? <div><span className="font-medium text-slate-900">Recommended by:</span> {dish.recommendedBy}</div> : null}
-                      {dish.recommendations?.length ? <div><span className="font-medium text-slate-900">Recommendations:</span><div className="mt-2 flex flex-wrap gap-2">{dish.recommendations.map((item) => <Badge key={item} className="bg-blue-100 text-blue-700">{item}</Badge>)}</div></div> : null}
-                      {dish.alerts?.length ? <div><span className="font-medium text-slate-900">Alerts:</span><div className="mt-2 flex flex-wrap gap-2">{dish.alerts.map((item) => <Badge key={item} className="bg-red-100 text-red-700">{item}</Badge>)}</div></div> : null}
-                      {dish.notes ? <div>{dish.notes}</div> : null}
-                      <div className="rounded-2xl bg-slate-50 p-3">
+                    <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
+                      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900">Dish rating:</span>{avgRating ? <><span>({avgRating.toFixed(1)})</span><Stars value={avgRating} /></> : <span>—</span>}</div>
+                        {dish.recommendedBy ? <div><span className="font-medium text-slate-900">Recommended by:</span> {dish.recommendedBy}</div> : null}
+                      </div>
+                      {dish.recommendations?.length ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div><span className="font-medium text-slate-900">Recommendations:</span><div className="mt-2 flex flex-wrap gap-2">{dish.recommendations.map((item) => <Badge key={item} className="bg-blue-100 text-blue-700">{item}</Badge>)}</div></div></div> : null}
+                      {dish.alerts?.length ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div><span className="font-medium text-slate-900">Alerts:</span><div className="mt-2 flex flex-wrap gap-2">{dish.alerts.map((item) => <Badge key={item} className="bg-red-100 text-red-700">{item}</Badge>)}</div></div></div> : null}
+                      {dish.notes ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{dish.notes}</div> : null}
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <div className="font-medium text-slate-900">Experience count: {experiences.length}</div>
                         {experiences.length > 0 && <div className="mt-1 text-xs text-slate-500">Latest: {[...experiences].sort((a, b) => new Date(b.date) - new Date(a.date))[0].date}</div>}
                       </div>
