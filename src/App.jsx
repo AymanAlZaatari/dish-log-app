@@ -128,11 +128,11 @@ const DASHBOARD_CARD_STYLES = {
 };
 const SECTION_CONTAINER = "rounded-[2rem] border border-slate-200 bg-slate-100/70 p-4 md:p-5";
 const TOP_ACTION_BUTTON_STYLES = {
-  addDish: "border-amber-300 bg-amber-500 text-white hover:bg-amber-600",
-  addRestaurant: "border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100",
-  addExperience: "border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100",
-  import: "border-sky-200 bg-sky-50 text-sky-900 hover:bg-sky-100",
-  export: "border-violet-200 bg-violet-50 text-violet-900 hover:bg-violet-100",
+  addDish: "!border-amber-300 !bg-amber-500 !text-white hover:!bg-amber-600",
+  addRestaurant: "!border-emerald-200 !bg-emerald-50 !text-emerald-900 hover:!bg-emerald-100",
+  addExperience: "!border-rose-200 !bg-rose-50 !text-rose-900 hover:!bg-rose-100",
+  import: "!border-sky-200 !bg-sky-50 !text-sky-900 hover:!bg-sky-100",
+  export: "!border-violet-200 !bg-violet-50 !text-violet-900 hover:!bg-violet-100",
 };
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
