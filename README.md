@@ -1,6 +1,42 @@
 # Dish Tracker Web App
 
-A free personal dish-tracking web app built with React + Vite.
+A lightweight web app for logging restaurants, dishes, branches, and food experiences in one place.
+
+The app is built for people who repeatedly try dishes across different restaurants and want a structured memory of:
+
+- which dish they ordered
+- where they ordered it
+- how good it was
+- how much it cost
+- whether it was worth the price
+- which version or branch was better
+
+## Features
+
+- restaurant management
+- branch tracking
+- dish tracking
+- experience logging
+- ratings and value-for-money notes
+- wishlist vs tried dishes
+- dish comparison across restaurants
+- JSON export and import
+- demo seed data for testing the UI
+
+## Purpose
+
+The goal of the project is to replace scattered food notes with a structured personal dish journal that is fast to update and easy to review later.
+
+## Tech Stack
+
+- React
+- Vite
+- Tailwind CSS utilities
+- local browser storage today, with Firebase planned for cloud sync
+
+## Intended Use
+
+This project is meant for a very small number of users, with simple account handling and low operational overhead. The focus is practicality, not a large-scale consumer product.
 
 ## Run locally
 
