@@ -967,7 +967,13 @@ export default function DishTrackerWebApp() {
     }));
   }
 
+  function confirmDelete(message) {
+    return window.confirm(message);
+  }
+
   function deleteRestaurant(id) {
+    const restaurant = data.restaurants.find((r) => r.id === id);
+    if (!confirmDelete(`Delete restaurant "${restaurant?.name || "this restaurant"}"? This will also remove its branches, dishes, and experiences.`)) return;
     const dishIds = data.dishes.filter((d) => d.restaurantId === id).map((d) => d.id);
     setData((prev) => ({
       ...prev,
@@ -979,10 +985,14 @@ export default function DishTrackerWebApp() {
   }
 
   function deleteDish(id) {
+    const dish = data.dishes.find((d) => d.id === id);
+    if (!confirmDelete(`Delete dish "${dish?.name || "this dish"}"? This will also remove its experiences.`)) return;
     setData((prev) => ({ ...prev, dishes: prev.dishes.filter((d) => d.id !== id), experiences: prev.experiences.filter((e) => e.dishId !== id) }));
   }
 
   function deleteBranch(id) {
+    const branch = data.branches.find((b) => b.id === id);
+    if (!confirmDelete(`Delete branch "${branch?.name || "this branch"}"? Dishes and experiences will keep their records but lose this branch link.`)) return;
     setData((prev) => ({
       ...prev,
       branches: prev.branches.filter((b) => b.id !== id),
@@ -992,6 +1002,7 @@ export default function DishTrackerWebApp() {
   }
 
   function deleteExperience(id) {
+    if (!confirmDelete("Delete this experience?")) return;
     setData((prev) => ({ ...prev, experiences: prev.experiences.filter((e) => e.id !== id) }));
   }
 
