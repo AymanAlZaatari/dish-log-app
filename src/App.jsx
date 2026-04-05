@@ -15,6 +15,7 @@ import {
   NotebookText,
   X,
   Pencil,
+  Eye,
   Image as ImageIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const STORAGE_KEY = "dish-tracker-webapp-v2";
+const APP_VERSION = "v0.1.3";
 const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 const PORTION_SIZES = [
   "Taster",
@@ -136,8 +138,10 @@ const TOP_ACTION_BUTTON_STYLES = {
 };
 const SAVE_BUTTON_STYLE = "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700";
 const CANCEL_BUTTON_STYLE = "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200";
-const EDIT_BUTTON_STYLE = "border-blue-300 bg-blue-100 text-blue-800 hover:bg-blue-200";
-const DELETE_BUTTON_STYLE = "border-red-300 bg-red-100 text-red-800 hover:bg-red-200";
+const EDIT_BUTTON_STYLE = "!border-blue-300 !bg-blue-100 !text-blue-800 hover:!bg-blue-200";
+const DELETE_BUTTON_STYLE = "!border-red-300 !bg-red-100 !text-red-800 hover:!bg-red-200";
+const VIEW_BUTTON_STYLE = "!border-sky-300 !bg-sky-100 !text-sky-800 hover:!bg-sky-200";
+const LOG_BUTTON_STYLE = "!border-amber-300 !bg-amber-100 !text-amber-800 hover:!bg-amber-200";
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -393,6 +397,29 @@ function average(list) {
   const nums = list.filter((n) => n != null && !Number.isNaN(Number(n))).map(Number);
   if (!nums.length) return null;
   return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+function summarizeTags(tags = [], maxChars = 24, maxItems = 3) {
+  const visible = [];
+  let usedChars = 0;
+  for (const tag of tags) {
+    if (visible.length >= maxItems) break;
+    const nextChars = usedChars + tag.length;
+    if (visible.length > 0 && nextChars > maxChars) break;
+    visible.push(tag);
+    usedChars = nextChars;
+  }
+  const hiddenCount = tags.length - visible.length;
+  return { visible, hiddenCount };
+}
+
+function ratingPillClass(value) {
+  if (value == null) return "border-slate-200 bg-slate-50 text-slate-700";
+  if (value >= 4.75) return "border-emerald-300 bg-emerald-100 text-emerald-900";
+  if (value >= 3.75) return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  if (value >= 2.75) return "border-amber-200 bg-amber-50 text-amber-800";
+  if (value >= 1.75) return "border-rose-200 bg-rose-50 text-rose-800";
+  return "border-red-300 bg-red-100 text-red-900";
 }
 
 function normalizeDishName(name) {
@@ -1121,6 +1148,11 @@ export default function DishTrackerWebApp() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
+              <div className="mb-3">
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  {APP_VERSION}
+                </span>
+              </div>
               <h1 className="text-3xl font-bold tracking-tight">Dish Tracker</h1>
               <p className="mt-1 text-sm text-slate-600">Track restaurants, dishes, branches, and every tasting experience.</p>
             </div>
@@ -1338,12 +1370,23 @@ export default function DishTrackerWebApp() {
                     </div>
                     <div className="md:col-span-2"><Field label="Notes"><Textarea value={dishForm.notes} onChange={(e) => setDishForm({ ...dishForm, notes: e.target.value })} rows={4} /></Field></div>
                   </div>
-                  <ModalActions
-                    onCancel={() => { setDishOpen(false); resetDishForm(); }}
-                    onSave={saveDish}
-                    saveLabel={dishForm.id ? "Save Changes" : "Save Dish"}
-                    cancelLabel={dishForm.id ? "Discard" : "Cancel"}
-                  />
+                  <div className="mt-6 flex items-center justify-between gap-3">
+                    <div>
+                      {dishForm.id ? (
+                        <Button type="button" variant="outline" className={DELETE_BUTTON_STYLE} onClick={() => { deleteDish(dishForm.id); setDishOpen(false); resetDishForm(); }}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className="flex gap-3">
+                      <Button type="button" variant="outline" className={CANCEL_BUTTON_STYLE} onClick={() => { setDishOpen(false); resetDishForm(); }}>
+                        {dishForm.id ? "Discard" : "Cancel"}
+                      </Button>
+                      <Button type="button" className={SAVE_BUTTON_STYLE} onClick={saveDish}>
+                        {dishForm.id ? "Save Changes" : "Save Dish"}
+                      </Button>
+                    </div>
+                  </div>
                 </DialogContent>
               </Dialog>
 
@@ -1636,6 +1679,51 @@ export default function DishTrackerWebApp() {
                         {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-5 w-5 text-red-500" /> Open Maps Link</a>}
                       </div>
                       {restaurant.notes && <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{restaurant.notes}</div>}
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="mb-3 font-medium text-slate-900">Dishes</div>
+                        {dishes.length === 0 ? (
+                          <div className="text-sm text-slate-500">No dishes added yet.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {dishes.map((dish) => {
+                              const dishAvgRating = computedDishRating(dish.id);
+                              const avgDishPrice = average(data.experiences.filter((experience) => experience.dishId === dish.id).map((experience) => experience.price));
+                              const tagSummary = summarizeTags(dish.tags);
+                              return (
+                                <div key={dish.id} className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-3">
+                                  <div className="min-w-0">
+                                    <div className="font-medium text-slate-900">{dish.name}</div>
+                                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                                      {dish.isWishlist ? <Badge className="!border-amber-200 !bg-amber-100 !text-amber-800">Wishlist</Badge> : <Badge className="!border-emerald-200 !bg-emerald-100 !text-emerald-800">Tried</Badge>}
+                                      {dish.portionSize && dish.portionSize !== "Adult" ? <Badge variant="outline">{dish.portionSize}</Badge> : null}
+                                      {tagSummary.visible.map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}
+                                      {tagSummary.hiddenCount > 0 ? <Badge variant="outline">+{tagSummary.hiddenCount} more</Badge> : null}
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600">
+                                      <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(dishAvgRating)}`}>
+                                        <span>Rating:</span>
+                                        {dishAvgRating ? <><span>({dishAvgRating.toFixed(1)})</span><Stars value={dishAvgRating} /></> : <span>—</span>}
+                                      </div>
+                                      <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.8rem] font-semibold text-emerald-800">
+                                        <span>Avg price:</span>
+                                        <span>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex shrink-0 items-center gap-2">
+                                    <Button variant="outline" size="sm" className={VIEW_BUTTON_STYLE} onClick={() => editDish(dish)} aria-label={`View ${dish.name}`}>
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="outline" size="sm" className={LOG_BUTTON_STYLE} onClick={() => prepareLogExperience(dish.restaurantId, dish.id)} aria-label={`Log experience for ${dish.name}`}>
+                                      <NotebookText className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <div className="mb-3 font-medium text-slate-900">Branches</div>
                         {branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex items-center gap-2"><Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editBranch(branch)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button><Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteBranch(branch.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button></div></div>)}</div>}
