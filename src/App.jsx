@@ -432,6 +432,7 @@ export default function DishTrackerWebApp() {
   const [restaurantCuisineFilter, setRestaurantCuisineFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("all");
   const [cuisineFilter, setCuisineFilter] = useState("all");
+  const [restaurantFilter, setRestaurantFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const [restaurantOpen, setRestaurantOpen] = useState(false);
@@ -471,6 +472,26 @@ export default function DishTrackerWebApp() {
   const allAlertTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.alerts || []))].sort(), [data.dishes]);
 
   const areaOptions = useMemo(() => [...new Set([...(data.areas || []), ...data.restaurants.map((r) => r.area).filter(Boolean), ...data.branches.map((b) => b.area).filter(Boolean)])].sort(), [data]);
+  const restaurantFilterAreaOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.area).filter(Boolean))].sort(), [data.restaurants]);
+  const restaurantFilterCuisineOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.cuisine).filter(Boolean))].sort(), [data.restaurants]);
+  const dishFilterRestaurantOptions = useMemo(
+    () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.name).filter(Boolean))].sort(),
+    [data.dishes, restaurantsById]
+  );
+  const dishFilterAreaOptions = useMemo(
+    () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.area).filter(Boolean))].sort(),
+    [data.dishes, restaurantsById]
+  );
+  const dishFilterCuisineOptions = useMemo(
+    () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.cuisine).filter(Boolean))].sort(),
+    [data.dishes, restaurantsById]
+  );
+  const dishStatusOptions = useMemo(() => {
+    const options = [];
+    if (data.dishes.some((dish) => !dish.isWishlist)) options.push({ value: "tried", label: "Tried" });
+    if (data.dishes.some((dish) => dish.isWishlist)) options.push({ value: "wishlist", label: "Wishlist" });
+    return options;
+  }, [data.dishes]);
 
   const dishExperienceMap = useMemo(() => {
     return Object.fromEntries(
@@ -587,13 +608,14 @@ export default function DishTrackerWebApp() {
       ].join(" ").toLowerCase();
 
       if (q && !haystack.includes(q)) return false;
+      if (restaurantFilter !== "all" && restaurant?.name !== restaurantFilter) return false;
       if (areaFilter !== "all" && restaurant?.area !== areaFilter) return false;
       if (cuisineFilter !== "all" && restaurant?.cuisine !== cuisineFilter) return false;
       if (statusFilter === "wishlist" && !dish.isWishlist) return false;
       if (statusFilter === "tried" && dish.isWishlist) return false;
       return true;
     });
-  }, [data.dishes, restaurantsById, search, areaFilter, cuisineFilter, statusFilter]);
+  }, [data.dishes, restaurantsById, search, restaurantFilter, areaFilter, cuisineFilter, statusFilter]);
 
   const filteredRestaurants = useMemo(() => {
     const q = restaurantSearch.trim().toLowerCase();
@@ -1465,8 +1487,8 @@ export default function DishTrackerWebApp() {
 
               <div className="grid gap-3 md:grid-cols-4">
                 <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search restaurants, branches, dishes..." value={restaurantSearch} onChange={(e) => setRestaurantSearch(e.target.value)} /></div>
-                <Select value={restaurantAreaFilter} onValueChange={setRestaurantAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
-                <Select value={restaurantCuisineFilter} onValueChange={setRestaurantCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
+                <Select value={restaurantAreaFilter} onValueChange={setRestaurantAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{restaurantFilterAreaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
+                <Select value={restaurantCuisineFilter} onValueChange={setRestaurantCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{restaurantFilterCuisineOptions.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
               </div>
             </div>
 
@@ -1624,11 +1646,12 @@ export default function DishTrackerWebApp() {
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-5">
+              <div className="grid gap-3 md:grid-cols-6">
                 <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search dishes, tags, restaurants..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-                <Select value={areaFilter} onValueChange={setAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
-                <Select value={cuisineFilter} onValueChange={setCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem><SelectItem value="tried">Tried</SelectItem><SelectItem value="wishlist">Wishlist</SelectItem></SelectContent></Select>
+                <Select value={restaurantFilter} onValueChange={setRestaurantFilter}><SelectTrigger><SelectValue placeholder="Restaurant" /></SelectTrigger><SelectContent><SelectItem value="all">All restaurants</SelectItem>{dishFilterRestaurantOptions.map((restaurantName) => <SelectItem key={restaurantName} value={restaurantName}>{restaurantName}</SelectItem>)}</SelectContent></Select>
+                <Select value={areaFilter} onValueChange={setAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{dishFilterAreaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
+                <Select value={cuisineFilter} onValueChange={setCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{dishFilterCuisineOptions.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem>{dishStatusOptions.map((status) => <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>)}</SelectContent></Select>
               </div>
             </div>
 
