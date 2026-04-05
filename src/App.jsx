@@ -128,12 +128,16 @@ const DASHBOARD_CARD_STYLES = {
 };
 const SECTION_CONTAINER = "rounded-[2rem] border border-slate-200 bg-slate-100/70 p-4 md:p-5";
 const TOP_ACTION_BUTTON_STYLES = {
-  addDish: "!border-amber-300 !bg-amber-500 !text-white hover:!bg-amber-600",
+  addDish: "!border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700",
   addRestaurant: "!border-emerald-200 !bg-emerald-50 !text-emerald-900 hover:!bg-emerald-100",
   addExperience: "!border-rose-200 !bg-rose-50 !text-rose-900 hover:!bg-rose-100",
   import: "!border-sky-200 !bg-sky-50 !text-sky-900 hover:!bg-sky-100",
   export: "!border-violet-200 !bg-violet-50 !text-violet-900 hover:!bg-violet-100",
 };
+const SAVE_BUTTON_STYLE = "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700";
+const CANCEL_BUTTON_STYLE = "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200";
+const EDIT_BUTTON_STYLE = "border-blue-300 bg-blue-100 text-blue-800 hover:bg-blue-200";
+const DELETE_BUTTON_STYLE = "border-red-300 bg-red-100 text-red-800 hover:bg-red-200";
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -344,6 +348,36 @@ function Field({ label, children }) {
   );
 }
 
+function ModalHeader({ title, onClose }) {
+  return (
+    <DialogHeader className="relative pr-10">
+      <DialogTitle className="text-xl font-bold tracking-tight">{title}</DialogTitle>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="absolute right-0 top-0 h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+        onClick={onClose}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </DialogHeader>
+  );
+}
+
+function ModalActions({ onCancel, onSave, saveLabel, cancelLabel = "Cancel" }) {
+  return (
+    <div className="mt-6 flex justify-end gap-3">
+      <Button type="button" variant="outline" className={CANCEL_BUTTON_STYLE} onClick={onCancel}>
+        {cancelLabel}
+      </Button>
+      <Button type="button" className={SAVE_BUTTON_STYLE} onClick={onSave}>
+        {saveLabel}
+      </Button>
+    </div>
+  );
+}
+
 function Stars({ value }) {
   const n = Number(value || 0);
   return (
@@ -460,6 +494,7 @@ export default function DishTrackerWebApp() {
 
   const [restaurantForm, setRestaurantForm] = useState(emptyRestaurantForm);
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
+  const [branchFormError, setBranchFormError] = useState("");
   const [dishForm, setDishForm] = useState(emptyDishForm);
   const [experienceForm, setExperienceForm] = useState(emptyExperienceForm);
   const [experienceFormError, setExperienceFormError] = useState("");
@@ -685,7 +720,7 @@ export default function DishTrackerWebApp() {
   }, [data, dishExperienceMap]);
 
   function resetRestaurantForm() { setRestaurantForm(emptyRestaurantForm); }
-  function resetBranchForm() { setBranchForm(emptyBranchForm); }
+  function resetBranchForm() { setBranchForm(emptyBranchForm); setBranchFormError(""); }
   function resetDishForm() {
     setDishForm(emptyDishForm);
     setDuplicateDishSuggestion(null);
@@ -748,7 +783,14 @@ export default function DishTrackerWebApp() {
   }
 
   function saveBranch() {
-    if (!branchForm.restaurantId || !branchForm.name.trim()) return;
+    if (!branchForm.restaurantId) {
+      setBranchFormError("Select a restaurant before saving the branch.");
+      return;
+    }
+    if (!branchForm.name.trim()) {
+      setBranchFormError("Enter a branch name before saving.");
+      return;
+    }
     const payload = {
       id: branchForm.id || uid(),
       restaurantId: branchForm.restaurantId,
@@ -954,7 +996,7 @@ export default function DishTrackerWebApp() {
   }
 
   function editRestaurant(r) { setRestaurantForm({ ...emptyRestaurantForm, ...r, rating: r.rating ?? "" }); setRestaurantOpen(true); }
-  function editBranch(b) { setBranchForm({ ...emptyBranchForm, ...b }); setBranchOpen(true); }
+  function editBranch(b) { setBranchFormError(""); setBranchForm({ ...emptyBranchForm, ...b }); setBranchOpen(true); }
   function editDish(d) {
     setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", recommendationInput: "", alertInput: "", tagInput: "" });
     setDuplicateDishSuggestion(null);
@@ -1080,7 +1122,7 @@ export default function DishTrackerWebApp() {
               <Dialog open={restaurantOpen} onOpenChange={(open) => { setRestaurantOpen(open); if (!open) resetRestaurantForm(); }}>
                 <DialogTrigger asChild><Button variant="outline" className={`order-2 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addRestaurant}`}><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-2xl">
-                  <DialogHeader><DialogTitle>{restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"}</DialogTitle></DialogHeader>
+                  <ModalHeader title={restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"} onClose={() => { setRestaurantOpen(false); resetRestaurantForm(); }} />
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Name"><Input value={restaurantForm.name} onChange={(e) => setRestaurantForm({ ...restaurantForm, name: e.target.value })} /></Field>
                     <Field label="Area">
@@ -1109,14 +1151,19 @@ export default function DishTrackerWebApp() {
                     <div className="flex items-center gap-3 pt-8"><Checkbox checked={restaurantForm.kidsFriendly} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
                     <div className="md:col-span-2"><Field label="Notes"><Textarea value={restaurantForm.notes} onChange={(e) => setRestaurantForm({ ...restaurantForm, notes: e.target.value })} rows={4} /></Field></div>
                   </div>
-                  <div className="mt-4 flex justify-end"><Button onClick={saveRestaurant}>{restaurantForm.id ? "Save Changes" : "Save Restaurant"}</Button></div>
+                  <ModalActions
+                    onCancel={() => { setRestaurantOpen(false); resetRestaurantForm(); }}
+                    onSave={saveRestaurant}
+                    saveLabel={restaurantForm.id ? "Save Changes" : "Save Restaurant"}
+                    cancelLabel={restaurantForm.id ? "Discard" : "Cancel"}
+                  />
                 </DialogContent>
               </Dialog>
 
               <Dialog open={dishOpen} onOpenChange={(open) => { setDishOpen(open); if (!open) resetDishForm(); }}>
                 <DialogTrigger asChild><Button className={`order-1 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addDish}`}><Plus className="mr-2 h-4 w-4" /> Add Dish</Button></DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
-                  <DialogHeader><DialogTitle>{dishForm.id ? "Edit Dish" : "Add Dish"}</DialogTitle></DialogHeader>
+                  <ModalHeader title={dishForm.id ? "Edit Dish" : "Add Dish"} onClose={() => { setDishOpen(false); resetDishForm(); }} />
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Restaurant">
                       {!showInlineRestaurantForDish ? (
@@ -1280,14 +1327,19 @@ export default function DishTrackerWebApp() {
                     </div>
                     <div className="md:col-span-2"><Field label="Notes"><Textarea value={dishForm.notes} onChange={(e) => setDishForm({ ...dishForm, notes: e.target.value })} rows={4} /></Field></div>
                   </div>
-                  <div className="mt-4 flex justify-end"><Button onClick={saveDish}>{dishForm.id ? "Save Changes" : "Save Dish"}</Button></div>
+                  <ModalActions
+                    onCancel={() => { setDishOpen(false); resetDishForm(); }}
+                    onSave={saveDish}
+                    saveLabel={dishForm.id ? "Save Changes" : "Save Dish"}
+                    cancelLabel={dishForm.id ? "Discard" : "Cancel"}
+                  />
                 </DialogContent>
               </Dialog>
 
               <Dialog open={experienceOpen} onOpenChange={(open) => { setExperienceOpen(open); if (!open) resetExperienceForm(); }}>
                 <Button type="button" variant="outline" className={`order-3 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addExperience}`} onClick={openNewExperienceDialog}><Plus className="mr-2 h-4 w-4" /> Add Experience</Button>
                 <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
-                  <DialogHeader><DialogTitle>{experienceForm.id ? "Edit Experience" : "Log Dish Experience"}</DialogTitle></DialogHeader>
+                  <ModalHeader title={experienceForm.id ? "Edit Experience" : "Log Dish Experience"} onClose={() => { setExperienceOpen(false); resetExperienceForm(); }} />
                   {experienceFormError ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{experienceFormError}</div> : null}
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Restaurant">
@@ -1386,7 +1438,12 @@ export default function DishTrackerWebApp() {
                     </div>
                     <div className="md:col-span-2"><Field label="Notes"><Textarea value={experienceForm.notes} onChange={(e) => setExperienceForm({ ...experienceForm, notes: e.target.value })} rows={4} /></Field></div>
                   </div>
-                  <div className="mt-4 flex justify-end"><Button onClick={saveExperience}>{experienceForm.id ? "Save Changes" : "Save Experience"}</Button></div>
+                  <ModalActions
+                    onCancel={() => { setExperienceOpen(false); resetExperienceForm(); }}
+                    onSave={saveExperience}
+                    saveLabel={experienceForm.id ? "Save Changes" : "Save Experience"}
+                    cancelLabel={experienceForm.id ? "Discard" : "Cancel"}
+                  />
                 </DialogContent>
               </Dialog>
             </div>
@@ -1432,7 +1489,15 @@ export default function DishTrackerWebApp() {
                             <div className="text-sm text-slate-500">{restaurant?.name} • {experience.orderType} • {experience.date}</div>
                             {branch && <div className="mt-1 text-xs text-slate-500">Branch: {branch.name}</div>}
                           </div>
-                          <div className="flex items-center gap-2"><Stars value={experience.rating} /><Button variant="ghost" size="icon" onClick={() => deleteExperience(experience.id)}><Trash2 className="h-4 w-4" /></Button></div>
+                          <div className="flex items-center gap-2">
+                            <Stars value={experience.rating} />
+                            <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editExperience(experience)}>
+                              <Pencil className="mr-2 h-4 w-4" /> Edit
+                            </Button>
+                            <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteExperience(experience.id)}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </Button>
+                          </div>
                         </div>
                         {((experience.price != null && experience.price !== "") || experience.valueForMoney || experience.notes || experience.images?.length > 0) && (
                           <div className="mt-3 text-sm text-slate-600">
@@ -1479,26 +1544,35 @@ export default function DishTrackerWebApp() {
                 <Dialog open={branchOpen} onOpenChange={(open) => { setBranchOpen(open); if (!open) resetBranchForm(); }}>
                   <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Branch</Button></DialogTrigger>
                   <DialogContent className="sm:max-w-2xl">
-                    <DialogHeader><DialogTitle>{branchForm.id ? "Edit Branch" : "Add Branch"}</DialogTitle></DialogHeader>
+                    <ModalHeader title={branchForm.id ? "Edit Branch" : "Add Branch"} onClose={() => { setBranchOpen(false); resetBranchForm(); }} />
+                    {branchFormError ? <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{branchFormError}</div> : null}
                     <div className="grid gap-4 md:grid-cols-2">
                       <Field label="Restaurant">
-                        <Select value={branchForm.restaurantId} onValueChange={(value) => setBranchForm({ ...branchForm, restaurantId: value })}>
+                        <Select value={branchForm.restaurantId || "__none"} onValueChange={(value) => { setBranchForm({ ...branchForm, restaurantId: value === "__none" ? "" : value }); setBranchFormError(""); }}>
                           <SelectTrigger><SelectValue placeholder="Select restaurant" /></SelectTrigger>
-                          <SelectContent>{data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}</SelectContent>
+                          <SelectContent>
+                            <SelectItem value="__none">Select restaurant</SelectItem>
+                            {data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}
+                          </SelectContent>
                         </Select>
                       </Field>
-                      <Field label="Branch name"><Input value={branchForm.name} onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })} /></Field>
+                      <Field label="Branch name"><Input value={branchForm.name} onChange={(e) => { setBranchForm({ ...branchForm, name: e.target.value }); setBranchFormError(""); }} /></Field>
                       <Field label="Area">
-                        <Select value={branchForm.area || "__none"} onValueChange={(value) => setBranchForm({ ...branchForm, area: value === "__none" ? "" : value })}>
+                        <Select value={branchForm.area || "__none"} onValueChange={(value) => { setBranchForm({ ...branchForm, area: value === "__none" ? "" : value }); setBranchFormError(""); }}>
                           <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
                           <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
                         </Select>
                       </Field>
-                      <Field label="Location text"><Input value={branchForm.locationText} onChange={(e) => setBranchForm({ ...branchForm, locationText: e.target.value })} /></Field>
-                      <Field label="Google Maps link"><Input value={branchForm.mapsLink} onChange={(e) => setBranchForm({ ...branchForm, mapsLink: e.target.value })} /></Field>
-                      <div className="md:col-span-2"><Field label="Notes"><Textarea value={branchForm.notes} onChange={(e) => setBranchForm({ ...branchForm, notes: e.target.value })} rows={4} /></Field></div>
+                      <Field label="Location text"><Input value={branchForm.locationText} onChange={(e) => { setBranchForm({ ...branchForm, locationText: e.target.value }); setBranchFormError(""); }} /></Field>
+                      <Field label="Google Maps link"><Input value={branchForm.mapsLink} onChange={(e) => { setBranchForm({ ...branchForm, mapsLink: e.target.value }); setBranchFormError(""); }} /></Field>
+                      <div className="md:col-span-2"><Field label="Notes"><Textarea value={branchForm.notes} onChange={(e) => { setBranchForm({ ...branchForm, notes: e.target.value }); setBranchFormError(""); }} rows={4} /></Field></div>
                     </div>
-                    <div className="mt-4 flex justify-end"><Button onClick={saveBranch}>{branchForm.id ? "Save Changes" : "Save Branch"}</Button></div>
+                    <ModalActions
+                      onCancel={() => { setBranchOpen(false); resetBranchForm(); }}
+                      onSave={saveBranch}
+                      saveLabel={branchForm.id ? "Save Changes" : "Save Branch"}
+                      cancelLabel={branchForm.id ? "Discard" : "Cancel"}
+                    />
                   </DialogContent>
                 </Dialog>
               </div>
@@ -1538,8 +1612,8 @@ export default function DishTrackerWebApp() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => editRestaurant(restaurant)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
-                        <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => deleteRestaurant(restaurant.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                        <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editRestaurant(restaurant)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                        <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteRestaurant(restaurant.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
                       </div>
                     </CardHeader>
                     <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
@@ -1553,7 +1627,7 @@ export default function DishTrackerWebApp() {
                       {restaurant.notes && <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{restaurant.notes}</div>}
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <div className="mb-3 font-medium text-slate-900">Branches</div>
-                        {branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => editBranch(branch)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteBranch(branch.id)}><X className="h-4 w-4" /></Button></div></div>)}</div>}
+                        {branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex items-center gap-2"><Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editBranch(branch)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button><Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteBranch(branch.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button></div></div>)}</div>}
                       </div>
                     </CardContent>
                   </Card>
@@ -1693,7 +1767,10 @@ export default function DishTrackerWebApp() {
                           <CardTitle className="text-2xl font-bold tracking-tight">{dish.name}</CardTitle>
                           <div className="mt-1 text-sm text-slate-500">{restaurant?.name || "Unknown restaurant"}</div>
                         </div>
-                        <div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => editDish(dish)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteDish(dish.id)}><Trash2 className="h-4 w-4" /></Button></div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editDish(dish)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                          <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteDish(dish.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                        </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {dish.isWishlist ? <Badge className="!border-amber-200 !bg-amber-100 !text-amber-800">Wishlist</Badge> : <Badge className="!border-emerald-200 !bg-emerald-100 !text-emerald-800">Tried</Badge>}
@@ -1790,8 +1867,8 @@ export default function DishTrackerWebApp() {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={() => editExperience(experience)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
-                            <Button variant="outline" size="sm" className="border-red-200 text-red-700 hover:bg-red-50" onClick={() => deleteExperience(experience.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                            <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editExperience(experience)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                            <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteExperience(experience.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
                           </div>
                         </td>
                       </tr>
@@ -1838,14 +1915,14 @@ export default function DishTrackerWebApp() {
 
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Cuisine</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><div className="flex justify-end"><Button onClick={addCuisine}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><ModalHeader title="Add Cuisine" onClose={() => setCuisineOpen(false)} /><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><ModalActions onCancel={() => setCuisineOpen(false)} onSave={addCuisine} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
                 <CardContent><div className="flex flex-wrap gap-2">{data.cuisines.map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}</div></CardContent>
               </Card>
             </div>
 
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Area</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><div className="flex justify-end"><Button onClick={addArea}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
                 <CardContent><div className="flex flex-wrap gap-2">{areaOptions.map((area) => <Badge key={area} variant="secondary">{area}</Badge>)}</div></CardContent>
               </Card>
             </div>
