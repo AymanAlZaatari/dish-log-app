@@ -212,6 +212,10 @@ const sampleExperienceId = uid();
 const sampleData = {
   cuisines: DEFAULT_CUISINES,
   areas: DEFAULT_AREAS,
+  tagColors: {
+    cheesy: "#2563eb",
+    breakfast: "#f59e0b",
+  },
   restaurants: [
     {
       id: sampleRestaurantId,
@@ -306,6 +310,7 @@ function migrateData(parsed) {
   return {
     cuisines: parsed.cuisines?.length ? parsed.cuisines : DEFAULT_CUISINES,
     areas: parsed.areas?.length ? parsed.areas : DEFAULT_AREAS,
+    tagColors: parsed.tagColors || {},
     restaurants,
     branches: parsed.branches || [],
     dishes,
@@ -419,6 +424,16 @@ function TagInput({ label, color = "slate", values, setValues, inputValue, setIn
       </div>
     </div>
   );
+}
+
+function tagChipStyle(colorValue) {
+  if (!colorValue) return undefined;
+
+  return {
+    backgroundColor: `${colorValue}22`,
+    borderColor: `${colorValue}55`,
+    color: colorValue,
+  };
 }
 
 export default function DishTrackerWebApp() {
@@ -896,6 +911,16 @@ export default function DishTrackerWebApp() {
     if (!value || data.areas.includes(value)) return;
     setData((prev) => ({ ...prev, areas: [...prev.areas, value].sort() }));
     setNewArea("");
+  }
+
+  function setTagColor(tag, colorValue) {
+    setData((prev) => ({
+      ...prev,
+      tagColors: {
+        ...(prev.tagColors || {}),
+        [tag]: colorValue,
+      },
+    }));
   }
 
   function deleteRestaurant(id) {
@@ -1673,7 +1698,7 @@ export default function DishTrackerWebApp() {
                         {restaurant?.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
                         {branch && <Badge variant="secondary">Branch: {branch.name}</Badge>}
                         {dish.portionSize && <Badge variant="outline">{dish.portionSize}</Badge>}
-                        {(dish.tags || []).map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}
+                        {(dish.tags || []).map((tag) => <Badge key={tag} variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>)}
                       </div>
                     </CardHeader>
                     <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
@@ -1777,6 +1802,37 @@ export default function DishTrackerWebApp() {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
+            <div className={SECTION_CONTAINER}>
+              <Card className="rounded-3xl border-0 shadow-sm">
+                <CardHeader><CardTitle>Dish Tags</CardTitle></CardHeader>
+                <CardContent>
+                  {allDishTags.length === 0 ? (
+                    <div className="text-sm text-slate-500">No dish tags yet.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {allDishTags.map((tag) => (
+                        <div key={tag} className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>
+                            <span className="text-sm text-slate-500">{data.dishes.filter((dish) => (dish.tags || []).includes(tag)).length} dish(es)</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Label className="text-sm">Color</Label>
+                            <Input
+                              type="color"
+                              value={data.tagColors?.[tag] || "#64748b"}
+                              onChange={(e) => setTagColor(tag, e.target.value)}
+                              className="h-10 w-16 cursor-pointer p-1"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Cuisine</DialogTitle></DialogHeader><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><div className="flex justify-end"><Button onClick={addCuisine}>Save</Button></div></div></DialogContent></Dialog></CardHeader>
