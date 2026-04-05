@@ -30,7 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const STORAGE_KEY = "dish-tracker-webapp-v2";
-const APP_VERSION = "v0.1.3";
+const APP_VERSION = "v0.1.5";
 const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 const PORTION_SIZES = [
   "Taster",
@@ -213,64 +213,569 @@ const inlineRestaurantFormDefault = {
   kidsFriendly: false,
 };
 
-const sampleRestaurantId = uid();
-const sampleDishId = uid();
-const sampleExperienceId = uid();
+function daysAgo(days) {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+}
 
-const sampleData = {
-  cuisines: DEFAULT_CUISINES,
-  areas: DEFAULT_AREAS,
-  tagColors: {
-    cheesy: "#2563eb",
-    breakfast: "#f59e0b",
-  },
-  restaurants: [
-    {
-      id: sampleRestaurantId,
-      name: "Cedar Bite",
-      area: "Mar Mikhael",
-      locationText: "Beirut",
-      mapsLink: "",
-      cuisine: "Lebanese",
-      rating: 4,
-      notes: "Great late-night option.",
-      recommendedBy: "Rami",
-      halalChecked: true,
-      kidsFriendly: false,
+function createSampleData() {
+  const cedarBiteId = uid();
+  const cedarBiteHamraBranchId = uid();
+  const cedarBiteAchrafiehBranchId = uid();
+  const falafelHubId = uid();
+  const falafelHubVerdunBranchId = uid();
+  const nonaSliceId = uid();
+  const nonaSliceDbayehBranchId = uid();
+  const sushiLoopId = uid();
+  const sushiLoopJalElDibBranchId = uid();
+  const burgerYardId = uid();
+  const burgerYardJouniehBranchId = uid();
+  const sweetLeafId = uid();
+  const sweetLeafBadaroBranchId = uid();
+
+  const cheeseManousheId = uid();
+  const tawoukWrapId = uid();
+  const falafelSandwichId = uid();
+  const spicyPotatoesId = uid();
+  const trufflePizzaId = uid();
+  const tiramisuId = uid();
+  const acaiBowlId = uid();
+  const salmonMakiId = uid();
+  const dragonRollId = uid();
+  const wagyuBurgerId = uid();
+  const loadedFriesId = uid();
+  const moltenCookieId = uid();
+  const avocadoToastId = uid();
+  const pistachioCheesecakeId = uid();
+
+  return {
+    cuisines: DEFAULT_CUISINES,
+    areas: DEFAULT_AREAS,
+    tagColors: {
+      cheesy: "#2563eb",
+      breakfast: "#f59e0b",
+      crispy: "#f97316",
+      spicy: "#ef4444",
+      comfort: "#8b5cf6",
+      fresh: "#10b981",
+      dessert: "#ec4899",
     },
-  ],
-  branches: [],
-  dishes: [
-    {
-      id: sampleDishId,
-      restaurantId: sampleRestaurantId,
-      name: "Cheese Manoushe",
-      branchId: null,
-      isWishlist: false,
-      recommendations: ["Best fresh in the morning"],
-      alerts: ["Can get oily late at night"],
-      tags: ["cheesy", "breakfast"],
-      notes: "Very consistent.",
-      recommendedBy: "Maya",
-      portionSize: "Adult",
-    },
-  ],
-  experiences: [
-    {
-      id: sampleExperienceId,
-      dishId: sampleDishId,
-      restaurantId: sampleRestaurantId,
-      branchId: null,
-      date: new Date().toISOString().slice(0, 10),
-      orderType: "Dine-in",
-      rating: 4,
-      price: 8,
-      valueForMoney: "Good value",
-      notes: "Crispy edges and generous cheese.",
-      images: [],
-    },
-  ],
-};
+    restaurants: [
+      {
+        id: cedarBiteId,
+        name: "Cedar Bite",
+        area: "Mar Mikhael",
+        locationText: "Beirut",
+        mapsLink: "",
+        cuisine: "Lebanese",
+        rating: 4,
+        notes: "Reliable for breakfast and quick late-night orders.",
+        recommendedBy: "Rami",
+        halalChecked: true,
+        kidsFriendly: true,
+      },
+      {
+        id: falafelHubId,
+        name: "Falafel Hub",
+        area: "Hamra",
+        locationText: "Beirut",
+        mapsLink: "",
+        cuisine: "Middle Eastern",
+        rating: 5,
+        notes: "Fast service and very consistent wraps.",
+        recommendedBy: "Nadine",
+        halalChecked: true,
+        kidsFriendly: false,
+      },
+      {
+        id: nonaSliceId,
+        name: "Nona Slice",
+        area: "Dbayeh",
+        locationText: "Mount Lebanon",
+        mapsLink: "",
+        cuisine: "Italian",
+        rating: 4,
+        notes: "Good spot for pizza nights and dessert.",
+        recommendedBy: "Karim",
+        halalChecked: false,
+        kidsFriendly: true,
+      },
+      {
+        id: sushiLoopId,
+        name: "Sushi Loop",
+        area: "Jal El Dib",
+        locationText: "Metn",
+        mapsLink: "",
+        cuisine: "Japanese",
+        rating: 4,
+        notes: "Clean flavors and good rice texture.",
+        recommendedBy: "Lea",
+        halalChecked: false,
+        kidsFriendly: true,
+      },
+      {
+        id: burgerYardId,
+        name: "Burger Yard",
+        area: "Jounieh",
+        locationText: "Keserwan",
+        mapsLink: "",
+        cuisine: "American",
+        rating: 4,
+        notes: "Strong smash burgers and late-night fries.",
+        recommendedBy: "Ziad",
+        halalChecked: true,
+        kidsFriendly: true,
+      },
+      {
+        id: sweetLeafId,
+        name: "Sweet Leaf",
+        area: "Badaro",
+        locationText: "Beirut",
+        mapsLink: "",
+        cuisine: "Cafe",
+        rating: 5,
+        notes: "Excellent breakfast and dessert stop.",
+        recommendedBy: "Tala",
+        halalChecked: true,
+        kidsFriendly: true,
+      },
+    ],
+    branches: [
+      {
+        id: cedarBiteHamraBranchId,
+        restaurantId: cedarBiteId,
+        name: "Hamra Branch",
+        area: "Hamra",
+        locationText: "Main street near AUB",
+        mapsLink: "",
+        notes: "Best dine-in experience.",
+      },
+      {
+        id: cedarBiteAchrafiehBranchId,
+        restaurantId: cedarBiteId,
+        name: "Achrafieh Branch",
+        area: "Achrafieh",
+        locationText: "Near Sassine Square",
+        mapsLink: "",
+        notes: "Usually faster for takeaway.",
+      },
+      {
+        id: falafelHubVerdunBranchId,
+        restaurantId: falafelHubId,
+        name: "Verdun Branch",
+        area: "Verdun",
+        locationText: "Facing the mall entrance",
+        mapsLink: "",
+        notes: "",
+      },
+      {
+        id: nonaSliceDbayehBranchId,
+        restaurantId: nonaSliceId,
+        name: "Waterfront Branch",
+        area: "Dbayeh",
+        locationText: "Near the marina",
+        mapsLink: "",
+        notes: "Parking is easier on weekdays.",
+      },
+      {
+        id: sushiLoopJalElDibBranchId,
+        restaurantId: sushiLoopId,
+        name: "Main Branch",
+        area: "Jal El Dib",
+        locationText: "Near the highway exit",
+        mapsLink: "",
+        notes: "Quieter on weekday lunches.",
+      },
+      {
+        id: burgerYardJouniehBranchId,
+        restaurantId: burgerYardId,
+        name: "Seaside Branch",
+        area: "Jounieh",
+        locationText: "Next to the coastal road",
+        mapsLink: "",
+        notes: "Best for dine-in burgers.",
+      },
+      {
+        id: sweetLeafBadaroBranchId,
+        restaurantId: sweetLeafId,
+        name: "Garden Branch",
+        area: "Badaro",
+        locationText: "Behind the main strip",
+        mapsLink: "",
+        notes: "Nice outdoor seating in the morning.",
+      },
+    ],
+    dishes: [
+      {
+        id: cheeseManousheId,
+        restaurantId: cedarBiteId,
+        name: "Cheese Manoushe",
+        branchId: cedarBiteHamraBranchId,
+        isWishlist: false,
+        recommendations: ["Best fresh in the morning", "Ask for extra akkawi"],
+        alerts: ["Can get oily late at night"],
+        tags: ["cheesy", "breakfast", "comfort"],
+        notes: "Very consistent.",
+        recommendedBy: "Maya",
+        portionSize: "Adult",
+      },
+      {
+        id: tawoukWrapId,
+        restaurantId: cedarBiteId,
+        name: "Tawouk Wrap",
+        branchId: cedarBiteAchrafiehBranchId,
+        isWishlist: false,
+        recommendations: ["Extra garlic sauce works well"],
+        alerts: ["Fries inside can go soggy on delivery"],
+        tags: ["fresh", "comfort"],
+        notes: "Strong lunch option.",
+        recommendedBy: "Rami",
+        portionSize: "Big adult",
+      },
+      {
+        id: falafelSandwichId,
+        restaurantId: falafelHubId,
+        name: "Falafel Sandwich",
+        branchId: falafelHubVerdunBranchId,
+        isWishlist: false,
+        recommendations: ["Add extra pickles and parsley"],
+        alerts: [],
+        tags: ["crispy", "fresh"],
+        notes: "Crunchy and balanced.",
+        recommendedBy: "Nadine",
+        portionSize: "Adult",
+      },
+      {
+        id: spicyPotatoesId,
+        restaurantId: falafelHubId,
+        name: "Spicy Potatoes",
+        branchId: falafelHubVerdunBranchId,
+        isWishlist: false,
+        recommendations: ["Works well as a side for sharing"],
+        alerts: ["Heat level varies a lot"],
+        tags: ["spicy", "crispy"],
+        notes: "",
+        recommendedBy: "",
+        portionSize: "Shareable",
+      },
+      {
+        id: trufflePizzaId,
+        restaurantId: nonaSliceId,
+        name: "Truffle Mushroom Pizza",
+        branchId: nonaSliceDbayehBranchId,
+        isWishlist: false,
+        recommendations: ["Best eaten in-house"],
+        alerts: ["Rich, not for every mood"],
+        tags: ["cheesy", "comfort"],
+        notes: "Good crust and strong mushroom flavor.",
+        recommendedBy: "Karim",
+        portionSize: "Shareable",
+      },
+      {
+        id: tiramisuId,
+        restaurantId: nonaSliceId,
+        name: "Tiramisu",
+        branchId: nonaSliceDbayehBranchId,
+        isWishlist: false,
+        recommendations: ["Good to split after pizza"],
+        alerts: [],
+        tags: ["dessert"],
+        notes: "",
+        recommendedBy: "Lynn",
+        portionSize: "Taster",
+      },
+      {
+        id: acaiBowlId,
+        restaurantId: nonaSliceId,
+        name: "Acai Bowl",
+        branchId: null,
+        isWishlist: true,
+        recommendations: [],
+        alerts: [],
+        tags: ["fresh", "breakfast"],
+        notes: "Looks promising for a lighter option.",
+        recommendedBy: "Sara",
+        portionSize: "Adult",
+      },
+      {
+        id: salmonMakiId,
+        restaurantId: sushiLoopId,
+        name: "Salmon Maki",
+        branchId: sushiLoopJalElDibBranchId,
+        isWishlist: false,
+        recommendations: ["Good starter if you want something safe"],
+        alerts: [],
+        tags: ["fresh"],
+        notes: "Simple and well executed.",
+        recommendedBy: "Lea",
+        portionSize: "Taster",
+      },
+      {
+        id: dragonRollId,
+        restaurantId: sushiLoopId,
+        name: "Dragon Roll",
+        branchId: sushiLoopJalElDibBranchId,
+        isWishlist: false,
+        recommendations: ["Best shared with another roll"],
+        alerts: ["Sauce can overpower the eel"],
+        tags: ["fresh", "comfort"],
+        notes: "",
+        recommendedBy: "Lea",
+        portionSize: "Adult",
+      },
+      {
+        id: wagyuBurgerId,
+        restaurantId: burgerYardId,
+        name: "Wagyu Smash Burger",
+        branchId: burgerYardJouniehBranchId,
+        isWishlist: false,
+        recommendations: ["Medium sauce is the right balance"],
+        alerts: ["Messy to eat in the car"],
+        tags: ["comfort", "crispy"],
+        notes: "Very good crust on the patties.",
+        recommendedBy: "Ziad",
+        portionSize: "Big adult",
+      },
+      {
+        id: loadedFriesId,
+        restaurantId: burgerYardId,
+        name: "Loaded Fries",
+        branchId: burgerYardJouniehBranchId,
+        isWishlist: false,
+        recommendations: ["Share between two"],
+        alerts: ["Gets soggy fast on delivery"],
+        tags: ["cheesy", "comfort"],
+        notes: "",
+        recommendedBy: "",
+        portionSize: "Shareable",
+      },
+      {
+        id: moltenCookieId,
+        restaurantId: burgerYardId,
+        name: "Molten Cookie Skillet",
+        branchId: null,
+        isWishlist: true,
+        recommendations: [],
+        alerts: [],
+        tags: ["dessert"],
+        notes: "Looks heavy but worth trying once.",
+        recommendedBy: "Dana",
+        portionSize: "Shareable",
+      },
+      {
+        id: avocadoToastId,
+        restaurantId: sweetLeafId,
+        name: "Avocado Toast",
+        branchId: sweetLeafBadaroBranchId,
+        isWishlist: false,
+        recommendations: ["Add poached egg if hungry"],
+        alerts: [],
+        tags: ["breakfast", "fresh"],
+        notes: "Clean and balanced breakfast option.",
+        recommendedBy: "Tala",
+        portionSize: "Adult",
+      },
+      {
+        id: pistachioCheesecakeId,
+        restaurantId: sweetLeafId,
+        name: "Pistachio Cheesecake",
+        branchId: sweetLeafBadaroBranchId,
+        isWishlist: false,
+        recommendations: ["Best with coffee"],
+        alerts: [],
+        tags: ["dessert", "comfort"],
+        notes: "Creamy with a strong pistachio finish.",
+        recommendedBy: "Tala",
+        portionSize: "Taster",
+      },
+    ],
+    experiences: [
+      {
+        id: uid(),
+        dishId: cheeseManousheId,
+        restaurantId: cedarBiteId,
+        branchId: cedarBiteHamraBranchId,
+        date: daysAgo(2),
+        orderType: "Dine-in",
+        rating: 4,
+        price: 8,
+        valueForMoney: "Good value",
+        notes: "Crispy edges and generous cheese.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: cheeseManousheId,
+        restaurantId: cedarBiteId,
+        branchId: cedarBiteAchrafiehBranchId,
+        date: daysAgo(18),
+        orderType: "Takeaway",
+        rating: 3,
+        price: 7.5,
+        valueForMoney: "Okay value",
+        notes: "Still solid, but less crisp.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: tawoukWrapId,
+        restaurantId: cedarBiteId,
+        branchId: cedarBiteAchrafiehBranchId,
+        date: daysAgo(5),
+        orderType: "Delivery",
+        rating: 4,
+        price: 11,
+        valueForMoney: "Good value",
+        notes: "Juicy chicken, bread held up well.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: falafelSandwichId,
+        restaurantId: falafelHubId,
+        branchId: falafelHubVerdunBranchId,
+        date: daysAgo(1),
+        orderType: "Takeaway",
+        rating: 5,
+        price: 4,
+        valueForMoney: "Excellent value",
+        notes: "Still the benchmark.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: spicyPotatoesId,
+        restaurantId: falafelHubId,
+        branchId: falafelHubVerdunBranchId,
+        date: daysAgo(1),
+        orderType: "Takeaway",
+        rating: 4,
+        price: 3.5,
+        valueForMoney: "Great value",
+        notes: "Extra coriander and chili.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: trufflePizzaId,
+        restaurantId: nonaSliceId,
+        branchId: nonaSliceDbayehBranchId,
+        date: daysAgo(9),
+        orderType: "Dine-in",
+        rating: 4,
+        price: 18,
+        valueForMoney: "Okay value",
+        notes: "Rich but satisfying for two people.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: tiramisuId,
+        restaurantId: nonaSliceId,
+        branchId: nonaSliceDbayehBranchId,
+        date: daysAgo(9),
+        orderType: "Dine-in",
+        rating: 5,
+        price: 6.5,
+        valueForMoney: "Good value",
+        notes: "Light texture, not too sweet.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: salmonMakiId,
+        restaurantId: sushiLoopId,
+        branchId: sushiLoopJalElDibBranchId,
+        date: daysAgo(4),
+        orderType: "Dine-in",
+        rating: 4,
+        price: 7,
+        valueForMoney: "Okay value",
+        notes: "Fresh fish and neat cuts.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: dragonRollId,
+        restaurantId: sushiLoopId,
+        branchId: sushiLoopJalElDibBranchId,
+        date: daysAgo(14),
+        orderType: "Dine-in",
+        rating: 4,
+        price: 13,
+        valueForMoney: "Okay value",
+        notes: "Good texture contrast, slightly sweet sauce.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: wagyuBurgerId,
+        restaurantId: burgerYardId,
+        branchId: burgerYardJouniehBranchId,
+        date: daysAgo(3),
+        orderType: "Dine-in",
+        rating: 5,
+        price: 14,
+        valueForMoney: "Good value",
+        notes: "Excellent crust and still juicy.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: wagyuBurgerId,
+        restaurantId: burgerYardId,
+        branchId: burgerYardJouniehBranchId,
+        date: daysAgo(21),
+        orderType: "Delivery",
+        rating: 4,
+        price: 14,
+        valueForMoney: "Okay value",
+        notes: "Still good, but fries were softer.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: loadedFriesId,
+        restaurantId: burgerYardId,
+        branchId: burgerYardJouniehBranchId,
+        date: daysAgo(3),
+        orderType: "Dine-in",
+        rating: 4,
+        price: 6,
+        valueForMoney: "Great value",
+        notes: "Good to share with burgers.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: avocadoToastId,
+        restaurantId: sweetLeafId,
+        branchId: sweetLeafBadaroBranchId,
+        date: daysAgo(6),
+        orderType: "Dine-in",
+        rating: 4,
+        price: 9.5,
+        valueForMoney: "Okay value",
+        notes: "Fresh ingredients and good bread.",
+        images: [],
+      },
+      {
+        id: uid(),
+        dishId: pistachioCheesecakeId,
+        restaurantId: sweetLeafId,
+        branchId: sweetLeafBadaroBranchId,
+        date: daysAgo(6),
+        orderType: "Dine-in",
+        rating: 5,
+        price: 7,
+        valueForMoney: "Good value",
+        notes: "One of the best desserts in the seed set.",
+        images: [],
+      },
+    ],
+  };
+}
 
 function safeParse(value, fallback) {
   try {
@@ -327,10 +832,10 @@ function migrateData(parsed) {
 }
 
 function loadData() {
-  if (typeof window === "undefined") return sampleData;
+  if (typeof window === "undefined") return createSampleData();
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return sampleData;
-  return migrateData(safeParse(raw, sampleData));
+  if (!raw) return createSampleData();
+  return migrateData(safeParse(raw, createSampleData()));
 }
 
 function exportData(data) {
@@ -764,6 +1269,26 @@ export default function DishTrackerWebApp() {
     setExperienceRatingError("");
     setShowInlineRestaurantForExperience(false);
     setInlineRestaurantForExperience(inlineRestaurantFormDefault);
+  }
+
+  function seedSampleData() {
+    if (typeof window !== "undefined") {
+      const confirmed = window.confirm("Replace the current local data with sample seed data? This will overwrite the data currently shown in the app.");
+      if (!confirmed) return;
+    }
+
+    setData(createSampleData());
+    resetRestaurantForm();
+    resetBranchForm();
+    resetDishForm();
+    resetExperienceForm();
+    setRestaurantOpen(false);
+    setBranchOpen(false);
+    setDishOpen(false);
+    setExperienceOpen(false);
+    setSearch("");
+    setRestaurantSearch("");
+    setDishReportSearch("");
   }
 
   function createRestaurantRecord(form) {
@@ -2034,6 +2559,11 @@ export default function DishTrackerWebApp() {
                   <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
                   <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
                   <div>You can later host this as a static site on GitHub Pages with no backend cost.</div>
+                  <div className="pt-2">
+                    <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={seedSampleData}>
+                      <Download className="mr-2 h-4 w-4" /> Load Seed Data
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
