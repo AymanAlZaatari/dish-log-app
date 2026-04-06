@@ -180,6 +180,7 @@ const emptyDishForm = {
   restaurantId: "",
   name: "",
   branchId: "none",
+  price: "",
   isWishlist: false,
   recommendations: [],
   alerts: [],
@@ -418,6 +419,7 @@ function createSampleData() {
         restaurantId: cedarBiteId,
         name: "Cheese Manoushe",
         branchId: cedarBiteHamraBranchId,
+        price: 8,
         isWishlist: false,
         recommendations: ["Best fresh in the morning", "Ask for extra akkawi"],
         alerts: ["Can get oily late at night"],
@@ -431,6 +433,7 @@ function createSampleData() {
         restaurantId: cedarBiteId,
         name: "Tawouk Wrap",
         branchId: cedarBiteAchrafiehBranchId,
+        price: 11,
         isWishlist: false,
         recommendations: ["Extra garlic sauce works well"],
         alerts: ["Fries inside can go soggy on delivery"],
@@ -444,6 +447,7 @@ function createSampleData() {
         restaurantId: falafelHubId,
         name: "Falafel Sandwich",
         branchId: falafelHubVerdunBranchId,
+        price: 4,
         isWishlist: false,
         recommendations: ["Add extra pickles and parsley"],
         alerts: [],
@@ -457,6 +461,7 @@ function createSampleData() {
         restaurantId: falafelHubId,
         name: "Spicy Potatoes",
         branchId: falafelHubVerdunBranchId,
+        price: 3.5,
         isWishlist: false,
         recommendations: ["Works well as a side for sharing"],
         alerts: ["Heat level varies a lot"],
@@ -470,6 +475,7 @@ function createSampleData() {
         restaurantId: nonaSliceId,
         name: "Truffle Mushroom Pizza",
         branchId: nonaSliceDbayehBranchId,
+        price: 18,
         isWishlist: false,
         recommendations: ["Best eaten in-house"],
         alerts: ["Rich, not for every mood"],
@@ -483,6 +489,7 @@ function createSampleData() {
         restaurantId: nonaSliceId,
         name: "Tiramisu",
         branchId: nonaSliceDbayehBranchId,
+        price: 6.5,
         isWishlist: false,
         recommendations: ["Good to split after pizza"],
         alerts: [],
@@ -496,6 +503,7 @@ function createSampleData() {
         restaurantId: nonaSliceId,
         name: "Acai Bowl",
         branchId: null,
+        price: 9,
         isWishlist: true,
         recommendations: [],
         alerts: [],
@@ -509,6 +517,7 @@ function createSampleData() {
         restaurantId: sushiLoopId,
         name: "Salmon Maki",
         branchId: sushiLoopJalElDibBranchId,
+        price: 7,
         isWishlist: false,
         recommendations: ["Good starter if you want something safe"],
         alerts: [],
@@ -522,6 +531,7 @@ function createSampleData() {
         restaurantId: sushiLoopId,
         name: "Dragon Roll",
         branchId: sushiLoopJalElDibBranchId,
+        price: 13,
         isWishlist: false,
         recommendations: ["Best shared with another roll"],
         alerts: ["Sauce can overpower the eel"],
@@ -535,6 +545,7 @@ function createSampleData() {
         restaurantId: burgerYardId,
         name: "Wagyu Smash Burger",
         branchId: burgerYardJouniehBranchId,
+        price: 14,
         isWishlist: false,
         recommendations: ["Medium sauce is the right balance"],
         alerts: ["Messy to eat in the car"],
@@ -548,6 +559,7 @@ function createSampleData() {
         restaurantId: burgerYardId,
         name: "Loaded Fries",
         branchId: burgerYardJouniehBranchId,
+        price: 6,
         isWishlist: false,
         recommendations: ["Share between two"],
         alerts: ["Gets soggy fast on delivery"],
@@ -561,6 +573,7 @@ function createSampleData() {
         restaurantId: burgerYardId,
         name: "Molten Cookie Skillet",
         branchId: null,
+        price: 8,
         isWishlist: true,
         recommendations: [],
         alerts: [],
@@ -574,6 +587,7 @@ function createSampleData() {
         restaurantId: sweetLeafId,
         name: "Avocado Toast",
         branchId: sweetLeafBadaroBranchId,
+        price: 9.5,
         isWishlist: false,
         recommendations: ["Add poached egg if hungry"],
         alerts: [],
@@ -587,6 +601,7 @@ function createSampleData() {
         restaurantId: sweetLeafId,
         name: "Pistachio Cheesecake",
         branchId: sweetLeafBadaroBranchId,
+        price: 7,
         isWishlist: false,
         recommendations: ["Best with coffee"],
         alerts: [],
@@ -792,6 +807,12 @@ function safeParse(value, fallback) {
 }
 
 function migrateData(parsed) {
+  const experiences = (parsed.experiences || []).map((e) => ({
+    valueForMoney: typeof e.valueForMoney === "number" ? VALUE_OPTIONS[Math.max(0, Math.min(VALUE_OPTIONS.length - 1, e.valueForMoney - 1))] : e.valueForMoney || "",
+    images: e.images || [],
+    ...e,
+  }));
+
   const restaurants = (parsed.restaurants || []).map((r) => ({
     halalChecked: r.halalChecked ?? true,
     kidsFriendly: r.kidsFriendly ?? false,
@@ -800,6 +821,9 @@ function migrateData(parsed) {
   }));
 
   const dishes = (parsed.dishes || []).map((d) => ({
+    price: d.price ?? [...experiences]
+      .filter((e) => e.dishId === d.id && e.price != null)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.price ?? null,
     recommendations: Array.isArray(d.recommendations)
       ? d.recommendations
       : typeof d.recommendations === "string"
@@ -818,12 +842,6 @@ function migrateData(parsed) {
     recommendedBy: d.recommendedBy || "",
     portionSize: d.portionSize || "",
     ...d,
-  }));
-
-  const experiences = (parsed.experiences || []).map((e) => ({
-    valueForMoney: typeof e.valueForMoney === "number" ? VALUE_OPTIONS[Math.max(0, Math.min(VALUE_OPTIONS.length - 1, e.valueForMoney - 1))] : e.valueForMoney || "",
-    images: e.images || [],
-    ...e,
   }));
 
   return {
@@ -908,6 +926,12 @@ function average(list) {
   const nums = list.filter((n) => n != null && !Number.isNaN(Number(n))).map(Number);
   if (!nums.length) return null;
   return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+function normalizeNumericInput(value) {
+  if (value === "" || value == null) return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
 }
 
 function summarizeTags(tags = [], maxChars = 24, maxItems = 3) {
@@ -1138,6 +1162,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [logExperienceWithDish, setLogExperienceWithDish] = useState(true);
 
   const importRef = useRef(null);
+  const previousExperienceDishIdRef = useRef("");
 
   const restaurantsById = useMemo(() => Object.fromEntries(data.restaurants.map((r) => [r.id, r])), [data.restaurants]);
   const branchesById = useMemo(() => Object.fromEntries(data.branches.map((b) => [b.id, b])), [data.branches]);
@@ -1486,6 +1511,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       restaurantId,
       name: dishForm.name.trim(),
       branchId: dishForm.branchId === "none" ? null : dishForm.branchId,
+      price: normalizeNumericInput(dishForm.price),
       isWishlist: dishForm.isWishlist,
       recommendations: dishForm.recommendations,
       alerts: dishForm.alerts,
@@ -1501,6 +1527,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     }
 
     const shouldLogExperience = !dishForm.isWishlist && logExperienceWithDish;
+    const defaultExperiencePrice = normalizeNumericInput(experienceForm.price) ?? payload.price;
     const experiencePayload = shouldLogExperience
       ? {
           id: uid(),
@@ -1510,16 +1537,20 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
           date: experienceForm.date,
           orderType: experienceForm.orderType,
           rating: experienceForm.rating ? Number(experienceForm.rating) : null,
-          price: experienceForm.price ? Number(experienceForm.price) : null,
+          price: defaultExperiencePrice,
           valueForMoney: experienceForm.valueForMoney,
           notes: experienceForm.notes.trim(),
           images: experienceForm.images || [],
         }
       : null;
 
+    const finalDishPayload = experiencePayload?.price != null
+      ? { ...payload, price: experiencePayload.price }
+      : payload;
+
     setData((prev) => ({
       ...prev,
-      dishes: dishForm.id ? prev.dishes.map((d) => (d.id === dishForm.id ? payload : d)) : [payload, ...prev.dishes],
+      dishes: dishForm.id ? prev.dishes.map((d) => (d.id === dishForm.id ? finalDishPayload : d)) : [finalDishPayload, ...prev.dishes],
       experiences: experiencePayload ? [experiencePayload, ...prev.experiences] : prev.experiences,
     }));
 
@@ -1572,7 +1603,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       date: experienceForm.date,
       orderType: experienceForm.orderType,
       rating: experienceForm.rating ? Number(experienceForm.rating) : null,
-      price: experienceForm.price ? Number(experienceForm.price) : null,
+      price: normalizeNumericInput(experienceForm.price),
       valueForMoney: experienceForm.valueForMoney,
       notes: experienceForm.notes.trim(),
       images: experienceForm.images || [],
@@ -1582,7 +1613,11 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       experiences: experienceForm.id
         ? prev.experiences.map((e) => (e.id === experienceForm.id ? payload : e))
         : [payload, ...prev.experiences],
-      dishes: prev.dishes.map((dish) => dish.id === experienceForm.dishId ? { ...dish, isWishlist: false } : dish),
+      dishes: prev.dishes.map((dish) => dish.id === experienceForm.dishId ? {
+        ...dish,
+        isWishlist: false,
+        price: payload.price != null ? payload.price : dish.price ?? null,
+      } : dish),
     }));
     resetExperienceForm();
     setExperienceOpen(false);
@@ -1654,7 +1689,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   function editRestaurant(r) { setRestaurantForm({ ...emptyRestaurantForm, ...r, rating: r.rating ?? "" }); setRestaurantOpen(true); }
   function editBranch(b) { setBranchFormError(""); setBranchForm({ ...emptyBranchForm, ...b }); setBranchOpen(true); }
   function editDish(d) {
-    setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", recommendationInput: "", alertInput: "", tagInput: "" });
+    setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", price: d.price ?? "", recommendationInput: "", alertInput: "", tagInput: "" });
     setDuplicateDishSuggestion(null);
     setShowDishNameSuggestions(false);
     setExperienceFormError("");
@@ -1666,9 +1701,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   function editExperience(e) { setExperienceFormError(""); setExperienceRatingError(""); setExperienceForm({ ...emptyExperienceForm, ...e, branchId: e.branchId || "none", rating: e.rating ?? "", price: e.price ?? "", valueForMoney: e.valueForMoney || "" }); setExperienceOpen(true); }
 
   function prepareLogExperience(restaurantId, dishId) {
+    const dish = dishesById[dishId];
     setExperienceFormError("");
     setExperienceRatingError("");
-    setExperienceForm({ ...emptyExperienceForm, restaurantId, dishId, branchId: "none" });
+    setExperienceForm({ ...emptyExperienceForm, restaurantId, dishId, branchId: "none", price: dish?.price ?? "" });
     setExperienceOpen(true);
     setTab("dishes");
   }
@@ -1759,6 +1795,18 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       setExperienceFormError("");
     }
   }, [data.dishes, experienceForm.dishId, experienceForm.restaurantId, showInlineRestaurantForExperience]);
+
+  useEffect(() => {
+    const selectedDish = dishesById[experienceForm.dishId];
+    const previousDish = dishesById[previousExperienceDishIdRef.current];
+    const previousDishPrice = previousDish?.price ?? "";
+
+    if (selectedDish && (experienceForm.price === "" || experienceForm.price === previousDishPrice)) {
+      setExperienceForm((prev) => ({ ...prev, price: selectedDish.price ?? "" }));
+    }
+
+    previousExperienceDishIdRef.current = experienceForm.dishId;
+  }, [dishesById, experienceForm.dishId, experienceForm.price]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -1943,6 +1991,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         </SelectContent>
                       </Select>
                     </Field>
+                    <Field label="Dish price"><Input type="number" value={dishForm.price} onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })} /></Field>
                     <Field label="Recommended by"><Input value={dishForm.recommendedBy} onChange={(e) => setDishForm({ ...dishForm, recommendedBy: e.target.value })} /></Field>
                     <div className="flex items-center gap-3 pt-8"><Checkbox checked={dishForm.isWishlist} onCheckedChange={(checked) => setDishForm({ ...dishForm, isWishlist: !!checked })} /><Label>Wishlist item (not tried yet)</Label></div>
                     <div className="md:col-span-2 rounded-2xl border bg-slate-50 p-4 space-y-4">
@@ -2280,7 +2329,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                 const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
                 const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
                 const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
-                const avgDishPrice = average(data.experiences.filter((experience) => experience.restaurantId === restaurant.id).map((experience) => experience.price));
+                const avgDishPrice = average(dishes.map((dish) => dish.price));
                 return (
                   <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
                     <CardHeader className="px-6 pt-6 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
@@ -2325,7 +2374,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                           <div className="space-y-2">
                             {dishes.map((dish) => {
                               const dishAvgRating = computedDishRating(dish.id);
-                              const avgDishPrice = average(data.experiences.filter((experience) => experience.dishId === dish.id).map((experience) => experience.price));
                               const tagSummary = summarizeTags(dish.tags);
                               return (
                                 <div key={dish.id} className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-3">
@@ -2343,8 +2391,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                         {dishAvgRating ? <><span>({dishAvgRating.toFixed(1)})</span><Stars value={dishAvgRating} /></> : <span>—</span>}
                                       </div>
                                       <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.8rem] font-semibold text-emerald-800">
-                                        <span>Avg price:</span>
-                                        <span>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
+                                        <span>Price:</span>
+                                        <span>{dish.price != null ? `$${Number(dish.price).toFixed(1)}` : "—"}</span>
                                       </div>
                                     </div>
                                   </div>
