@@ -148,6 +148,7 @@ const EDIT_BUTTON_STYLE = "!border-blue-300 !bg-blue-100 !text-blue-800 hover:!b
 const DELETE_BUTTON_STYLE = "!border-red-300 !bg-red-100 !text-red-800 hover:!bg-red-200";
 const VIEW_BUTTON_STYLE = "!border-sky-300 !bg-sky-100 !text-sky-800 hover:!bg-sky-200";
 const LOG_BUTTON_STYLE = "!border-amber-300 !bg-amber-100 !text-amber-800 hover:!bg-amber-200";
+const LOG_EXPERIENCE_BUTTON_STYLE = "!border-violet-300 !bg-violet-100 !text-violet-800 hover:!bg-violet-200";
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -2581,7 +2582,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         <div className="font-medium text-slate-900">Experience count: {experiences.length}</div>
                         {experiences.length > 0 && <div className="mt-1 text-xs text-slate-500">Latest: {[...experiences].sort((a, b) => new Date(b.date) - new Date(a.date))[0].date}</div>}
                       </div>
-                      <Button variant="outline" className="w-full" onClick={() => prepareLogExperience(dish.restaurantId, dish.id)}>Log another experience</Button>
+                      <Button variant="outline" className={`w-full ${LOG_EXPERIENCE_BUTTON_STYLE}`} onClick={() => prepareLogExperience(dish.restaurantId, dish.id)}>Log another experience</Button>
                     </CardContent>
                   </Card>
                 );
