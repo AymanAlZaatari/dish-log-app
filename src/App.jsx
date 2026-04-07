@@ -2766,21 +2766,21 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><ModalHeader title="Add Cuisine" onClose={() => setCuisineOpen(false)} /><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><ModalActions onCancel={() => setCuisineOpen(false)} onSave={addCuisine} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><ModalHeader title="Add Cuisine" onClose={() => setCuisineOpen(false)} /><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><ModalActions onCancel={() => setCuisineOpen(false)} onSave={addCuisine} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
                 <CardContent><div className="flex flex-wrap gap-2">{data.cuisines.map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}</div></CardContent>
               </Card>
             </div>
 
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
                 <CardContent><div className="flex flex-wrap gap-2">{areaOptions.map((area) => <Badge key={area} variant="secondary">{area}</Badge>)}</div></CardContent>
               </Card>
             </div>
 
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader><CardTitle>Data Notes</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="font-bold">Data Notes</CardTitle></CardHeader>
                 <CardContent className="space-y-3 text-sm text-slate-600">
                   <div>Your data is saved to Firebase Cloud Firestore and synced per signed-in user.</div>
                   <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
