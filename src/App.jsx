@@ -3007,68 +3007,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
-                <CardContent>
-                  {areaOptions.length === 0 ? (
-                    <div className="text-sm text-slate-500">No areas yet.</div>
-                  ) : (
-                    <div className="flex flex-wrap gap-3">
-                      {areaOptions.map((area) => {
-                        const areaRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
-                        const isExpanded = expandedArea === area;
-                        return (
-                          <div key={area} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
-                            <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                className="flex items-center gap-3 text-left"
-                                onClick={() => setExpandedArea(isExpanded ? null : area)}
-                                aria-expanded={isExpanded}
-                              >
-                                <Badge variant="secondary">{area}</Badge>
-                                <span className="text-sm text-slate-500">{areaRestaurants.length} restaurant(s)</span>
-                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                              </button>
-                              <div className="ml-auto flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                                  onClick={() => renameArea(area)}
-                                  aria-label={`Rename ${area}`}
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
-                                  onClick={() => deleteArea(area)}
-                                  aria-label={`Delete ${area}`}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            {isExpanded ? (
-                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
-                                {areaRestaurants.map((restaurant) => (
-                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
-                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
-                                    <div>{restaurant.cuisines?.length ? restaurant.cuisines.join(", ") : restaurant.fullAddress || "No extra details"}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={SECTION_CONTAINER}>
-              <Card className="rounded-3xl border-0 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cities</CardTitle><Dialog open={cityOpen} onOpenChange={setCityOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add City</Button></DialogTrigger><DialogContent><ModalHeader title="Add City" onClose={() => setCityOpen(false)} /><div className="space-y-4"><Input value={newCity} onChange={(e) => setNewCity(e.target.value)} placeholder="Enter city name" /><ModalActions onCancel={() => setCityOpen(false)} onSave={addCity} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
                 <CardContent>
                   {cityOptions.length === 0 ? (
@@ -3116,6 +3054,68 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                   <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
                                     <div className="font-medium text-slate-900">{restaurant.name}</div>
                                     <div>{restaurant.area || restaurant.cuisines?.join(", ") || "No extra details"}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className={SECTION_CONTAINER}>
+              <Card className="rounded-3xl border-0 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+                <CardContent>
+                  {areaOptions.length === 0 ? (
+                    <div className="text-sm text-slate-500">No areas yet.</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {areaOptions.map((area) => {
+                        const areaRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
+                        const isExpanded = expandedArea === area;
+                        return (
+                          <div key={area} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="flex items-center gap-3 text-left"
+                                onClick={() => setExpandedArea(isExpanded ? null : area)}
+                                aria-expanded={isExpanded}
+                              >
+                                <Badge variant="secondary">{area}</Badge>
+                                <span className="text-sm text-slate-500">{areaRestaurants.length} restaurant(s)</span>
+                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                              </button>
+                              <div className="ml-auto flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                                  onClick={() => renameArea(area)}
+                                  aria-label={`Rename ${area}`}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                                  onClick={() => deleteArea(area)}
+                                  aria-label={`Delete ${area}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            {isExpanded ? (
+                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                                {areaRestaurants.map((restaurant) => (
+                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
+                                    <div>{restaurant.cuisines?.length ? restaurant.cuisines.join(", ") : restaurant.fullAddress || "No extra details"}</div>
                                   </div>
                                 ))}
                               </div>
