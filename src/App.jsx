@@ -1165,6 +1165,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [logExperienceWithDish, setLogExperienceWithDish] = useState(true);
   const [expandedTag, setExpandedTag] = useState(null);
   const [expandedCuisine, setExpandedCuisine] = useState(null);
+  const [expandedArea, setExpandedArea] = useState(null);
 
   const importRef = useRef(null);
   const previousExperienceDishIdRef = useRef("");
@@ -1678,6 +1679,50 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (!value || data.areas.includes(value)) return;
     setData((prev) => ({ ...prev, areas: [...prev.areas, value].sort() }));
     setNewArea("");
+  }
+
+  function renameArea(area) {
+    const nextArea = window.prompt("Rename area", area)?.trim();
+    if (!nextArea || nextArea === area) return;
+
+    const hasDuplicate = areaOptions.some((existingArea) => existingArea.toLowerCase() === nextArea.toLowerCase() && existingArea !== area);
+    if (hasDuplicate) {
+      window.alert("An area with that name already exists.");
+      return;
+    }
+
+    setData((prev) => ({
+      ...prev,
+      areas: [...new Set(prev.areas.map((existingArea) => (existingArea === area ? nextArea : existingArea)).concat(nextArea))].sort(),
+      restaurants: prev.restaurants.map((restaurant) => (
+        restaurant.area === area ? { ...restaurant, area: nextArea } : restaurant
+      )),
+      branches: prev.branches.map((branch) => (
+        branch.area === area ? { ...branch, area: nextArea } : branch
+      )),
+    }));
+  }
+
+  function deleteArea(area) {
+    const linkedRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
+    const linkedBranches = data.branches.filter((branch) => branch.area === area);
+    const confirmed = window.confirm(
+      linkedRestaurants.length > 0 || linkedBranches.length > 0
+        ? `Delete area "${area}"? It will be removed from ${linkedRestaurants.length} restaurant(s) and ${linkedBranches.length} branch(es).`
+        : `Delete area "${area}"?`,
+    );
+    if (!confirmed) return;
+
+    setData((prev) => ({
+      ...prev,
+      areas: prev.areas.filter((existingArea) => existingArea !== area),
+      restaurants: prev.restaurants.map((restaurant) => (
+        restaurant.area === area ? { ...restaurant, area: "" } : restaurant
+      )),
+      branches: prev.branches.map((branch) => (
+        branch.area === area ? { ...branch, area: "" } : branch
+      )),
+    }));
   }
 
   function setTagColor(tag, colorValue) {
@@ -2868,7 +2913,62 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
-                <CardContent><div className="flex flex-wrap gap-2">{areaOptions.map((area) => <Badge key={area} variant="secondary">{area}</Badge>)}</div></CardContent>
+                <CardContent>
+                  {areaOptions.length === 0 ? (
+                    <div className="text-sm text-slate-500">No areas yet.</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {areaOptions.map((area) => {
+                        const areaRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
+                        const isExpanded = expandedArea === area;
+                        return (
+                          <div key={area} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="flex items-center gap-3 text-left"
+                                onClick={() => setExpandedArea(isExpanded ? null : area)}
+                                aria-expanded={isExpanded}
+                              >
+                                <Badge variant="secondary">{area}</Badge>
+                                <span className="text-sm text-slate-500">{areaRestaurants.length} restaurant(s)</span>
+                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                              </button>
+                              <div className="ml-auto flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                                  onClick={() => renameArea(area)}
+                                  aria-label={`Rename ${area}`}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                                  onClick={() => deleteArea(area)}
+                                  aria-label={`Delete ${area}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            {isExpanded ? (
+                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                                {areaRestaurants.map((restaurant) => (
+                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
+                                    <div>{restaurant.cuisine || restaurant.locationText || "No extra details"}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
               </Card>
             </div>
 
