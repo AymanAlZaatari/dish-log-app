@@ -1164,6 +1164,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [inlineRestaurantForExperience, setInlineRestaurantForExperience] = useState(inlineRestaurantFormDefault);
   const [logExperienceWithDish, setLogExperienceWithDish] = useState(true);
   const [expandedTag, setExpandedTag] = useState(null);
+  const [expandedCuisine, setExpandedCuisine] = useState(null);
 
   const importRef = useRef(null);
   const previousExperienceDishIdRef = useRef("");
@@ -1632,6 +1633,44 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (!value || data.cuisines.includes(value)) return;
     setData((prev) => ({ ...prev, cuisines: [...prev.cuisines, value].sort() }));
     setNewCuisine("");
+  }
+
+  function renameCuisine(cuisine) {
+    const nextCuisine = window.prompt("Rename cuisine", cuisine)?.trim();
+    if (!nextCuisine || nextCuisine === cuisine) return;
+
+    const hasDuplicate = data.cuisines.some((existingCuisine) => existingCuisine.toLowerCase() === nextCuisine.toLowerCase() && existingCuisine !== cuisine);
+    if (hasDuplicate) {
+      window.alert("A cuisine with that name already exists.");
+      return;
+    }
+
+    setData((prev) => ({
+      ...prev,
+      cuisines: prev.cuisines.map((existingCuisine) => (existingCuisine === cuisine ? nextCuisine : existingCuisine)).sort(),
+      restaurants: prev.restaurants.map((restaurant) => (
+        restaurant.cuisine === cuisine ? { ...restaurant, cuisine: nextCuisine } : restaurant
+      )),
+    }));
+  }
+
+  function deleteCuisine(cuisine) {
+    const linkedRestaurants = data.restaurants.filter((restaurant) => restaurant.cuisine === cuisine);
+    const linkedRestaurantNames = linkedRestaurants.map((restaurant) => restaurant.name).join(", ");
+    const confirmed = window.confirm(
+      linkedRestaurants.length > 0
+        ? `Delete cuisine "${cuisine}"? It will also be removed from these restaurants: ${linkedRestaurantNames}.`
+        : `Delete cuisine "${cuisine}"?`,
+    );
+    if (!confirmed) return;
+
+    setData((prev) => ({
+      ...prev,
+      cuisines: prev.cuisines.filter((existingCuisine) => existingCuisine !== cuisine),
+      restaurants: prev.restaurants.map((restaurant) => (
+        restaurant.cuisine === cuisine ? { ...restaurant, cuisine: "" } : restaurant
+      )),
+    }));
   }
 
   function addArea() {
@@ -2767,7 +2806,62 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             <div className={SECTION_CONTAINER}>
               <Card className="rounded-3xl border-0 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><ModalHeader title="Add Cuisine" onClose={() => setCuisineOpen(false)} /><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><ModalActions onCancel={() => setCuisineOpen(false)} onSave={addCuisine} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
-                <CardContent><div className="flex flex-wrap gap-2">{data.cuisines.map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}</div></CardContent>
+                <CardContent>
+                  {data.cuisines.length === 0 ? (
+                    <div className="text-sm text-slate-500">No cuisines yet.</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {data.cuisines.map((cuisine) => {
+                        const cuisineRestaurants = data.restaurants.filter((restaurant) => restaurant.cuisine === cuisine);
+                        const isExpanded = expandedCuisine === cuisine;
+                        return (
+                          <div key={cuisine} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="flex items-center gap-3 text-left"
+                                onClick={() => setExpandedCuisine(isExpanded ? null : cuisine)}
+                                aria-expanded={isExpanded}
+                              >
+                                <Badge variant="secondary">{cuisine}</Badge>
+                                <span className="text-sm text-slate-500">{cuisineRestaurants.length} restaurant(s)</span>
+                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                              </button>
+                              <div className="ml-auto flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                                  onClick={() => renameCuisine(cuisine)}
+                                  aria-label={`Rename ${cuisine}`}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                                  onClick={() => deleteCuisine(cuisine)}
+                                  aria-label={`Delete ${cuisine}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            {isExpanded ? (
+                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                                {cuisineRestaurants.map((restaurant) => (
+                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
+                                    <div>{restaurant.area || restaurant.locationText || "No location"}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
               </Card>
             </div>
 
