@@ -2517,24 +2517,25 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-5 shadow-sm">
-              <div className="mb-4">
+            <div className={SECTION_CONTAINER}>
+              <div className="mb-5">
                 <h2 className="text-xl font-semibold text-slate-900">Restaurant Library</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Search and filter restaurants by name, branch, dish, area, city, or cuisine.
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-6">
+              <div className="mb-5 grid gap-3 md:grid-cols-6">
                 <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search restaurants, branches, dishes..." value={restaurantSearch} onChange={(e) => setRestaurantSearch(e.target.value)} /></div>
                 <Select value={restaurantCityFilter} onValueChange={setRestaurantCityFilter}><SelectTrigger><SelectValue placeholder="City" /></SelectTrigger><SelectContent><SelectItem value="all">All cities</SelectItem>{restaurantFilterCityOptions.map((city) => <SelectItem key={city} value={city}>{city}</SelectItem>)}</SelectContent></Select>
                 <Select value={restaurantAreaFilter} onValueChange={setRestaurantAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{restaurantFilterAreaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
                 <Select value={restaurantCuisineFilter} onValueChange={setRestaurantCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{restaurantFilterCuisineOptions.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
                 <Select value={restaurantKidsFilter} onValueChange={setRestaurantKidsFilter}><SelectTrigger><SelectValue placeholder="Kids friendly" /></SelectTrigger><SelectContent><SelectItem value="all">All restaurants</SelectItem><SelectItem value="kids">Kids friendly only</SelectItem></SelectContent></Select>
               </div>
-            </div>
 
-            <div className={`${SECTION_CONTAINER} grid gap-5 lg:grid-cols-2`}>
+              <div className="mb-5 border-t border-slate-200" />
+
+              <div className="grid gap-5 lg:grid-cols-2">
               {filteredRestaurants.map((restaurant) => {
                 const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
                 const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
@@ -2634,6 +2635,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                   <CardContent className="p-6 text-sm text-slate-500">No restaurants match the current filters.</CardContent>
                 </Card>
               )}
+              </div>
             </div>
           </TabsContent>
 
