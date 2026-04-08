@@ -2036,17 +2036,9 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                 <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-auto sm:max-w-2xl">
                   <ModalHeader title={restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"} onClose={() => { setRestaurantOpen(false); resetRestaurantForm(); }} />
                   <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Name"><Input value={restaurantForm.name} onChange={(e) => setRestaurantForm({ ...restaurantForm, name: e.target.value })} /></Field>
-                    <Field label="Area">
-                      <Select value={restaurantForm.area || "__none"} onValueChange={(value) => setRestaurantForm({ ...restaurantForm, area: value === "__none" ? "" : value })}>
-                        <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none">No area</SelectItem>
-                          {areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </Field>
+                    <div className="md:col-span-2"><Field label="Name"><Input value={restaurantForm.name} onChange={(e) => setRestaurantForm({ ...restaurantForm, name: e.target.value })} /></Field></div>
                     <Field label="City"><Input list="restaurant-city-options" value={restaurantForm.city} onChange={(e) => setRestaurantForm({ ...restaurantForm, city: e.target.value })} placeholder="Select or type a city" /></Field>
+                    <Field label="Area"><Input list="restaurant-area-options" value={restaurantForm.area} onChange={(e) => setRestaurantForm({ ...restaurantForm, area: e.target.value })} placeholder="Select or type an area" /></Field>
                     <Field label="Full address"><Input value={restaurantForm.fullAddress} onChange={(e) => setRestaurantForm({ ...restaurantForm, fullAddress: e.target.value })} /></Field>
                     <Field label="Google Maps link"><Input value={restaurantForm.mapsLink} onChange={(e) => setRestaurantForm({ ...restaurantForm, mapsLink: e.target.value })} /></Field>
                     <div className="md:col-span-2">
@@ -2380,6 +2372,9 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
           </div>
         </motion.div>
 
+        <datalist id="restaurant-area-options">
+          {areaOptions.map((area) => <option key={area} value={area} />)}
+        </datalist>
         <datalist id="restaurant-city-options">
           {cityOptions.map((city) => <option key={city} value={city} />)}
         </datalist>
