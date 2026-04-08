@@ -19,19 +19,21 @@ export function DialogTrigger({ asChild = false, children }) {
   return <button type="button" onClick={() => ctx?.onOpenChange?.(true)}>{children}</button>
 }
 
-export function DialogContent({ className = '', children, ...props }) {
+export function DialogContent({ className = '', children, showCloseButton = true, ...props }) {
   const ctx = useContext(DialogContext)
   if (!ctx?.open) return null
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => ctx.onOpenChange?.(false)}>
       <div className={['relative w-full rounded-2xl bg-white p-6 shadow-xl', className].join(' ').trim()} onClick={(e) => e.stopPropagation()} {...props}>
-        <button
-          type="button"
-          className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-          onClick={() => ctx.onOpenChange?.(false)}
-        >
-          X
-        </button>
+        {showCloseButton ? (
+          <button
+            type="button"
+            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+            onClick={() => ctx.onOpenChange?.(false)}
+          >
+            X
+          </button>
+        ) : null}
         {children}
       </div>
     </div>

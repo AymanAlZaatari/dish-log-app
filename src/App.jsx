@@ -922,7 +922,7 @@ function ModalHeader({ title, onClose }) {
         className="absolute right-0 top-0 h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         onClick={onClose}
       >
-        <X className="h-4 w-4" />
+        <span className="text-sm font-semibold leading-none">X</span>
       </Button>
     </DialogHeader>
   );
@@ -2033,7 +2033,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
               <Dialog open={restaurantOpen} onOpenChange={(open) => { setRestaurantOpen(open); if (!open) resetRestaurantForm(); }}>
                 <DialogTrigger asChild><Button variant="outline" className={`order-2 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addRestaurant}`}><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-2xl">
+                <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-auto sm:max-w-2xl">
                   <ModalHeader title={restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"} onClose={() => { setRestaurantOpen(false); resetRestaurantForm(); }} />
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Name"><Input value={restaurantForm.name} onChange={(e) => setRestaurantForm({ ...restaurantForm, name: e.target.value })} /></Field>
@@ -2077,7 +2077,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
               <Dialog open={dishOpen} onOpenChange={(open) => { setDishOpen(open); if (!open) resetDishForm(); }}>
                 <DialogTrigger asChild><Button className={`order-1 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addDish}`}><Plus className="mr-2 h-4 w-4" /> Add Dish</Button></DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
+                <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <ModalHeader title={dishForm.id ? "Edit Dish" : "Add Dish"} onClose={() => { setDishOpen(false); resetDishForm(); }} />
                   <div className="grid gap-4 md:grid-cols-2">
                     <Field label="Restaurant">
@@ -2262,7 +2262,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
               <Dialog open={experienceOpen} onOpenChange={(open) => { setExperienceOpen(open); if (!open) resetExperienceForm(); }}>
                 <Button type="button" variant="outline" className={`order-3 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addExperience}`} onClick={openNewExperienceDialog}><Plus className="mr-2 h-4 w-4" /> Add Experience</Button>
-                <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-3xl">
+                <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-auto sm:max-w-3xl">
                   <ModalHeader title={experienceForm.id ? "Edit Experience" : "Log Dish Experience"} onClose={() => { setExperienceOpen(false); resetExperienceForm(); }} />
                   {experienceFormError ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{experienceFormError}</div> : null}
                   <div className="grid gap-4 md:grid-cols-2">
