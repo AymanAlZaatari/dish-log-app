@@ -158,6 +158,7 @@ const emptyRestaurantForm = {
   id: null,
   name: "",
   area: "",
+  city: "",
   locationText: "",
   mapsLink: "",
   cuisine: "",
@@ -213,6 +214,7 @@ const emptyExperienceForm = {
 const inlineRestaurantFormDefault = {
   name: "",
   area: "",
+  city: "",
   locationText: "",
   mapsLink: "",
   cuisine: "",
@@ -276,6 +278,7 @@ function createSampleData() {
         id: cedarBiteId,
         name: "Cedar Bite",
         area: "Mar Mikhael",
+        city: "Beirut",
         locationText: "Beirut",
         mapsLink: "",
         cuisine: "Lebanese",
@@ -289,6 +292,7 @@ function createSampleData() {
         id: falafelHubId,
         name: "Falafel Hub",
         area: "Hamra",
+        city: "Beirut",
         locationText: "Beirut",
         mapsLink: "",
         cuisine: "Middle Eastern",
@@ -302,6 +306,7 @@ function createSampleData() {
         id: nonaSliceId,
         name: "Nona Slice",
         area: "Dbayeh",
+        city: "Metn",
         locationText: "Mount Lebanon",
         mapsLink: "",
         cuisine: "Italian",
@@ -315,6 +320,7 @@ function createSampleData() {
         id: sushiLoopId,
         name: "Sushi Loop",
         area: "Jal El Dib",
+        city: "Metn",
         locationText: "Metn",
         mapsLink: "",
         cuisine: "Japanese",
@@ -328,6 +334,7 @@ function createSampleData() {
         id: burgerYardId,
         name: "Burger Yard",
         area: "Jounieh",
+        city: "Keserwan",
         locationText: "Keserwan",
         mapsLink: "",
         cuisine: "American",
@@ -341,6 +348,7 @@ function createSampleData() {
         id: sweetLeafId,
         name: "Sweet Leaf",
         area: "Badaro",
+        city: "Beirut",
         locationText: "Beirut",
         mapsLink: "",
         cuisine: "Cafe",
@@ -820,6 +828,7 @@ function migrateData(parsed) {
     halalChecked: r.halalChecked ?? true,
     kidsFriendly: r.kidsFriendly ?? false,
     recommendedBy: r.recommendedBy || "",
+    city: r.city || "",
     ...r,
   }));
 
@@ -1134,6 +1143,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [showDishNameSuggestions, setShowDishNameSuggestions] = useState(false);
   const [restaurantSearch, setRestaurantSearch] = useState("");
   const [restaurantAreaFilter, setRestaurantAreaFilter] = useState("all");
+  const [restaurantCityFilter, setRestaurantCityFilter] = useState("all");
   const [restaurantCuisineFilter, setRestaurantCuisineFilter] = useState("all");
   const [restaurantKidsFilter, setRestaurantKidsFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("all");
@@ -1180,6 +1190,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
   const areaOptions = useMemo(() => [...new Set([...(data.areas || []), ...data.restaurants.map((r) => r.area).filter(Boolean), ...data.branches.map((b) => b.area).filter(Boolean)])].sort(), [data]);
   const restaurantFilterAreaOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.area).filter(Boolean))].sort(), [data.restaurants]);
+  const restaurantFilterCityOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.city).filter(Boolean))].sort(), [data.restaurants]);
   const restaurantFilterCuisineOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.cuisine).filter(Boolean))].sort(), [data.restaurants]);
   const dishFilterRestaurantOptions = useMemo(
     () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.name).filter(Boolean))].sort(),
@@ -1334,6 +1345,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       const haystack = [
         restaurant.name,
         restaurant.area,
+        restaurant.city,
         restaurant.cuisine,
         restaurant.locationText,
         restaurant.notes,
@@ -1344,11 +1356,12 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
       if (q && !haystack.includes(q)) return false;
       if (restaurantAreaFilter !== "all" && restaurant.area !== restaurantAreaFilter) return false;
+      if (restaurantCityFilter !== "all" && restaurant.city !== restaurantCityFilter) return false;
       if (restaurantCuisineFilter !== "all" && restaurant.cuisine !== restaurantCuisineFilter) return false;
       if (restaurantKidsFilter === "kids" && !restaurant.kidsFriendly) return false;
       return true;
     });
-  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCuisineFilter, restaurantKidsFilter, restaurantSearch]);
+  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCityFilter, restaurantCuisineFilter, restaurantKidsFilter, restaurantSearch]);
 
   const dashboardStats = useMemo(() => {
     const triedDishes = data.dishes.filter((d) => !d.isWishlist).length;
@@ -1421,6 +1434,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       id: uid(),
       name: form.name.trim(),
       area: form.area.trim(),
+      city: form.city.trim(),
       locationText: form.locationText.trim(),
       mapsLink: form.mapsLink.trim(),
       cuisine: form.cuisine,
@@ -1438,6 +1452,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       id: restaurantForm.id || uid(),
       name: restaurantForm.name.trim(),
       area: restaurantForm.area.trim(),
+      city: restaurantForm.city.trim(),
       locationText: restaurantForm.locationText.trim(),
       mapsLink: restaurantForm.mapsLink.trim(),
       cuisine: restaurantForm.cuisine,
@@ -1969,6 +1984,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         </SelectContent>
                       </Select>
                     </Field>
+                    <Field label="City"><Input value={restaurantForm.city} onChange={(e) => setRestaurantForm({ ...restaurantForm, city: e.target.value })} /></Field>
                     <Field label="Location text"><Input value={restaurantForm.locationText} onChange={(e) => setRestaurantForm({ ...restaurantForm, locationText: e.target.value })} /></Field>
                     <Field label="Google Maps link"><Input value={restaurantForm.mapsLink} onChange={(e) => setRestaurantForm({ ...restaurantForm, mapsLink: e.target.value })} /></Field>
                     <Field label="Cuisine">
@@ -2018,6 +2034,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                             <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
                             <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
                           </Select>
+                          <Input placeholder="City" value={inlineRestaurantForDish.city} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, city: e.target.value })} />
                           <Input placeholder="Location text" value={inlineRestaurantForDish.locationText} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, locationText: e.target.value })} />
                           <Input placeholder="Google Maps link" value={inlineRestaurantForDish.mapsLink} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, mapsLink: e.target.value })} />
                           <Select value={inlineRestaurantForDish.cuisine || "__none"} onValueChange={(value) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, cuisine: value === "__none" ? "" : value })}>
@@ -2210,6 +2227,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                             <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
                             <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
                           </Select>
+                          <Input placeholder="City" value={inlineRestaurantForExperience.city} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, city: e.target.value })} />
                           <Input placeholder="Location text" value={inlineRestaurantForExperience.locationText} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, locationText: e.target.value })} />
                           <Input placeholder="Google Maps link" value={inlineRestaurantForExperience.mapsLink} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, mapsLink: e.target.value })} />
                           <Select value={inlineRestaurantForExperience.cuisine || "__none"} onValueChange={(value) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, cuisine: value === "__none" ? "" : value })}>
@@ -2371,7 +2389,11 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="font-semibold">{restaurant.name}</div>
-                          <div className="text-sm text-slate-500">{restaurant.area || "No area"} • {restaurant.cuisine || "No cuisine"}</div>
+                          <div className="text-sm text-slate-500">
+                            {restaurant.area || "No area"}
+                            {restaurant.city ? ` • ${restaurant.city}` : ""}
+                            {restaurant.cuisine ? ` • ${restaurant.cuisine}` : " • No cuisine"}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-600">
                           <span>Avg dish rating</span>
@@ -2435,13 +2457,14 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
               <div className="mb-4">
                 <h2 className="text-xl font-semibold text-slate-900">Restaurant Library</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Search and filter restaurants by name, branch, dish, area, or cuisine.
+                  Search and filter restaurants by name, branch, dish, area, city, or cuisine.
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-5">
+              <div className="grid gap-3 md:grid-cols-6">
                 <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search restaurants, branches, dishes..." value={restaurantSearch} onChange={(e) => setRestaurantSearch(e.target.value)} /></div>
                 <Select value={restaurantAreaFilter} onValueChange={setRestaurantAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{restaurantFilterAreaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
+                <Select value={restaurantCityFilter} onValueChange={setRestaurantCityFilter}><SelectTrigger><SelectValue placeholder="City" /></SelectTrigger><SelectContent><SelectItem value="all">All cities</SelectItem>{restaurantFilterCityOptions.map((city) => <SelectItem key={city} value={city}>{city}</SelectItem>)}</SelectContent></Select>
                 <Select value={restaurantCuisineFilter} onValueChange={setRestaurantCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{restaurantFilterCuisineOptions.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
                 <Select value={restaurantKidsFilter} onValueChange={setRestaurantKidsFilter}><SelectTrigger><SelectValue placeholder="Kids friendly" /></SelectTrigger><SelectContent><SelectItem value="all">All restaurants</SelectItem><SelectItem value="kids">Kids friendly only</SelectItem></SelectContent></Select>
               </div>
@@ -2460,6 +2483,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         <CardTitle className="text-2xl font-bold tracking-tight">{restaurant.name}</CardTitle>
                         <div className="mt-3 flex flex-wrap gap-2.5 text-xs text-slate-600">
                           {restaurant.area && <Badge variant="secondary">{restaurant.area}</Badge>}
+                          {restaurant.city && <Badge variant="secondary">{restaurant.city}</Badge>}
                           {restaurant.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
                           {restaurant.halalChecked && <Badge variant="outline">Halal checked</Badge>}
                           {restaurant.kidsFriendly && <Badge className="!border-blue-200 !bg-blue-100 !text-blue-700">Kids friendly</Badge>}
