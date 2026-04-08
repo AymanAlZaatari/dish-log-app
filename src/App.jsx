@@ -1532,7 +1532,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       id: dishId,
       restaurantId,
       name: dishForm.name.trim(),
-      branchId: dishForm.branchId === "none" ? null : dishForm.branchId,
+      branchId: null,
       price: normalizeNumericInput(dishForm.price),
       isWishlist: dishForm.isWishlist,
       recommendations: dishForm.recommendations,
@@ -2107,15 +2107,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         <div className="mt-2"><Button size="sm" variant="outline" onClick={() => prepareLogExperience(duplicateDishSuggestion.restaurantId, duplicateDishSuggestion.id)}>Log Experience for Existing Dish</Button></div>
                       </div>
                     )}
-                    <Field label="Default branch (optional)">
-                      <Select value={dishForm.branchId} onValueChange={(value) => setDishForm({ ...dishForm, branchId: value })}>
-                        <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No default branch</SelectItem>
-                          {branchOptionsForDish.map((branch) => <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </Field>
                     <Field label="Portion size">
                       <Select value={dishForm.portionSize || "__none"} onValueChange={(value) => setDishForm({ ...dishForm, portionSize: value === "__none" ? "" : value })}>
                         <SelectTrigger><SelectValue placeholder="Select portion size" /></SelectTrigger>
@@ -2125,10 +2116,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         </SelectContent>
                       </Select>
                     </Field>
-                    <Field label="Dish price"><Input type="number" value={dishForm.price} onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })} /></Field>
+                    <Field label="Dish price ($)"><Input type="number" value={dishForm.price} onChange={(e) => setDishForm({ ...dishForm, price: e.target.value })} /></Field>
                     <Field label="Recommended by"><Input value={dishForm.recommendedBy} onChange={(e) => setDishForm({ ...dishForm, recommendedBy: e.target.value })} /></Field>
-                    <div className="flex items-center gap-3 pt-8"><Checkbox checked={dishForm.isWishlist} onCheckedChange={(checked) => setDishForm({ ...dishForm, isWishlist: !!checked })} /><Label>Wishlist item (not tried yet)</Label></div>
                     <div className="md:col-span-2 rounded-2xl border bg-slate-50 p-4 space-y-4">
+                      <div className="flex items-center gap-3"><Checkbox checked={dishForm.isWishlist} onCheckedChange={(checked) => setDishForm({ ...dishForm, isWishlist: !!checked })} /><Label>Wishlist item (not tried yet)</Label></div>
                       <div className="flex items-center gap-3"><Checkbox checked={!dishForm.isWishlist && logExperienceWithDish} onCheckedChange={(checked) => setLogExperienceWithDish(!!checked)} disabled={dishForm.isWishlist} /><Label>Add first experience now</Label></div>
                       {!dishForm.isWishlist && logExperienceWithDish && (
                         <div className="grid gap-4 md:grid-cols-2">
@@ -2152,7 +2143,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                             <Field label="Rating (1-5) *"><Input type="number" min="1" max="5" required value={experienceForm.rating} onChange={(e) => { setExperienceForm({ ...experienceForm, rating: e.target.value }); if (hasValidRating(e.target.value)) setExperienceRatingError(""); }} className={experienceRatingError ? "border-red-400 focus-visible:ring-red-400" : ""} /></Field>
                             {experienceRatingError ? <div className="mt-2 text-sm text-red-600">{experienceRatingError}</div> : null}
                           </div>
-                          <Field label="Price"><Input type="number" value={experienceForm.price} onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })} /></Field>
+                          <Field label="Price ($)"><Input type="number" value={experienceForm.price} onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })} /></Field>
                           <Field label="Value for money">
                             <Select value={experienceForm.valueForMoney || "__none"} onValueChange={(value) => setExperienceForm({ ...experienceForm, valueForMoney: value === "__none" ? "" : value })}>
                               <SelectTrigger><SelectValue placeholder="Select value" /></SelectTrigger>
@@ -2276,7 +2267,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                       <Field label="Rating (1-5) *"><Input type="number" min="1" max="5" required value={experienceForm.rating} onChange={(e) => { setExperienceForm({ ...experienceForm, rating: e.target.value }); if (hasValidRating(e.target.value)) setExperienceRatingError(""); }} className={experienceRatingError ? "border-red-400 focus-visible:ring-red-400" : ""} /></Field>
                       {experienceRatingError ? <div className="mt-2 text-sm text-red-600">{experienceRatingError}</div> : null}
                     </div>
-                    <Field label="Price"><Input type="number" value={experienceForm.price} onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })} /></Field>
+                    <Field label="Price ($)"><Input type="number" value={experienceForm.price} onChange={(e) => setExperienceForm({ ...experienceForm, price: e.target.value })} /></Field>
                     <Field label="Value for money">
                       <Select value={experienceForm.valueForMoney || "__none"} onValueChange={(value) => setExperienceForm({ ...experienceForm, valueForMoney: value === "__none" ? "" : value })}>
                         <SelectTrigger><SelectValue placeholder="Select value" /></SelectTrigger>
@@ -2367,10 +2358,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         {((experience.price != null && experience.price !== "") || experience.valueForMoney || experience.notes || experience.images?.length > 0) && (
                           <div className="mt-3 text-sm text-slate-600">
                             {experience.price != null && experience.price !== "" ? (
-                              <>Price: <span className="font-semibold text-slate-900">{`$${Number(experience.price).toFixed(1)}`}</span></>
+                              <><span className="font-semibold text-slate-900">Price:</span> {`$${Number(experience.price).toFixed(1)}`}</>
                             ) : ""}
                             {experience.price != null && experience.price !== "" && experience.valueForMoney ? " • " : ""}
-                            {experience.valueForMoney ? `Value: ${experience.valueForMoney}` : ""}
+                            {experience.valueForMoney ? <><span className="font-semibold text-slate-900">Value:</span> {experience.valueForMoney}</> : ""}
                             {experience.notes ? <div className="mt-2">{experience.notes}</div> : null}
                             {experience.images?.length > 0 ? <div className="mt-2 text-xs text-slate-500">{experience.images.length} image(s)</div> : null}
                           </div>
