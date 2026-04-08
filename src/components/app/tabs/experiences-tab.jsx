@@ -1,0 +1,108 @@
+import { Pencil, Trash2 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { TabsContent } from "@/components/ui/tabs";
+
+import {
+  DELETE_BUTTON_STYLE,
+  EDIT_BUTTON_STYLE,
+  SECTION_CONTAINER,
+} from "@/lib/app/constants";
+import { ratingPillClass, valuePillClass } from "@/lib/app/data";
+
+import { Stars } from "../shared";
+
+export function ExperiencesTab({
+  data,
+  dishesById,
+  restaurantsById,
+  branchesById,
+  editExperience,
+  deleteExperience,
+}) {
+  return (
+    <TabsContent value="experiences" className="space-y-4">
+      <div className={`${SECTION_CONTAINER} space-y-3`}>
+        <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white">
+          <table className="min-w-full text-sm">
+            <thead className="border-b border-slate-200 bg-slate-50 text-center text-sm font-semibold uppercase tracking-wide text-slate-600">
+              <tr>
+                <th className="px-5 py-3">Dish</th>
+                <th className="px-5 py-3">Restaurant</th>
+                <th className="px-5 py-3">Price</th>
+                <th className="px-5 py-3">Value</th>
+                <th className="px-5 py-3">Rating</th>
+                <th className="px-5 py-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {[...data.experiences].sort((a, b) => new Date(b.date) - new Date(a.date)).map((experience) => {
+                const dish = dishesById[experience.dishId];
+                const restaurant = dish ? restaurantsById[dish.restaurantId] : null;
+                const branch = experience.branchId ? branchesById[experience.branchId] : null;
+                return (
+                  <tr key={experience.id} className="align-top odd:bg-white even:bg-slate-50/70">
+                    <td className="px-5 py-4">
+                      <div className="min-w-0 space-y-2">
+                        <div>
+                          <div className="text-lg font-semibold text-slate-900">{dish?.name || "Unknown dish"}</div>
+                          <div className="text-sm text-slate-500">{experience.date}</div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary">{experience.orderType}</Badge>
+                          {branch && <Badge variant="secondary">{branch.name}</Badge>}
+                        </div>
+                        {(experience.notes || experience.images?.length > 0) && (
+                          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                            {experience.notes ? <div className="text-sm text-slate-700">{experience.notes}</div> : null}
+                            {experience.images?.length > 0 && (
+                              <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+                                {experience.images.map((img) => <div key={img.id} className="overflow-hidden rounded-2xl border bg-white"><img src={img.dataUrl} alt={img.name} className="h-24 w-full object-cover" /></div>)}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-slate-700">
+                      <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
+                      {restaurant?.area || restaurant?.cuisines?.length ? (
+                        <div className="mt-1 text-sm text-slate-500">
+                          {restaurant?.area || "No area"}
+                          {restaurant?.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : ""}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td className="px-5 py-4 text-center text-slate-700">
+                      {experience.price != null ? <span className="font-semibold text-slate-900">{`$${Number(experience.price).toFixed(1)}`}</span> : "—"}
+                    </td>
+                    <td className="px-5 py-4 text-center text-slate-700">
+                      <div className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${valuePillClass(experience.valueForMoney)}`}>
+                        {experience.valueForMoney || "—"}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(experience.rating)}`}>
+                        {experience.rating != null ? <span>({Number(experience.rating).toFixed(1)})</span> : <span>—</span>}
+                        <Stars value={experience.rating} />
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editExperience(experience)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
+                        <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteExperience(experience.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {data.experiences.length === 0 && <Card className="rounded-3xl border-0 shadow-sm"><CardContent className="p-6 text-sm text-slate-500">No experiences logged yet.</CardContent></Card>}
+      </div>
+    </TabsContent>
+  );
+}

@@ -4,33 +4,22 @@ import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebas
 import { onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import {
   Plus,
-  Search,
-  Star,
   Upload,
   Download,
   Trash2,
-  MapPin,
-  Store,
-  UtensilsCrossed,
-  Heart,
-  Filter,
-  NotebookText,
   X,
   Pencil,
-  Eye,
   Image as ImageIcon,
   LogOut,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { auth, db, hasFirebaseConfig } from "./lib/firebase";
@@ -81,7 +70,10 @@ import {
 import { Field, ModalActions, ModalHeader, Stars, TagInput } from "./components/app/shared";
 import { AuthScreen, LoadingScreen, SetupRequiredScreen } from "./components/app/screens";
 import { DashboardTab } from "./components/app/tabs/dashboard-tab";
+import { DishesTab } from "./components/app/tabs/dishes-tab";
+import { ExperiencesTab } from "./components/app/tabs/experiences-tab";
 import { RestaurantsTab } from "./components/app/tabs/restaurants-tab";
+import { SettingsTab } from "./components/app/tabs/settings-tab";
 
 function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout }) {
   const [tab, setTab] = useState("dashboard");
@@ -1362,515 +1354,86 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             deleteBranch={deleteBranch}
           />
 
-          <TabsContent value="dishes" className="space-y-6">
-            <Card className="rounded-3xl border border-amber-200 bg-amber-50/60 shadow-sm">
-              <CardHeader className="px-6 pt-6">
-                <CardTitle className="text-2xl font-bold tracking-tight text-amber-950">Dish Comparison Across Restaurants</CardTitle>
-                <div className="text-sm text-slate-600">
-                  Compare one dish across every restaurant you have logged so you can decide where you liked it most.
-                </div>
-              </CardHeader>
-              <CardContent className="px-6 pb-6 space-y-5">
-                <div className="space-y-3 rounded-2xl border border-amber-200 bg-white/70 p-4">
-                  <Input
-                    placeholder="Type a dish name like Tawouk"
-                    value={dishReportSearch}
-                    onChange={(e) => setDishReportSearch(e.target.value)}
-                  />
-                  {dishComparisonSuggestions.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {dishComparisonSuggestions.map((group) => (
-                        <button
-                          key={group.key}
-                          type="button"
-                          className="rounded-full border px-3 py-1 text-xs text-slate-600"
-                          onClick={() => setDishReportSearch(group.label)}
-                        >
-                          {group.label} ({group.items.length})
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+          <DishesTab
+            dishReportSearch={dishReportSearch}
+            setDishReportSearch={setDishReportSearch}
+            dishComparisonSuggestions={dishComparisonSuggestions}
+            activeDishComparison={activeDishComparison}
+            activeDishComparisonRows={activeDishComparisonRows}
+            openExistingDish={openExistingDish}
+            prepareLogExperience={prepareLogExperience}
+            search={search}
+            setSearch={setSearch}
+            restaurantFilter={restaurantFilter}
+            setRestaurantFilter={setRestaurantFilter}
+            dishFilterRestaurantOptions={dishFilterRestaurantOptions}
+            areaFilter={areaFilter}
+            setAreaFilter={setAreaFilter}
+            dishFilterAreaOptions={dishFilterAreaOptions}
+            cuisineFilter={cuisineFilter}
+            setCuisineFilter={setCuisineFilter}
+            dishFilterCuisineOptions={dishFilterCuisineOptions}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            dishStatusOptions={dishStatusOptions}
+            filteredDishes={filteredDishes}
+            restaurantsById={restaurantsById}
+            branchesById={branchesById}
+            dishExperienceMap={dishExperienceMap}
+            computedDishRating={computedDishRating}
+            editDish={editDish}
+            deleteDish={deleteDish}
+            data={data}
+          />
 
-                {activeDishComparison ? (
-                  <div className="space-y-4">
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <div className="text-xl font-bold tracking-tight text-slate-900">{activeDishComparison.label}</div>
-                      <div className="mt-1 text-sm text-slate-600">
-                        {activeDishComparisonRows.length} restaurant{activeDishComparisonRows.length === 1 ? "" : "s"} tracked for this dish.
-                      </div>
-                    </div>
+          <ExperiencesTab
+            data={data}
+            dishesById={dishesById}
+            restaurantsById={restaurantsById}
+            branchesById={branchesById}
+            editExperience={editExperience}
+            deleteExperience={deleteExperience}
+          />
 
-                    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-                      <table className="min-w-full text-sm">
-                        <thead className="bg-slate-50 text-left text-slate-600">
-                          <tr>
-                            <th className="px-4 py-3 font-medium">Restaurant</th>
-                            <th className="px-4 py-3 font-medium">Average</th>
-                            <th className="px-4 py-3 font-medium">Latest</th>
-                            <th className="px-4 py-3 font-medium">Best</th>
-                            <th className="px-4 py-3 font-medium">Experiences</th>
-                            <th className="px-4 py-3 font-medium">Latest notes</th>
-                            <th className="px-4 py-3 font-medium"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {activeDishComparisonRows.map(({ dish, restaurant, branch, experiences, latestExperience, avgRating, bestRating }) => (
-                            <tr key={dish.id} className="border-t align-top">
-                              <td className="px-4 py-3">
-                                <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
-                                <div className="mt-1 text-xs text-slate-500">
-                                  {restaurant?.area || "No area"}
-                                  {restaurant?.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : ""}
-                                  {branch ? ` • ${branch.name}` : ""}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3">{avgRating ? avgRating.toFixed(1) : "—"}</td>
-                              <td className="px-4 py-3">
-                                {latestExperience?.rating ?? "—"}
-                                {latestExperience?.date ? <div className="mt-1 text-xs text-slate-500">{latestExperience.date}</div> : null}
-                              </td>
-                              <td className="px-4 py-3">{bestRating || "—"}</td>
-                              <td className="px-4 py-3">
-                                {experiences.length}
-                                {latestExperience?.price != null ? <div className="mt-1 text-xs text-slate-500">Latest price: {latestExperience.price}</div> : null}
-                              </td>
-                              <td className="max-w-xs px-4 py-3 text-slate-600">
-                                {latestExperience?.notes || dish.notes || "—"}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="flex gap-2">
-                                  <Button variant="outline" size="sm" onClick={() => openExistingDish(dish)}>Open</Button>
-                                  <Button variant="ghost" size="sm" onClick={() => prepareLogExperience(dish.restaurantId, dish.id)}>Log</Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <div className={SECTION_CONTAINER}>
-              <div className="mb-5">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dish Library</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Browse, filter, and manage all saved dishes across restaurants.
-                </p>
-              </div>
-
-              <div className="mb-5 grid gap-3 md:grid-cols-6">
-                <div className="relative md:col-span-2"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><Input className="pl-9" placeholder="Search dishes, tags, restaurants..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-                <Select value={restaurantFilter} onValueChange={setRestaurantFilter}><SelectTrigger><SelectValue placeholder="Restaurant" /></SelectTrigger><SelectContent><SelectItem value="all">All restaurants</SelectItem>{dishFilterRestaurantOptions.map((restaurantName) => <SelectItem key={restaurantName} value={restaurantName}>{restaurantName}</SelectItem>)}</SelectContent></Select>
-                <Select value={areaFilter} onValueChange={setAreaFilter}><SelectTrigger><SelectValue placeholder="Area" /></SelectTrigger><SelectContent><SelectItem value="all">All areas</SelectItem>{dishFilterAreaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent></Select>
-                <Select value={cuisineFilter} onValueChange={setCuisineFilter}><SelectTrigger><SelectValue placeholder="Cuisine" /></SelectTrigger><SelectContent><SelectItem value="all">All cuisines</SelectItem>{dishFilterCuisineOptions.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent></Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem>{dishStatusOptions.map((status) => <SelectItem key={status.value} value={status.value}>{status.label}</SelectItem>)}</SelectContent></Select>
-              </div>
-
-              <div className="mb-5 border-t border-slate-200" />
-
-              <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-              {filteredDishes.map((dish) => {
-                const restaurant = restaurantsById[dish.restaurantId];
-                const branch = dish.branchId ? branchesById[dish.branchId] : null;
-                const experiences = dishExperienceMap[dish.id] || [];
-                const avgRating = computedDishRating(dish.id);
-                return (
-                  <Card key={dish.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
-                    <CardHeader className="px-6 pt-6 space-y-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <CardTitle className="text-2xl font-bold tracking-tight">{dish.name}</CardTitle>
-                          <div className="mt-1 text-sm text-slate-500">{restaurant?.name || "Unknown restaurant"}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editDish(dish)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
-                          <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteDish(dish.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {dish.isWishlist ? <Badge className="!border-amber-200 !bg-amber-100 !text-amber-800">Wishlist</Badge> : <Badge className="!border-emerald-200 !bg-emerald-100 !text-emerald-800">Tried</Badge>}
-                        {restaurant?.area && <Badge variant="secondary">{restaurant.area}</Badge>}
-                        {(restaurant?.cuisines || []).map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}
-                        {branch && <Badge variant="secondary">Branch: {branch.name}</Badge>}
-                        {dish.portionSize && dish.portionSize !== "Adult" && <Badge variant="outline">{dish.portionSize}</Badge>}
-                        {(dish.tags || []).map((tag) => <Badge key={tag} variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>)}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
-                      <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(avgRating)}`}>
-                          <span>Dish rating:</span>
-                          {avgRating ? <><span>({avgRating.toFixed(1)})</span><Stars value={avgRating} /></> : <span>—</span>}
-                        </div>
-                        {dish.recommendedBy ? <div><span className="font-medium text-slate-900">Recommended by:</span> {dish.recommendedBy}</div> : null}
-                      </div>
-                      {dish.recommendations?.length ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div><span className="font-medium text-slate-900">Recommendations:</span><div className="mt-2 flex flex-wrap gap-2">{dish.recommendations.map((item) => <Badge key={item} className="!border-blue-200 !bg-blue-100 !text-blue-700">{item}</Badge>)}</div></div></div> : null}
-                      {dish.alerts?.length ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div><span className="font-medium text-slate-900">Alerts:</span><div className="mt-2 flex flex-wrap gap-2">{dish.alerts.map((item) => <Badge key={item} className="!border-red-200 !bg-red-100 !text-red-700">{item}</Badge>)}</div></div></div> : null}
-                      {dish.notes ? <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{dish.notes}</div> : null}
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="font-medium text-slate-900">Experience count: {experiences.length}</div>
-                        {experiences.length > 0 && <div className="mt-1 text-xs text-slate-500">Latest: {[...experiences].sort((a, b) => new Date(b.date) - new Date(a.date))[0].date}</div>}
-                      </div>
-                      <Button variant="outline" className={`w-full ${LOG_EXPERIENCE_BUTTON_STYLE}`} onClick={() => prepareLogExperience(dish.restaurantId, dish.id)}>Log another experience</Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="experiences" className="space-y-4">
-            <div className={`${SECTION_CONTAINER} space-y-3`}>
-              <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white">
-                <table className="min-w-full text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-center text-sm font-semibold uppercase tracking-wide text-slate-600">
-                    <tr>
-                      <th className="px-5 py-3">Dish</th>
-                      <th className="px-5 py-3">Restaurant</th>
-                      <th className="px-5 py-3">Price</th>
-                      <th className="px-5 py-3">Value</th>
-                      <th className="px-5 py-3">Rating</th>
-                      <th className="px-5 py-3 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                  {[...data.experiences].sort((a, b) => new Date(b.date) - new Date(a.date)).map((experience) => {
-                    const dish = dishesById[experience.dishId];
-                    const restaurant = dish ? restaurantsById[dish.restaurantId] : null;
-                    const branch = experience.branchId ? branchesById[experience.branchId] : null;
-                    return (
-                      <tr key={experience.id} className="align-top odd:bg-white even:bg-slate-50/70">
-                        <td className="px-5 py-4">
-                          <div className="min-w-0 space-y-2">
-                            <div>
-                              <div className="text-lg font-semibold text-slate-900">{dish?.name || "Unknown dish"}</div>
-                              <div className="text-sm text-slate-500">{experience.date}</div>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="secondary">{experience.orderType}</Badge>
-                              {branch && <Badge variant="secondary">{branch.name}</Badge>}
-                            </div>
-                            {(experience.notes || experience.images?.length > 0) && (
-                              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                                {experience.notes ? <div className="text-sm text-slate-700">{experience.notes}</div> : null}
-                                {experience.images?.length > 0 && (
-                                  <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
-                                    {experience.images.map((img) => <div key={img.id} className="overflow-hidden rounded-2xl border bg-white"><img src={img.dataUrl} alt={img.name} className="h-24 w-full object-cover" /></div>)}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-slate-700">
-                          <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
-                          {restaurant?.area || restaurant?.cuisines?.length ? (
-                            <div className="mt-1 text-sm text-slate-500">
-                              {restaurant?.area || "No area"}
-                              {restaurant?.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : ""}
-                            </div>
-                          ) : null}
-                        </td>
-                        <td className="px-5 py-4 text-center text-slate-700">
-                          {experience.price != null ? <span className="font-semibold text-slate-900">{`$${Number(experience.price).toFixed(1)}`}</span> : "—"}
-                        </td>
-                        <td className="px-5 py-4 text-center text-slate-700">
-                          <div className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${valuePillClass(experience.valueForMoney)}`}>
-                            {experience.valueForMoney || "—"}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(experience.rating)}`}>
-                            {experience.rating != null ? <span>({Number(experience.rating).toFixed(1)})</span> : <span>—</span>}
-                            <Stars value={experience.rating} />
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editExperience(experience)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button>
-                            <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteExperience(experience.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  </tbody>
-                </table>
-              </div>
-              {data.experiences.length === 0 && <Card className="rounded-3xl border-0 shadow-sm"><CardContent className="p-6 text-sm text-slate-500">No experiences logged yet.</CardContent></Card>}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="settings" className="space-y-6">
-            <div className={SECTION_CONTAINER}>
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader><CardTitle className="font-bold">Dish Tags</CardTitle></CardHeader>
-                <CardContent>
-                  {allDishTags.length === 0 ? (
-                    <div className="text-sm text-slate-500">No dish tags yet.</div>
-                  ) : (
-                    <div className="flex flex-wrap gap-3">
-                      {allDishTags.map((tag) => {
-                        const taggedDishes = data.dishes.filter((dish) => (dish.tags || []).includes(tag));
-                        const isExpanded = expandedTag === tag;
-
-                        return (
-                        <div key={tag} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
-                          <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              className="flex items-center gap-3 text-left"
-                              onClick={() => setExpandedTag(isExpanded ? null : tag)}
-                              aria-expanded={isExpanded}
-                            >
-                              <Badge variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>
-                              <span className="text-sm text-slate-500">{taggedDishes.length} dish(es)</span>
-                              {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                            </button>
-                            <div className="ml-auto flex items-center gap-2">
-                            <button
-                              type="button"
-                              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                              onClick={() => renameTag(tag)}
-                              aria-label={`Rename ${tag}`}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <Input
-                              type="color"
-                              value={data.tagColors?.[tag] || "#64748b"}
-                              onChange={(e) => setTagColor(tag, e.target.value)}
-                              className="h-8 w-10 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
-                            />
-                          </div>
-                        </div>
-                          {isExpanded ? (
-                            <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
-                              {taggedDishes.map((dish) => (
-                                <div key={dish.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
-                                  <div className="font-medium text-slate-900">{dish.name}</div>
-                                  <div>{restaurantsById[dish.restaurantId]?.name || "Unknown restaurant"}</div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      )})}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={SECTION_CONTAINER}>
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><ModalHeader title="Add Cuisine" onClose={() => setCuisineOpen(false)} /><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><ModalActions onCancel={() => setCuisineOpen(false)} onSave={addCuisine} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
-                <CardContent>
-                  {data.cuisines.length === 0 ? (
-                    <div className="text-sm text-slate-500">No cuisines yet.</div>
-                  ) : (
-                    <div className="flex flex-wrap gap-3">
-                      {data.cuisines.map((cuisine) => {
-                        const cuisineRestaurants = data.restaurants.filter((restaurant) => (restaurant.cuisines || []).includes(cuisine));
-                        const isExpanded = expandedCuisine === cuisine;
-                        return (
-                          <div key={cuisine} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
-                            <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                className="flex items-center gap-3 text-left"
-                                onClick={() => setExpandedCuisine(isExpanded ? null : cuisine)}
-                                aria-expanded={isExpanded}
-                              >
-                                <Badge variant="secondary">{cuisine}</Badge>
-                                <span className="text-sm text-slate-500">{cuisineRestaurants.length} restaurant(s)</span>
-                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                              </button>
-                              <div className="ml-auto flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                                  onClick={() => renameCuisine(cuisine)}
-                                  aria-label={`Rename ${cuisine}`}
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
-                                  onClick={() => deleteCuisine(cuisine)}
-                                  aria-label={`Delete ${cuisine}`}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            {isExpanded ? (
-                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
-                                {cuisineRestaurants.map((restaurant) => (
-                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
-                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
-                                    <div>{restaurant.area || restaurant.fullAddress || "No location"}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={SECTION_CONTAINER}>
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cities</CardTitle><Dialog open={cityOpen} onOpenChange={setCityOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add City</Button></DialogTrigger><DialogContent><ModalHeader title="Add City" onClose={() => setCityOpen(false)} /><div className="space-y-4"><Input value={newCity} onChange={(e) => setNewCity(e.target.value)} placeholder="Enter city name" /><ModalActions onCancel={() => setCityOpen(false)} onSave={addCity} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
-                <CardContent>
-                  {cityOptions.length === 0 ? (
-                    <div className="text-sm text-slate-500">No cities yet.</div>
-                  ) : (
-                    <div className="flex flex-wrap gap-3">
-                      {cityOptions.map((city) => {
-                        const cityRestaurants = data.restaurants.filter((restaurant) => restaurant.city === city);
-                        const isExpanded = expandedCity === city;
-                        return (
-                          <div key={city} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
-                            <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                className="flex items-center gap-3 text-left"
-                                onClick={() => setExpandedCity(isExpanded ? null : city)}
-                                aria-expanded={isExpanded}
-                              >
-                                <Badge variant="secondary">{city}</Badge>
-                                <span className="text-sm text-slate-500">{cityRestaurants.length} restaurant(s)</span>
-                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                              </button>
-                              <div className="ml-auto flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                                  onClick={() => renameCity(city)}
-                                  aria-label={`Rename ${city}`}
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
-                                  onClick={() => deleteCity(city)}
-                                  aria-label={`Delete ${city}`}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            {isExpanded ? (
-                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
-                                {cityRestaurants.map((restaurant) => (
-                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
-                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
-                                    <div>{restaurant.area || restaurant.cuisines?.join(", ") || "No extra details"}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={SECTION_CONTAINER}>
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
-                <CardContent>
-                  {areaOptions.length === 0 ? (
-                    <div className="text-sm text-slate-500">No areas yet.</div>
-                  ) : (
-                    <div className="flex flex-wrap gap-3">
-                      {areaOptions.map((area) => {
-                        const areaRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
-                        const isExpanded = expandedArea === area;
-                        return (
-                          <div key={area} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
-                            <div className="flex items-center gap-3">
-                              <button
-                                type="button"
-                                className="flex items-center gap-3 text-left"
-                                onClick={() => setExpandedArea(isExpanded ? null : area)}
-                                aria-expanded={isExpanded}
-                              >
-                                <Badge variant="secondary">{area}</Badge>
-                                <span className="text-sm text-slate-500">{areaRestaurants.length} restaurant(s)</span>
-                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                              </button>
-                              <div className="ml-auto flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                                  onClick={() => renameArea(area)}
-                                  aria-label={`Rename ${area}`}
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
-                                  onClick={() => deleteArea(area)}
-                                  aria-label={`Delete ${area}`}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                            {isExpanded ? (
-                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
-                                {areaRestaurants.map((restaurant) => (
-                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
-                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
-                                    <div>{restaurant.cuisines?.length ? restaurant.cuisines.join(", ") : restaurant.fullAddress || "No extra details"}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={SECTION_CONTAINER}>
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardHeader><CardTitle className="font-bold">Data Notes</CardTitle></CardHeader>
-                <CardContent className="space-y-3 text-sm text-slate-600">
-                  <div>Your data is saved to Firebase Cloud Firestore and synced per signed-in user.</div>
-                  <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
-                  <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
-                  <div>The browser local copy is kept only as a migration and backup convenience, not as the primary source of truth.</div>
-                  <div className="pt-2">
-                    <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={seedSampleData}>
-                      <Download className="mr-2 h-4 w-4" /> Load Seed Data
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          <SettingsTab
+            allDishTags={allDishTags}
+            data={data}
+            expandedTag={expandedTag}
+            setExpandedTag={setExpandedTag}
+            renameTag={renameTag}
+            setTagColor={setTagColor}
+            restaurantsById={restaurantsById}
+            cuisineOpen={cuisineOpen}
+            setCuisineOpen={setCuisineOpen}
+            newCuisine={newCuisine}
+            setNewCuisine={setNewCuisine}
+            addCuisine={addCuisine}
+            expandedCuisine={expandedCuisine}
+            setExpandedCuisine={setExpandedCuisine}
+            renameCuisine={renameCuisine}
+            deleteCuisine={deleteCuisine}
+            cityOpen={cityOpen}
+            setCityOpen={setCityOpen}
+            newCity={newCity}
+            setNewCity={setNewCity}
+            addCity={addCity}
+            cityOptions={cityOptions}
+            expandedCity={expandedCity}
+            setExpandedCity={setExpandedCity}
+            renameCity={renameCity}
+            deleteCity={deleteCity}
+            areaOpen={areaOpen}
+            setAreaOpen={setAreaOpen}
+            newArea={newArea}
+            setNewArea={setNewArea}
+            addArea={addArea}
+            areaOptions={areaOptions}
+            expandedArea={expandedArea}
+            setExpandedArea={setExpandedArea}
+            renameArea={renameArea}
+            deleteArea={deleteArea}
+            seedSampleData={seedSampleData}
+          />
         </Tabs>
       </div>
     </div>

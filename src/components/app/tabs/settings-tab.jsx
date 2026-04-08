@@ -1,0 +1,323 @@
+import { ChevronDown, ChevronUp, Download, Pencil, Plus, Trash2 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { TabsContent } from "@/components/ui/tabs";
+
+import { SECTION_CONTAINER, TOP_ACTION_BUTTON_STYLES } from "@/lib/app/constants";
+import { tagChipStyle } from "@/lib/app/data";
+
+import { ModalActions, ModalHeader } from "../shared";
+
+export function SettingsTab(props) {
+  const {
+    allDishTags,
+    data,
+    expandedTag,
+    setExpandedTag,
+    renameTag,
+    setTagColor,
+    restaurantsById,
+    cuisineOpen,
+    setCuisineOpen,
+    newCuisine,
+    setNewCuisine,
+    addCuisine,
+    expandedCuisine,
+    setExpandedCuisine,
+    renameCuisine,
+    deleteCuisine,
+    cityOpen,
+    setCityOpen,
+    newCity,
+    setNewCity,
+    addCity,
+    cityOptions,
+    expandedCity,
+    setExpandedCity,
+    renameCity,
+    deleteCity,
+    areaOpen,
+    setAreaOpen,
+    newArea,
+    setNewArea,
+    addArea,
+    areaOptions,
+    expandedArea,
+    setExpandedArea,
+    renameArea,
+    deleteArea,
+    seedSampleData,
+  } = props;
+
+  return (
+    <TabsContent value="settings" className="space-y-6">
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader><CardTitle className="font-bold">Dish Tags</CardTitle></CardHeader>
+          <CardContent>
+            {allDishTags.length === 0 ? (
+              <div className="text-sm text-slate-500">No dish tags yet.</div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {allDishTags.map((tag) => {
+                  const taggedDishes = data.dishes.filter((dish) => (dish.tags || []).includes(tag));
+                  const isExpanded = expandedTag === tag;
+
+                  return (
+                    <div key={tag} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          className="flex items-center gap-3 text-left"
+                          onClick={() => setExpandedTag(isExpanded ? null : tag)}
+                          aria-expanded={isExpanded}
+                        >
+                          <Badge variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>
+                          <span className="text-sm text-slate-500">{taggedDishes.length} dish(es)</span>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                        </button>
+                        <div className="ml-auto flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                            onClick={() => renameTag(tag)}
+                            aria-label={`Rename ${tag}`}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <Input
+                            type="color"
+                            value={data.tagColors?.[tag] || "#64748b"}
+                            onChange={(e) => setTagColor(tag, e.target.value)}
+                            className="h-8 w-10 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                          />
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                          {taggedDishes.map((dish) => (
+                            <div key={dish.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                              <div className="font-medium text-slate-900">{dish.name}</div>
+                              <div>{restaurantsById[dish.restaurantId]?.name || "Unknown restaurant"}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cuisines</CardTitle><Dialog open={cuisineOpen} onOpenChange={setCuisineOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Cuisine</Button></DialogTrigger><DialogContent><ModalHeader title="Add Cuisine" onClose={() => setCuisineOpen(false)} /><div className="space-y-4"><Input value={newCuisine} onChange={(e) => setNewCuisine(e.target.value)} placeholder="Enter cuisine name" /><ModalActions onCancel={() => setCuisineOpen(false)} onSave={addCuisine} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+          <CardContent>
+            {data.cuisines.length === 0 ? (
+              <div className="text-sm text-slate-500">No cuisines yet.</div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {data.cuisines.map((cuisine) => {
+                  const cuisineRestaurants = data.restaurants.filter((restaurant) => (restaurant.cuisines || []).includes(cuisine));
+                  const isExpanded = expandedCuisine === cuisine;
+                  return (
+                    <div key={cuisine} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          className="flex items-center gap-3 text-left"
+                          onClick={() => setExpandedCuisine(isExpanded ? null : cuisine)}
+                          aria-expanded={isExpanded}
+                        >
+                          <Badge variant="secondary">{cuisine}</Badge>
+                          <span className="text-sm text-slate-500">{cuisineRestaurants.length} restaurant(s)</span>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                        </button>
+                        <div className="ml-auto flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                            onClick={() => renameCuisine(cuisine)}
+                            aria-label={`Rename ${cuisine}`}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => deleteCuisine(cuisine)}
+                            aria-label={`Delete ${cuisine}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                          {cuisineRestaurants.map((restaurant) => (
+                            <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                              <div className="font-medium text-slate-900">{restaurant.name}</div>
+                              <div>{restaurant.area || restaurant.fullAddress || "No location"}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cities</CardTitle><Dialog open={cityOpen} onOpenChange={setCityOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add City</Button></DialogTrigger><DialogContent><ModalHeader title="Add City" onClose={() => setCityOpen(false)} /><div className="space-y-4"><Input value={newCity} onChange={(e) => setNewCity(e.target.value)} placeholder="Enter city name" /><ModalActions onCancel={() => setCityOpen(false)} onSave={addCity} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+          <CardContent>
+            {cityOptions.length === 0 ? (
+              <div className="text-sm text-slate-500">No cities yet.</div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {cityOptions.map((city) => {
+                  const cityRestaurants = data.restaurants.filter((restaurant) => restaurant.city === city);
+                  const isExpanded = expandedCity === city;
+                  return (
+                    <div key={city} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          className="flex items-center gap-3 text-left"
+                          onClick={() => setExpandedCity(isExpanded ? null : city)}
+                          aria-expanded={isExpanded}
+                        >
+                          <Badge variant="secondary">{city}</Badge>
+                          <span className="text-sm text-slate-500">{cityRestaurants.length} restaurant(s)</span>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                        </button>
+                        <div className="ml-auto flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                            onClick={() => renameCity(city)}
+                            aria-label={`Rename ${city}`}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => deleteCity(city)}
+                            aria-label={`Delete ${city}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                          {cityRestaurants.map((restaurant) => (
+                            <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                              <div className="font-medium text-slate-900">{restaurant.name}</div>
+                              <div>{restaurant.area || restaurant.cuisines?.join(", ") || "No extra details"}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Areas</CardTitle><Dialog open={areaOpen} onOpenChange={setAreaOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Area</Button></DialogTrigger><DialogContent><ModalHeader title="Add Area" onClose={() => setAreaOpen(false)} /><div className="space-y-4"><Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Enter area / city" /><ModalActions onCancel={() => setAreaOpen(false)} onSave={addArea} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+          <CardContent>
+            {areaOptions.length === 0 ? (
+              <div className="text-sm text-slate-500">No areas yet.</div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {areaOptions.map((area) => {
+                  const areaRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
+                  const isExpanded = expandedArea === area;
+                  return (
+                    <div key={area} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          className="flex items-center gap-3 text-left"
+                          onClick={() => setExpandedArea(isExpanded ? null : area)}
+                          aria-expanded={isExpanded}
+                        >
+                          <Badge variant="secondary">{area}</Badge>
+                          <span className="text-sm text-slate-500">{areaRestaurants.length} restaurant(s)</span>
+                          {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                        </button>
+                        <div className="ml-auto flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                            onClick={() => renameArea(area)}
+                            aria-label={`Rename ${area}`}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => deleteArea(area)}
+                            aria-label={`Delete ${area}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {isExpanded ? (
+                        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                          {areaRestaurants.map((restaurant) => (
+                            <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                              <div className="font-medium text-slate-900">{restaurant.name}</div>
+                              <div>{restaurant.cuisines?.length ? restaurant.cuisines.join(", ") : restaurant.fullAddress || "No extra details"}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader><CardTitle className="font-bold">Data Notes</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-600">
+            <div>Your data is saved to Firebase Cloud Firestore and synced per signed-in user.</div>
+            <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
+            <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
+            <div>The browser local copy is kept only as a migration and backup convenience, not as the primary source of truth.</div>
+            <div className="pt-2">
+              <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={seedSampleData}>
+                <Download className="mr-2 h-4 w-4" /> Load Seed Data
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </TabsContent>
+  );
+}
