@@ -112,6 +112,12 @@ const DEFAULT_AREAS = [
   "Zalka",
   "Zgharta",
 ];
+const DEFAULT_CITIES = [
+  "Beirut",
+  "Metn",
+  "Keserwan",
+  "Mount Lebanon",
+];
 const VALUE_OPTIONS = [
   "Very bad value",
   "Bad value",
@@ -159,9 +165,10 @@ const emptyRestaurantForm = {
   name: "",
   area: "",
   city: "",
-  locationText: "",
+  fullAddress: "",
   mapsLink: "",
-  cuisine: "",
+  cuisines: [],
+  cuisineInput: "",
   rating: "",
   notes: "",
   recommendedBy: "",
@@ -215,9 +222,10 @@ const inlineRestaurantFormDefault = {
   name: "",
   area: "",
   city: "",
-  locationText: "",
+  fullAddress: "",
   mapsLink: "",
-  cuisine: "",
+  cuisines: [],
+  cuisineInput: "",
   rating: "",
   notes: "",
   recommendedBy: "",
@@ -264,6 +272,7 @@ function createSampleData() {
   return {
     cuisines: DEFAULT_CUISINES,
     areas: DEFAULT_AREAS,
+    cities: DEFAULT_CITIES,
     tagColors: {
       cheesy: "#2563eb",
       breakfast: "#f59e0b",
@@ -279,9 +288,9 @@ function createSampleData() {
         name: "Cedar Bite",
         area: "Mar Mikhael",
         city: "Beirut",
-        locationText: "Beirut",
+        fullAddress: "Mar Mikhael, Beirut",
         mapsLink: "",
-        cuisine: "Lebanese",
+        cuisines: ["Lebanese"],
         rating: 4,
         notes: "Reliable for breakfast and quick late-night orders.",
         recommendedBy: "Rami",
@@ -293,9 +302,9 @@ function createSampleData() {
         name: "Falafel Hub",
         area: "Hamra",
         city: "Beirut",
-        locationText: "Beirut",
+        fullAddress: "Hamra, Beirut",
         mapsLink: "",
-        cuisine: "Middle Eastern",
+        cuisines: ["Middle Eastern"],
         rating: 5,
         notes: "Fast service and very consistent wraps.",
         recommendedBy: "Nadine",
@@ -307,9 +316,9 @@ function createSampleData() {
         name: "Nona Slice",
         area: "Dbayeh",
         city: "Metn",
-        locationText: "Mount Lebanon",
+        fullAddress: "Dbayeh, Metn",
         mapsLink: "",
-        cuisine: "Italian",
+        cuisines: ["Italian", "Pizza"],
         rating: 4,
         notes: "Good spot for pizza nights and dessert.",
         recommendedBy: "Karim",
@@ -321,9 +330,9 @@ function createSampleData() {
         name: "Sushi Loop",
         area: "Jal El Dib",
         city: "Metn",
-        locationText: "Metn",
+        fullAddress: "Jal El Dib, Metn",
         mapsLink: "",
-        cuisine: "Japanese",
+        cuisines: ["Japanese", "Sushi"],
         rating: 4,
         notes: "Clean flavors and good rice texture.",
         recommendedBy: "Lea",
@@ -335,9 +344,9 @@ function createSampleData() {
         name: "Burger Yard",
         area: "Jounieh",
         city: "Keserwan",
-        locationText: "Keserwan",
+        fullAddress: "Jounieh, Keserwan",
         mapsLink: "",
-        cuisine: "American",
+        cuisines: ["American", "Burgers"],
         rating: 4,
         notes: "Strong smash burgers and late-night fries.",
         recommendedBy: "Ziad",
@@ -349,9 +358,9 @@ function createSampleData() {
         name: "Sweet Leaf",
         area: "Badaro",
         city: "Beirut",
-        locationText: "Beirut",
+        fullAddress: "Badaro, Beirut",
         mapsLink: "",
-        cuisine: "Cafe",
+        cuisines: ["Cafe", "Dessert"],
         rating: 5,
         notes: "Excellent breakfast and dessert stop.",
         recommendedBy: "Tala",
@@ -818,18 +827,24 @@ function safeParse(value, fallback) {
 }
 
 function migrateData(parsed) {
-  const experiences = (parsed.experiences || []).map((e) => ({
+  const experiences = (parsed.experiences || []).map(({ restaurantId: _restaurantId, ...e }) => ({
     valueForMoney: typeof e.valueForMoney === "number" ? VALUE_OPTIONS[Math.max(0, Math.min(VALUE_OPTIONS.length - 1, e.valueForMoney - 1))] : e.valueForMoney || "",
     images: e.images || [],
     ...e,
   }));
 
   const restaurants = (parsed.restaurants || []).map((r) => ({
+    ...r,
     halalChecked: r.halalChecked ?? true,
     kidsFriendly: r.kidsFriendly ?? false,
     recommendedBy: r.recommendedBy || "",
     city: r.city || "",
-    ...r,
+    fullAddress: r.fullAddress || r.locationText || "",
+    cuisines: Array.isArray(r.cuisines)
+      ? r.cuisines
+      : typeof r.cuisine === "string"
+        ? [r.cuisine].filter(Boolean)
+        : [],
   }));
 
   const dishes = (parsed.dishes || []).map((d) => ({
@@ -859,6 +874,9 @@ function migrateData(parsed) {
   return {
     cuisines: parsed.cuisines?.length ? parsed.cuisines : DEFAULT_CUISINES,
     areas: parsed.areas?.length ? parsed.areas : DEFAULT_AREAS,
+    cities: parsed.cities?.length
+      ? parsed.cities
+      : [...new Set((parsed.restaurants || []).map((restaurant) => restaurant.city).filter(Boolean).concat(DEFAULT_CITIES))].sort(),
     tagColors: parsed.tagColors || {},
     restaurants,
     branches: parsed.branches || [],
@@ -1157,6 +1175,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [experienceOpen, setExperienceOpen] = useState(false);
   const [cuisineOpen, setCuisineOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
 
   const [restaurantForm, setRestaurantForm] = useState(emptyRestaurantForm);
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
@@ -1167,6 +1186,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [experienceRatingError, setExperienceRatingError] = useState("");
   const [newCuisine, setNewCuisine] = useState("");
   const [newArea, setNewArea] = useState("");
+  const [newCity, setNewCity] = useState("");
   const [duplicateDishSuggestion, setDuplicateDishSuggestion] = useState(null);
   const [showInlineRestaurantForDish, setShowInlineRestaurantForDish] = useState(false);
   const [showInlineRestaurantForExperience, setShowInlineRestaurantForExperience] = useState(false);
@@ -1176,6 +1196,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [expandedTag, setExpandedTag] = useState(null);
   const [expandedCuisine, setExpandedCuisine] = useState(null);
   const [expandedArea, setExpandedArea] = useState(null);
+  const [expandedCity, setExpandedCity] = useState(null);
 
   const importRef = useRef(null);
   const previousExperienceDishIdRef = useRef("");
@@ -1189,9 +1210,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const allAlertTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.alerts || []))].sort(), [data.dishes]);
 
   const areaOptions = useMemo(() => [...new Set([...(data.areas || []), ...data.restaurants.map((r) => r.area).filter(Boolean), ...data.branches.map((b) => b.area).filter(Boolean)])].sort(), [data]);
+  const cityOptions = useMemo(() => [...new Set([...(data.cities || []), ...data.restaurants.map((r) => r.city).filter(Boolean)])].sort(), [data]);
   const restaurantFilterAreaOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.area).filter(Boolean))].sort(), [data.restaurants]);
   const restaurantFilterCityOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.city).filter(Boolean))].sort(), [data.restaurants]);
-  const restaurantFilterCuisineOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.cuisine).filter(Boolean))].sort(), [data.restaurants]);
+  const restaurantFilterCuisineOptions = useMemo(() => [...new Set(data.restaurants.flatMap((r) => r.cuisines || []))].sort(), [data.restaurants]);
   const dishFilterRestaurantOptions = useMemo(
     () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.name).filter(Boolean))].sort(),
     [data.dishes, restaurantsById]
@@ -1201,7 +1223,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     [data.dishes, restaurantsById]
   );
   const dishFilterCuisineOptions = useMemo(
-    () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.cuisine).filter(Boolean))].sort(),
+    () => [...new Set(data.dishes.flatMap((dish) => restaurantsById[dish.restaurantId]?.cuisines || []))].sort(),
     [data.dishes, restaurantsById]
   );
   const dishStatusOptions = useMemo(() => {
@@ -1322,13 +1344,13 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         dish.recommendedBy,
         restaurant?.name,
         restaurant?.area,
-        restaurant?.cuisine,
+        ...(restaurant?.cuisines || []),
       ].join(" ").toLowerCase();
 
       if (q && !haystack.includes(q)) return false;
       if (restaurantFilter !== "all" && restaurant?.name !== restaurantFilter) return false;
       if (areaFilter !== "all" && restaurant?.area !== areaFilter) return false;
-      if (cuisineFilter !== "all" && restaurant?.cuisine !== cuisineFilter) return false;
+      if (cuisineFilter !== "all" && !(restaurant?.cuisines || []).includes(cuisineFilter)) return false;
       if (statusFilter === "wishlist" && !dish.isWishlist) return false;
       if (statusFilter === "tried" && dish.isWishlist) return false;
       return true;
@@ -1346,8 +1368,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         restaurant.name,
         restaurant.area,
         restaurant.city,
-        restaurant.cuisine,
-        restaurant.locationText,
+        ...(restaurant.cuisines || []),
+        restaurant.fullAddress,
         restaurant.notes,
         restaurant.recommendedBy,
         ...restaurantBranches.flatMap((branch) => [branch.name, branch.area, branch.locationText, branch.notes]),
@@ -1357,7 +1379,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       if (q && !haystack.includes(q)) return false;
       if (restaurantAreaFilter !== "all" && restaurant.area !== restaurantAreaFilter) return false;
       if (restaurantCityFilter !== "all" && restaurant.city !== restaurantCityFilter) return false;
-      if (restaurantCuisineFilter !== "all" && restaurant.cuisine !== restaurantCuisineFilter) return false;
+      if (restaurantCuisineFilter !== "all" && !(restaurant.cuisines || []).includes(restaurantCuisineFilter)) return false;
       if (restaurantKidsFilter === "kids" && !restaurant.kidsFriendly) return false;
       return true;
     });
@@ -1382,7 +1404,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const restaurantSummaries = useMemo(() => {
     return data.restaurants.map((restaurant) => {
       const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
-      const experiences = data.experiences.filter((e) => e.restaurantId === restaurant.id);
+      const dishIds = new Set(dishes.map((dish) => dish.id));
+      const experiences = data.experiences.filter((e) => dishIds.has(e.dishId));
       const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
       const avgDishPrice = average(dishes.map((dish) => dish.price));
       return { restaurant, dishesCount: dishes.length, experiencesCount: experiences.length, avgDishRating, avgDishPrice };
@@ -1435,9 +1458,9 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       name: form.name.trim(),
       area: form.area.trim(),
       city: form.city.trim(),
-      locationText: form.locationText.trim(),
+      fullAddress: form.fullAddress.trim(),
       mapsLink: form.mapsLink.trim(),
-      cuisine: form.cuisine,
+      cuisines: form.cuisines,
       rating: form.rating ? Number(form.rating) : null,
       notes: form.notes.trim(),
       recommendedBy: form.recommendedBy.trim(),
@@ -1453,9 +1476,9 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       name: restaurantForm.name.trim(),
       area: restaurantForm.area.trim(),
       city: restaurantForm.city.trim(),
-      locationText: restaurantForm.locationText.trim(),
+      fullAddress: restaurantForm.fullAddress.trim(),
       mapsLink: restaurantForm.mapsLink.trim(),
-      cuisine: restaurantForm.cuisine,
+      cuisines: restaurantForm.cuisines,
       rating: restaurantForm.rating ? Number(restaurantForm.rating) : null,
       notes: restaurantForm.notes.trim(),
       recommendedBy: restaurantForm.recommendedBy.trim(),
@@ -1469,6 +1492,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         ? prev.restaurants.map((r) => (r.id === restaurantForm.id ? payload : r))
         : [payload, ...prev.restaurants],
       areas: payload.area && !prev.areas.includes(payload.area) ? [...prev.areas, payload.area].sort() : prev.areas,
+      cities: payload.city && !prev.cities?.includes(payload.city) ? [...(prev.cities || []), payload.city].sort() : (prev.cities || []),
     }));
     resetRestaurantForm();
     setRestaurantOpen(false);
@@ -1515,6 +1539,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         ...prev,
         restaurants: [newRestaurant, ...prev.restaurants],
         areas: newRestaurant.area && !prev.areas.includes(newRestaurant.area) ? [...prev.areas, newRestaurant.area].sort() : prev.areas,
+        cities: newRestaurant.city && !prev.cities?.includes(newRestaurant.city) ? [...(prev.cities || []), newRestaurant.city].sort() : (prev.cities || []),
       }));
     }
 
@@ -1554,7 +1579,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       ? {
           id: uid(),
           dishId,
-          restaurantId,
           branchId: experienceForm.branchId === "none" ? null : experienceForm.branchId,
           date: experienceForm.date,
           orderType: experienceForm.orderType,
@@ -1582,7 +1606,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   }
 
   function saveExperience() {
-    let restaurantId = experienceForm.restaurantId;
     const selectedDish = dishesById[experienceForm.dishId];
 
     setExperienceFormError("");
@@ -1590,25 +1613,16 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (showInlineRestaurantForExperience) {
       if (!inlineRestaurantForExperience.name.trim()) return;
       const newRestaurant = createRestaurantRecord(inlineRestaurantForExperience);
-      restaurantId = newRestaurant.id;
       setData((prev) => ({
         ...prev,
         restaurants: [newRestaurant, ...prev.restaurants],
         areas: newRestaurant.area && !prev.areas.includes(newRestaurant.area) ? [...prev.areas, newRestaurant.area].sort() : prev.areas,
+        cities: newRestaurant.city && !prev.cities?.includes(newRestaurant.city) ? [...(prev.cities || []), newRestaurant.city].sort() : (prev.cities || []),
       }));
     }
 
     if (!experienceForm.dishId) {
       setExperienceFormError("Select a dish before saving the experience.");
-      return;
-    }
-
-    if (!restaurantId && selectedDish?.restaurantId) {
-      restaurantId = selectedDish.restaurantId;
-    }
-
-    if (!restaurantId) {
-      setExperienceFormError("Select a restaurant before saving the experience.");
       return;
     }
 
@@ -1620,7 +1634,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     const payload = {
       id: experienceForm.id || uid(),
       dishId: experienceForm.dishId,
-      restaurantId,
       branchId: experienceForm.branchId === "none" ? null : experienceForm.branchId,
       date: experienceForm.date,
       orderType: experienceForm.orderType,
@@ -1665,14 +1678,15 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({
       ...prev,
       cuisines: prev.cuisines.map((existingCuisine) => (existingCuisine === cuisine ? nextCuisine : existingCuisine)).sort(),
-      restaurants: prev.restaurants.map((restaurant) => (
-        restaurant.cuisine === cuisine ? { ...restaurant, cuisine: nextCuisine } : restaurant
-      )),
+      restaurants: prev.restaurants.map((restaurant) => ({
+        ...restaurant,
+        cuisines: (restaurant.cuisines || []).map((existingCuisine) => (existingCuisine === cuisine ? nextCuisine : existingCuisine)),
+      })),
     }));
   }
 
   function deleteCuisine(cuisine) {
-    const linkedRestaurants = data.restaurants.filter((restaurant) => restaurant.cuisine === cuisine);
+    const linkedRestaurants = data.restaurants.filter((restaurant) => (restaurant.cuisines || []).includes(cuisine));
     const linkedRestaurantNames = linkedRestaurants.map((restaurant) => restaurant.name).join(", ");
     const confirmed = window.confirm(
       linkedRestaurants.length > 0
@@ -1684,9 +1698,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({
       ...prev,
       cuisines: prev.cuisines.filter((existingCuisine) => existingCuisine !== cuisine),
-      restaurants: prev.restaurants.map((restaurant) => (
-        restaurant.cuisine === cuisine ? { ...restaurant, cuisine: "" } : restaurant
-      )),
+      restaurants: prev.restaurants.map((restaurant) => ({
+        ...restaurant,
+        cuisines: (restaurant.cuisines || []).filter((existingCuisine) => existingCuisine !== cuisine),
+      })),
     }));
   }
 
@@ -1695,6 +1710,13 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (!value || data.areas.includes(value)) return;
     setData((prev) => ({ ...prev, areas: [...prev.areas, value].sort() }));
     setNewArea("");
+  }
+
+  function addCity() {
+    const value = newCity.trim();
+    if (!value || cityOptions.some((city) => city.toLowerCase() === value.toLowerCase())) return;
+    setData((prev) => ({ ...prev, cities: [...(prev.cities || []), value].sort() }));
+    setNewCity("");
   }
 
   function renameArea(area) {
@@ -1737,6 +1759,43 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       )),
       branches: prev.branches.map((branch) => (
         branch.area === area ? { ...branch, area: "" } : branch
+      )),
+    }));
+  }
+
+  function renameCity(city) {
+    const nextCity = window.prompt("Rename city", city)?.trim();
+    if (!nextCity || nextCity === city) return;
+
+    const hasDuplicate = cityOptions.some((existingCity) => existingCity.toLowerCase() === nextCity.toLowerCase() && existingCity !== city);
+    if (hasDuplicate) {
+      window.alert("A city with that name already exists.");
+      return;
+    }
+
+    setData((prev) => ({
+      ...prev,
+      cities: [...new Set((prev.cities || []).map((existingCity) => (existingCity === city ? nextCity : existingCity)).concat(nextCity))].sort(),
+      restaurants: prev.restaurants.map((restaurant) => (
+        restaurant.city === city ? { ...restaurant, city: nextCity } : restaurant
+      )),
+    }));
+  }
+
+  function deleteCity(city) {
+    const linkedRestaurants = data.restaurants.filter((restaurant) => restaurant.city === city);
+    const confirmed = window.confirm(
+      linkedRestaurants.length > 0
+        ? `Delete city "${city}"? It will be removed from ${linkedRestaurants.length} restaurant(s).`
+        : `Delete city "${city}"?`,
+    );
+    if (!confirmed) return;
+
+    setData((prev) => ({
+      ...prev,
+      cities: (prev.cities || []).filter((existingCity) => existingCity !== city),
+      restaurants: prev.restaurants.map((restaurant) => (
+        restaurant.city === city ? { ...restaurant, city: "" } : restaurant
       )),
     }));
   }
@@ -1792,7 +1851,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       restaurants: prev.restaurants.filter((r) => r.id !== id),
       branches: prev.branches.filter((b) => b.restaurantId !== id),
       dishes: prev.dishes.filter((d) => d.restaurantId !== id),
-      experiences: prev.experiences.filter((e) => e.restaurantId !== id && !dishIds.includes(e.dishId)),
+      experiences: prev.experiences.filter((e) => !dishIds.includes(e.dishId)),
     }));
   }
 
@@ -1818,7 +1877,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({ ...prev, experiences: prev.experiences.filter((e) => e.id !== id) }));
   }
 
-  function editRestaurant(r) { setRestaurantForm({ ...emptyRestaurantForm, ...r, rating: r.rating ?? "" }); setRestaurantOpen(true); }
+  function editRestaurant(r) { setRestaurantForm({ ...emptyRestaurantForm, ...r, cuisineInput: "", rating: r.rating ?? "" }); setRestaurantOpen(true); }
   function editBranch(b) { setBranchFormError(""); setBranchForm({ ...emptyBranchForm, ...b }); setBranchOpen(true); }
   function editDish(d) {
     setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", price: d.price ?? "", recommendationInput: "", alertInput: "", tagInput: "" });
@@ -1832,11 +1891,11 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   }
   function editExperience(e) { setExperienceFormError(""); setExperienceRatingError(""); setExperienceForm({ ...emptyExperienceForm, ...e, branchId: e.branchId || "none", rating: e.rating ?? "", price: e.price ?? "", valueForMoney: e.valueForMoney || "" }); setExperienceOpen(true); }
 
-  function prepareLogExperience(restaurantId, dishId) {
+  function prepareLogExperience(_restaurantId, dishId) {
     const dish = dishesById[dishId];
     setExperienceFormError("");
     setExperienceRatingError("");
-    setExperienceForm({ ...emptyExperienceForm, restaurantId, dishId, branchId: "none", price: dish?.price ?? "" });
+    setExperienceForm({ ...emptyExperienceForm, restaurantId: dish?.restaurantId || "", dishId, branchId: "none", price: dish?.price ?? "" });
     setExperienceOpen(true);
     setTab("dishes");
   }
@@ -1870,12 +1929,15 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     event.target.value = "";
   }
 
-  const effectiveExperienceRestaurantId = showInlineRestaurantForExperience ? "" : experienceForm.restaurantId;
+  const selectedExperienceDish = dishesById[experienceForm.dishId];
+  const effectiveExperienceRestaurantId = showInlineRestaurantForExperience
+    ? ""
+    : selectedExperienceDish?.restaurantId || experienceForm.restaurantId;
   const dishOptionsForExperience = data.dishes.filter((d) => !effectiveExperienceRestaurantId || d.restaurantId === effectiveExperienceRestaurantId);
   const effectiveDishRestaurantId = showInlineRestaurantForDish ? "" : dishForm.restaurantId;
   const branchOptionsForDish = data.branches.filter((b) => b.restaurantId === effectiveDishRestaurantId);
   const branchOptionsForDishExperience = data.branches.filter((b) => b.restaurantId === effectiveDishRestaurantId);
-  const branchOptionsForExperience = data.branches.filter((b) => b.restaurantId === experienceForm.restaurantId);
+  const branchOptionsForExperience = data.branches.filter((b) => b.restaurantId === effectiveExperienceRestaurantId);
 
   function openExistingDish(dish) {
     editDish(dish);
@@ -1984,18 +2046,20 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         </SelectContent>
                       </Select>
                     </Field>
-                    <Field label="City"><Input value={restaurantForm.city} onChange={(e) => setRestaurantForm({ ...restaurantForm, city: e.target.value })} /></Field>
-                    <Field label="Location text"><Input value={restaurantForm.locationText} onChange={(e) => setRestaurantForm({ ...restaurantForm, locationText: e.target.value })} /></Field>
+                    <Field label="City"><Input list="restaurant-city-options" value={restaurantForm.city} onChange={(e) => setRestaurantForm({ ...restaurantForm, city: e.target.value })} placeholder="Select or type a city" /></Field>
+                    <Field label="Full address"><Input value={restaurantForm.fullAddress} onChange={(e) => setRestaurantForm({ ...restaurantForm, fullAddress: e.target.value })} /></Field>
                     <Field label="Google Maps link"><Input value={restaurantForm.mapsLink} onChange={(e) => setRestaurantForm({ ...restaurantForm, mapsLink: e.target.value })} /></Field>
-                    <Field label="Cuisine">
-                      <Select value={restaurantForm.cuisine || "__none"} onValueChange={(value) => setRestaurantForm({ ...restaurantForm, cuisine: value === "__none" ? "" : value })}>
-                        <SelectTrigger><SelectValue placeholder="Select cuisine" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none">No cuisine</SelectItem>
-                          {data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </Field>
+                    <div className="md:col-span-2">
+                      <TagInput
+                        label="Cuisines"
+                        color="blue"
+                        values={restaurantForm.cuisines}
+                        setValues={(vals) => setRestaurantForm((prev) => ({ ...prev, cuisines: vals }))}
+                        inputValue={restaurantForm.cuisineInput}
+                        setInputValue={(v) => setRestaurantForm((prev) => ({ ...prev, cuisineInput: v }))}
+                        suggestions={data.cuisines}
+                      />
+                    </div>
                     <Field label="Restaurant rating (1-5)"><Input type="number" min="1" max="5" value={restaurantForm.rating} onChange={(e) => setRestaurantForm({ ...restaurantForm, rating: e.target.value })} /></Field>
                     <Field label="Recommended by"><Input value={restaurantForm.recommendedBy} onChange={(e) => setRestaurantForm({ ...restaurantForm, recommendedBy: e.target.value })} /></Field>
                     <div className="flex items-center gap-3 pt-8"><Checkbox checked={restaurantForm.halalChecked} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
@@ -2034,13 +2098,18 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                             <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
                             <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Input placeholder="City" value={inlineRestaurantForDish.city} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, city: e.target.value })} />
-                          <Input placeholder="Location text" value={inlineRestaurantForDish.locationText} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, locationText: e.target.value })} />
+                          <Input list="restaurant-city-options" placeholder="Select or type a city" value={inlineRestaurantForDish.city} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, city: e.target.value })} />
+                          <Input placeholder="Full address" value={inlineRestaurantForDish.fullAddress} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, fullAddress: e.target.value })} />
                           <Input placeholder="Google Maps link" value={inlineRestaurantForDish.mapsLink} onChange={(e) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, mapsLink: e.target.value })} />
-                          <Select value={inlineRestaurantForDish.cuisine || "__none"} onValueChange={(value) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, cuisine: value === "__none" ? "" : value })}>
-                            <SelectTrigger><SelectValue placeholder="Select cuisine" /></SelectTrigger>
-                            <SelectContent><SelectItem value="__none">No cuisine</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent>
-                          </Select>
+                          <TagInput
+                            label="Cuisines"
+                            color="blue"
+                            values={inlineRestaurantForDish.cuisines}
+                            setValues={(vals) => setInlineRestaurantForDish((prev) => ({ ...prev, cuisines: vals }))}
+                            inputValue={inlineRestaurantForDish.cuisineInput}
+                            setInputValue={(v) => setInlineRestaurantForDish((prev) => ({ ...prev, cuisineInput: v }))}
+                            suggestions={data.cuisines}
+                          />
                           <div className="flex gap-4">
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForDish.halalChecked} onCheckedChange={(checked) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForDish.kidsFriendly} onCheckedChange={(checked) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
@@ -2161,13 +2230,13 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                       )}
                     </div>
                     <div className="md:col-span-2">
-                      <TagInput label="Dish tags" color="slate" values={dishForm.tags} setValues={(vals) => setDishForm({ ...dishForm, tags: vals })} inputValue={dishForm.tagInput} setInputValue={(v) => setDishForm({ ...dishForm, tagInput: v })} suggestions={allDishTags} />
+                      <TagInput label="Dish tags" color="slate" values={dishForm.tags} setValues={(vals) => setDishForm((prev) => ({ ...prev, tags: vals }))} inputValue={dishForm.tagInput} setInputValue={(v) => setDishForm((prev) => ({ ...prev, tagInput: v }))} suggestions={allDishTags} />
                     </div>
                     <div className="md:col-span-2">
-                      <TagInput label="Recommendations" color="blue" values={dishForm.recommendations} setValues={(vals) => setDishForm({ ...dishForm, recommendations: vals })} inputValue={dishForm.recommendationInput} setInputValue={(v) => setDishForm({ ...dishForm, recommendationInput: v })} suggestions={allRecommendationTags} />
+                      <TagInput label="Recommendations" color="blue" values={dishForm.recommendations} setValues={(vals) => setDishForm((prev) => ({ ...prev, recommendations: vals }))} inputValue={dishForm.recommendationInput} setInputValue={(v) => setDishForm((prev) => ({ ...prev, recommendationInput: v }))} suggestions={allRecommendationTags} />
                     </div>
                     <div className="md:col-span-2">
-                      <TagInput label="Alerts / warnings" color="red" values={dishForm.alerts} setValues={(vals) => setDishForm({ ...dishForm, alerts: vals })} inputValue={dishForm.alertInput} setInputValue={(v) => setDishForm({ ...dishForm, alertInput: v })} suggestions={allAlertTags} />
+                      <TagInput label="Alerts / warnings" color="red" values={dishForm.alerts} setValues={(vals) => setDishForm((prev) => ({ ...prev, alerts: vals }))} inputValue={dishForm.alertInput} setInputValue={(v) => setDishForm((prev) => ({ ...prev, alertInput: v }))} suggestions={allAlertTags} />
                     </div>
                     <div className="md:col-span-2"><Field label="Notes"><Textarea value={dishForm.notes} onChange={(e) => setDishForm({ ...dishForm, notes: e.target.value })} rows={4} /></Field></div>
                   </div>
@@ -2218,13 +2287,18 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                             <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
                             <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Input placeholder="City" value={inlineRestaurantForExperience.city} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, city: e.target.value })} />
-                          <Input placeholder="Location text" value={inlineRestaurantForExperience.locationText} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, locationText: e.target.value })} />
+                          <Input list="restaurant-city-options" placeholder="Select or type a city" value={inlineRestaurantForExperience.city} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, city: e.target.value })} />
+                          <Input placeholder="Full address" value={inlineRestaurantForExperience.fullAddress} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, fullAddress: e.target.value })} />
                           <Input placeholder="Google Maps link" value={inlineRestaurantForExperience.mapsLink} onChange={(e) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, mapsLink: e.target.value })} />
-                          <Select value={inlineRestaurantForExperience.cuisine || "__none"} onValueChange={(value) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, cuisine: value === "__none" ? "" : value })}>
-                            <SelectTrigger><SelectValue placeholder="Select cuisine" /></SelectTrigger>
-                            <SelectContent><SelectItem value="__none">No cuisine</SelectItem>{data.cuisines.map((cuisine) => <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>)}</SelectContent>
-                          </Select>
+                          <TagInput
+                            label="Cuisines"
+                            color="blue"
+                            values={inlineRestaurantForExperience.cuisines}
+                            setValues={(vals) => setInlineRestaurantForExperience((prev) => ({ ...prev, cuisines: vals }))}
+                            inputValue={inlineRestaurantForExperience.cuisineInput}
+                            setInputValue={(v) => setInlineRestaurantForExperience((prev) => ({ ...prev, cuisineInput: v }))}
+                            suggestions={data.cuisines}
+                          />
                           <div className="flex gap-4">
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForExperience.halalChecked} onCheckedChange={(checked) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForExperience.kidsFriendly} onCheckedChange={(checked) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
@@ -2306,6 +2380,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
           </div>
         </motion.div>
 
+        <datalist id="restaurant-city-options">
+          {cityOptions.map((city) => <option key={city} value={city} />)}
+        </datalist>
+
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 gap-2 rounded-2xl bg-transparent p-0 md:grid-cols-5">
             <TabsTrigger value="dashboard" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.dashboard}`}>Dashboard</TabsTrigger>
@@ -2325,7 +2403,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                 ["Wishlist", dashboardStats.wishlistDishes, <Heart className="h-5 w-5" key="e" />],
                 ["Avg Dish Rating", dashboardStats.avgDishRating.toFixed(1), <Filter className="h-5 w-5" key="f" />],
               ].map(([label, value, icon]) => (
-                <Card key={label} className={`rounded-3xl border shadow-sm ${DASHBOARD_CARD_STYLES[label] || "border-slate-200 bg-white"}`}><CardContent className="flex items-center justify-between p-5"><div><div className="text-sm text-slate-600">{label}</div><div className="mt-1 text-2xl font-bold">{value}</div></div><div className="text-slate-500">{icon}</div></CardContent></Card>
+                <Card key={label} className={`rounded-3xl border shadow-sm ${DASHBOARD_CARD_STYLES[label] || "border-slate-200 bg-white"}`}><CardContent className="flex items-center justify-between p-5"><div><div className="text-sm font-bold text-slate-600">{label}</div><div className="mt-1 text-2xl font-bold">{value}</div></div><div className="text-slate-500">{icon}</div></CardContent></Card>
               ))}
             </div>
 
@@ -2335,7 +2413,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                 <CardContent className="space-y-3">
                   {recentExperiences.length === 0 ? <div className="text-sm text-slate-500">No experiences yet.</div> : recentExperiences.map((experience) => {
                     const dish = dishesById[experience.dishId];
-                    const restaurant = restaurantsById[experience.restaurantId];
+                    const restaurant = dish ? restaurantsById[dish.restaurantId] : null;
                     const branch = experience.branchId ? branchesById[experience.branchId] : null;
                     return (
                       <div key={experience.id} className="rounded-2xl border p-4">
@@ -2383,7 +2461,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                           <div className="text-sm text-slate-500">
                             {restaurant.area || "No area"}
                             {restaurant.city ? ` • ${restaurant.city}` : ""}
-                            {restaurant.cuisine ? ` • ${restaurant.cuisine}` : " • No cuisine"}
+                            {restaurant.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : " • No cuisine"}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -2475,7 +2553,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         <div className="mt-3 flex flex-wrap gap-2.5 text-xs text-slate-600">
                           {restaurant.area && <Badge variant="secondary">{restaurant.area}</Badge>}
                           {restaurant.city && <Badge variant="secondary">{restaurant.city}</Badge>}
-                          {restaurant.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
+                          {(restaurant.cuisines || []).map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}
                           {restaurant.halalChecked && <Badge variant="outline">Halal checked</Badge>}
                           {restaurant.kidsFriendly && <Badge className="!border-blue-200 !bg-blue-100 !text-blue-700">Kids friendly</Badge>}
                         </div>
@@ -2499,7 +2577,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                           <span>Avg dish price:</span>
                           <span>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
                         </div>
-                        {restaurant.locationText && <div><span className="font-medium text-slate-900">Location:</span> {restaurant.locationText}</div>}
+                        {restaurant.fullAddress && <div><span className="font-medium text-slate-900">Full address:</span> {restaurant.fullAddress}</div>}
                         {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
                         {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-5 w-5 text-red-500" /> Open Maps Link</a>}
                       </div>
@@ -2624,7 +2702,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                 <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
                                 <div className="mt-1 text-xs text-slate-500">
                                   {restaurant?.area || "No area"}
-                                  {restaurant?.cuisine ? ` • ${restaurant.cuisine}` : ""}
+                                  {restaurant?.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : ""}
                                   {branch ? ` • ${branch.name}` : ""}
                                 </div>
                               </td>
@@ -2698,7 +2776,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                       <div className="flex flex-wrap gap-2">
                         {dish.isWishlist ? <Badge className="!border-amber-200 !bg-amber-100 !text-amber-800">Wishlist</Badge> : <Badge className="!border-emerald-200 !bg-emerald-100 !text-emerald-800">Tried</Badge>}
                         {restaurant?.area && <Badge variant="secondary">{restaurant.area}</Badge>}
-                        {restaurant?.cuisine && <Badge variant="secondary">{restaurant.cuisine}</Badge>}
+                        {(restaurant?.cuisines || []).map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}
                         {branch && <Badge variant="secondary">Branch: {branch.name}</Badge>}
                         {dish.portionSize && dish.portionSize !== "Adult" && <Badge variant="outline">{dish.portionSize}</Badge>}
                         {(dish.tags || []).map((tag) => <Badge key={tag} variant="outline" style={tagChipStyle(data.tagColors?.[tag])}>{tag}</Badge>)}
@@ -2744,7 +2822,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                   <tbody className="divide-y divide-slate-200">
                   {[...data.experiences].sort((a, b) => new Date(b.date) - new Date(a.date)).map((experience) => {
                     const dish = dishesById[experience.dishId];
-                    const restaurant = restaurantsById[experience.restaurantId];
+                    const restaurant = dish ? restaurantsById[dish.restaurantId] : null;
                     const branch = experience.branchId ? branchesById[experience.branchId] : null;
                     return (
                       <tr key={experience.id} className="align-top odd:bg-white even:bg-slate-50/70">
@@ -2772,10 +2850,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                         </td>
                         <td className="px-5 py-4 text-slate-700">
                           <div className="font-medium text-slate-900">{restaurant?.name || "Unknown restaurant"}</div>
-                          {restaurant?.area || restaurant?.cuisine ? (
+                          {restaurant?.area || restaurant?.cuisines?.length ? (
                             <div className="mt-1 text-sm text-slate-500">
                               {restaurant?.area || "No area"}
-                              {restaurant?.cuisine ? ` • ${restaurant.cuisine}` : ""}
+                              {restaurant?.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : ""}
                             </div>
                           ) : null}
                         </td>
@@ -2879,7 +2957,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                   ) : (
                     <div className="flex flex-wrap gap-3">
                       {data.cuisines.map((cuisine) => {
-                        const cuisineRestaurants = data.restaurants.filter((restaurant) => restaurant.cuisine === cuisine);
+                        const cuisineRestaurants = data.restaurants.filter((restaurant) => (restaurant.cuisines || []).includes(cuisine));
                         const isExpanded = expandedCuisine === cuisine;
                         return (
                           <div key={cuisine} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
@@ -2918,7 +2996,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                 {cuisineRestaurants.map((restaurant) => (
                                   <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
                                     <div className="font-medium text-slate-900">{restaurant.name}</div>
-                                    <div>{restaurant.area || restaurant.locationText || "No location"}</div>
+                                    <div>{restaurant.area || restaurant.fullAddress || "No location"}</div>
                                   </div>
                                 ))}
                               </div>
@@ -2980,7 +3058,69 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                 {areaRestaurants.map((restaurant) => (
                                   <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
                                     <div className="font-medium text-slate-900">{restaurant.name}</div>
-                                    <div>{restaurant.cuisine || restaurant.locationText || "No extra details"}</div>
+                                    <div>{restaurant.cuisines?.length ? restaurant.cuisines.join(", ") : restaurant.fullAddress || "No extra details"}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className={SECTION_CONTAINER}>
+              <Card className="rounded-3xl border-0 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between"><CardTitle className="font-bold">Cities</CardTitle><Dialog open={cityOpen} onOpenChange={setCityOpen}><DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add City</Button></DialogTrigger><DialogContent><ModalHeader title="Add City" onClose={() => setCityOpen(false)} /><div className="space-y-4"><Input value={newCity} onChange={(e) => setNewCity(e.target.value)} placeholder="Enter city name" /><ModalActions onCancel={() => setCityOpen(false)} onSave={addCity} saveLabel="Save" /></div></DialogContent></Dialog></CardHeader>
+                <CardContent>
+                  {cityOptions.length === 0 ? (
+                    <div className="text-sm text-slate-500">No cities yet.</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {cityOptions.map((city) => {
+                        const cityRestaurants = data.restaurants.filter((restaurant) => restaurant.city === city);
+                        const isExpanded = expandedCity === city;
+                        return (
+                          <div key={city} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="flex items-center gap-3 text-left"
+                                onClick={() => setExpandedCity(isExpanded ? null : city)}
+                                aria-expanded={isExpanded}
+                              >
+                                <Badge variant="secondary">{city}</Badge>
+                                <span className="text-sm text-slate-500">{cityRestaurants.length} restaurant(s)</span>
+                                {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                              </button>
+                              <div className="ml-auto flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                                  onClick={() => renameCity(city)}
+                                  aria-label={`Rename ${city}`}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-700"
+                                  onClick={() => deleteCity(city)}
+                                  aria-label={`Delete ${city}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            {isExpanded ? (
+                              <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                                {cityRestaurants.map((restaurant) => (
+                                  <div key={restaurant.id} className="rounded-xl bg-white px-3 py-2 text-sm text-slate-600">
+                                    <div className="font-medium text-slate-900">{restaurant.name}</div>
+                                    <div>{restaurant.area || restaurant.cuisines?.join(", ") || "No extra details"}</div>
                                   </div>
                                 ))}
                               </div>
