@@ -1,0 +1,122 @@
+export const STORAGE_KEY = "dish-tracker-webapp-v2";
+export const APP_VERSION = "v0.2.0";
+export const CLOUD_DOC_VERSION = 1;
+export const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
+export const PORTION_SIZES = [
+  "Taster",
+  "Kids",
+  "Not enough for adult",
+  "Adult",
+  "Big adult",
+  "Shareable",
+  "Huge",
+];
+export const DEFAULT_CUISINES = [
+  "Lebanese",
+  "Italian",
+  "Japanese",
+  "American",
+  "Mexican",
+  "Indian",
+  "Chinese",
+  "Thai",
+  "Turkish",
+  "French",
+  "Fast Food",
+  "Bakery",
+  "Dessert",
+  "Cafe",
+  "Pizza",
+  "Burgers",
+  "Seafood",
+  "Sushi",
+  "Middle Eastern",
+];
+export const DEFAULT_AREAS = [
+  "Achrafieh",
+  "Aley",
+  "Amchit",
+  "Antelias",
+  "Baabda",
+  "Baalbek",
+  "Batroun",
+  "Beirut",
+  "Bhamdoun",
+  "Bint Jbeil",
+  "Broummana",
+  "Byblos",
+  "Chekka",
+  "Chouf",
+  "Dbayeh",
+  "Deir El Qamar",
+  "Ehden",
+  "Halat",
+  "Hamra",
+  "Hazmieh",
+  "Jal El Dib",
+  "Jbeil",
+  "Jezzine",
+  "Jounieh",
+  "Kaslik",
+  "Kfardebian",
+  "Koura",
+  "Mansourieh",
+  "Mar Mikhael",
+  "Matn",
+  "Mina",
+  "Mkalles",
+  "Nabatieh",
+  "Saida",
+  "Sin El Fil",
+  "Sour",
+  "Tripoli",
+  "Verdun",
+  "Zahle",
+  "Zalka",
+  "Zgharta",
+];
+export const DEFAULT_CITIES = [
+  "Beirut",
+  "Metn",
+  "Keserwan",
+  "Mount Lebanon",
+];
+export const VALUE_OPTIONS = [
+  "Very bad value",
+  "Bad value",
+  "Okay value",
+  "Good value",
+  "Great value",
+  "Excellent value",
+];
+export const TOP_NAV_STYLES = {
+  dashboard: "bg-sky-50 text-sky-900 border-sky-200 data-[state=active]:bg-sky-100 data-[state=active]:text-sky-950 data-[state=active]:ring-2 data-[state=active]:ring-sky-300",
+  restaurants: "bg-emerald-50 text-emerald-900 border-emerald-200 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-950 data-[state=active]:ring-2 data-[state=active]:ring-emerald-300",
+  dishes: "bg-amber-50 text-amber-900 border-amber-200 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-950 data-[state=active]:ring-2 data-[state=active]:ring-amber-300",
+  experiences: "bg-rose-50 text-rose-900 border-rose-200 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-950 data-[state=active]:ring-2 data-[state=active]:ring-rose-300",
+  settings: "bg-violet-50 text-violet-900 border-violet-200 data-[state=active]:bg-violet-100 data-[state=active]:text-violet-950 data-[state=active]:ring-2 data-[state=active]:ring-violet-300",
+};
+export const DASHBOARD_CARD_STYLES = {
+  Restaurants: "border-emerald-200 bg-emerald-50",
+  Dishes: "border-amber-200 bg-amber-50",
+  Experiences: "border-rose-200 bg-rose-50",
+  Tried: "border-sky-200 bg-sky-50",
+  Wishlist: "border-pink-200 bg-pink-50",
+  "Avg Dish Rating": "border-violet-200 bg-violet-50",
+};
+export const SECTION_CONTAINER = "rounded-[2rem] border border-slate-200 bg-slate-100/70 p-4 md:p-5";
+export const TOP_ACTION_BUTTON_STYLES = {
+  addDish: "!border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700",
+  addRestaurant: "!border-emerald-200 !bg-emerald-50 !text-emerald-900 hover:!bg-emerald-100",
+  addExperience: "!border-rose-200 !bg-rose-50 !text-rose-900 hover:!bg-rose-100",
+  import: "!border-sky-200 !bg-sky-50 !text-sky-900 hover:!bg-sky-100",
+  export: "!border-violet-200 !bg-violet-50 !text-violet-900 hover:!bg-violet-100",
+  auth: "!border-slate-300 !bg-slate-100 !text-slate-800 hover:!bg-slate-200",
+};
+export const SAVE_BUTTON_STYLE = "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700";
+export const CANCEL_BUTTON_STYLE = "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200";
+export const EDIT_BUTTON_STYLE = "!border-blue-300 !bg-blue-100 !text-blue-800 hover:!bg-blue-200";
+export const DELETE_BUTTON_STYLE = "!border-red-300 !bg-red-100 !text-red-800 hover:!bg-red-200";
+export const VIEW_BUTTON_STYLE = "!border-sky-300 !bg-sky-100 !text-sky-800 hover:!bg-sky-200";
+export const LOG_BUTTON_STYLE = "!border-amber-300 !bg-amber-100 !text-amber-800 hover:!bg-amber-200";
+export const LOG_EXPERIENCE_BUTTON_STYLE = "!border-violet-300 !bg-violet-100 !text-violet-800 hover:!bg-violet-200";
