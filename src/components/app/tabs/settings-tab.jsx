@@ -1,4 +1,6 @@
-import { ChevronDown, ChevronUp, Download, Pencil, Plus, Trash2 } from "lucide-react";
+import { useRef } from "react";
+
+import { ChevronDown, ChevronUp, Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,7 @@ import { tagChipStyle } from "@/lib/app/data";
 import { ModalActions, ModalHeader } from "../shared";
 
 export function SettingsTab(props) {
+  const importRef = useRef(null);
   const {
     allDishTags,
     data,
@@ -51,6 +54,8 @@ export function SettingsTab(props) {
     renameArea,
     deleteArea,
     seedSampleData,
+    exportJson,
+    importJson,
   } = props;
 
   return (
@@ -310,7 +315,14 @@ export function SettingsTab(props) {
             <div>Use <span className="font-medium text-slate-900">Export JSON</span> regularly to keep a portable backup file.</div>
             <div>Images are stored inside your local browser data and JSON export, so large image libraries can make the file bigger.</div>
             <div>The browser local copy is kept only as a migration and backup convenience, not as the primary source of truth.</div>
-            <div className="pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.export} onClick={exportJson}>
+                <Download className="mr-2 h-4 w-4" /> Export JSON
+              </Button>
+              <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={() => importRef.current?.click()}>
+                <Upload className="mr-2 h-4 w-4" /> Import JSON
+              </Button>
+              <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
               <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={seedSampleData}>
                 <Download className="mr-2 h-4 w-4" /> Load Seed Data
               </Button>

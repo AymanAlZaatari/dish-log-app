@@ -1,5 +1,5 @@
 export const STORAGE_KEY = "dish-tracker-webapp-v2";
-export const APP_VERSION = "v0.2.12";
+export const APP_VERSION = "v0.2.15";
 export const CLOUD_DOC_VERSION = 1;
 export const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 export const PORTION_SIZES = [
@@ -111,7 +111,7 @@ export const TOP_ACTION_BUTTON_STYLES = {
   addExperience: "!border-rose-200 !bg-rose-50 !text-rose-900 hover:!bg-rose-100",
   import: "!border-sky-200 !bg-sky-50 !text-sky-900 hover:!bg-sky-100",
   export: "!border-violet-200 !bg-violet-50 !text-violet-900 hover:!bg-violet-100",
-  auth: "!border-slate-300 !bg-slate-100 !text-slate-800 hover:!bg-slate-200",
+  auth: "!border-red-300 !bg-red-100 !text-red-800 hover:!bg-red-200",
 };
 export const SAVE_BUTTON_STYLE = "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700";
 export const CANCEL_BUTTON_STYLE = "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200";

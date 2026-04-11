@@ -4,8 +4,6 @@ import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebas
 import { onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import {
   Plus,
-  Upload,
-  Download,
   Trash2,
   X,
   Pencil,
@@ -119,7 +117,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [expandedArea, setExpandedArea] = useState(null);
   const [expandedCity, setExpandedCity] = useState(null);
 
-  const importRef = useRef(null);
   const previousExperienceDishIdRef = useRef("");
 
   const restaurantsById = useMemo(() => Object.fromEntries(data.restaurants.map((r) => [r.id, r])), [data.restaurants]);
@@ -947,11 +944,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             </div>
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
               <Button variant="outline" className={`order-6 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.auth}`} onClick={onLogout}><LogOut className="mr-2 h-4 w-4" /> Sign Out</Button>
-              <Button variant="outline" className={`order-5 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.export}`} onClick={() => exportData(data)}><Download className="mr-2 h-4 w-4" /> Export JSON</Button>
-              <Button variant="outline" className={`order-4 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.import}`} onClick={() => importRef.current?.click()}><Upload className="mr-2 h-4 w-4" /> Import JSON</Button>
-              <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
-
-
               <Dialog open={restaurantOpen} onOpenChange={(open) => { setRestaurantOpen(open); if (!open) resetRestaurantForm(); }}>
                 <DialogTrigger asChild><Button variant="outline" className={`order-2 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addRestaurant}`}><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
                 <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-auto sm:max-w-2xl">
@@ -1433,6 +1425,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             renameArea={renameArea}
             deleteArea={deleteArea}
             seedSampleData={seedSampleData}
+            exportJson={() => exportData(data)}
+            importJson={importJson}
           />
         </Tabs>
       </div>
