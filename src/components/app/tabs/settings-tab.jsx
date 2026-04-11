@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { ChevronDown, ChevronUp, Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, LogOut, Pencil, Plus, Trash2, Upload } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,7 @@ export function SettingsTab(props) {
     seedSampleData,
     exportJson,
     importJson,
+    onLogout,
   } = props;
 
   return (
@@ -325,6 +326,11 @@ export function SettingsTab(props) {
               <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={importJson} />
               <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.import} onClick={seedSampleData}>
                 <Download className="mr-2 h-4 w-4" /> Load Seed Data
+              </Button>
+            </div>
+            <div className="border-t border-slate-200 pt-4">
+              <Button type="button" variant="outline" className={TOP_ACTION_BUTTON_STYLES.auth} onClick={onLogout}>
+                <LogOut className="mr-2 h-4 w-4" /> Sign Out
               </Button>
             </div>
           </CardContent>

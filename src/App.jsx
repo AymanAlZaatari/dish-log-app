@@ -8,7 +8,6 @@ import {
   X,
   Pencil,
   Image as ImageIcon,
-  LogOut,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -943,7 +942,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
               </div>
             </div>
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
-              <Button variant="outline" className={`order-6 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.auth}`} onClick={onLogout}><LogOut className="mr-2 h-4 w-4" /> Sign Out</Button>
               <Dialog open={restaurantOpen} onOpenChange={(open) => { setRestaurantOpen(open); if (!open) resetRestaurantForm(); }}>
                 <DialogTrigger asChild><Button variant="outline" className={`order-2 w-full justify-center sm:w-auto ${TOP_ACTION_BUTTON_STYLES.addRestaurant}`}><Plus className="mr-2 h-4 w-4" /> Add Restaurant</Button></DialogTrigger>
                 <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-auto sm:max-w-2xl">
@@ -1427,6 +1425,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             seedSampleData={seedSampleData}
             exportJson={() => exportData(data)}
             importJson={importJson}
+            onLogout={onLogout}
           />
         </Tabs>
       </div>
