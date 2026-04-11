@@ -54,15 +54,20 @@ export function RestaurantsTab({
   prepareLogExperience,
   editBranch,
   deleteBranch,
+  defaultStatsView,
 }) {
   const [expandAllDishes, setExpandAllDishes] = useState(false);
   const [expandedDishRestaurantIds, setExpandedDishRestaurantIds] = useState([]);
-  const [statsView, setStatsView] = useState("cards");
+  const [statsView, setStatsView] = useState(defaultStatsView || "cards");
 
   useEffect(() => {
     const visibleRestaurantIds = new Set(filteredRestaurants.map((restaurant) => restaurant.id));
     setExpandedDishRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
   }, [filteredRestaurants]);
+
+  useEffect(() => {
+    setStatsView(defaultStatsView || "cards");
+  }, [defaultStatsView]);
 
   const toggleRestaurantDishes = (restaurantId) => {
     if (expandAllDishes) {

@@ -42,7 +42,7 @@ export function DashboardTab({
                 <span className="text-xl font-bold text-slate-900 sm:text-2xl">{value}</span>
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-extrabold leading-tight text-slate-700 sm:text-sm">{label}</div>
+                <div className="text-sm font-extrabold leading-tight text-slate-700 sm:text-[0.95rem]">{label}</div>
               </div>
             </CardContent>
           </Card>

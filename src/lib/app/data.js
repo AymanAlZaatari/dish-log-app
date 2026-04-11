@@ -48,6 +48,9 @@ export function createSampleData() {
   const pistachioCheesecakeId = uid();
 
   return {
+    settings: {
+      defaultRestaurantStatsView: "cards",
+    },
     cuisines: DEFAULT_CUISINES,
     areas: DEFAULT_AREAS,
     cities: DEFAULT_CITIES,
@@ -605,6 +608,8 @@ export function safeParse(value, fallback) {
 }
 
 export function migrateData(parsed) {
+  const defaultRestaurantStatsView = parsed.settings?.defaultRestaurantStatsView === "rows" ? "rows" : "cards";
+
   const experiences = (parsed.experiences || []).map(({ restaurantId: _restaurantId, ...e }) => ({
     valueForMoney: typeof e.valueForMoney === "number" ? VALUE_OPTIONS[Math.max(0, Math.min(VALUE_OPTIONS.length - 1, e.valueForMoney - 1))] : e.valueForMoney || "",
     images: e.images || [],
@@ -650,6 +655,9 @@ export function migrateData(parsed) {
   }));
 
   return {
+    settings: {
+      defaultRestaurantStatsView,
+    },
     cuisines: parsed.cuisines?.length ? parsed.cuisines : DEFAULT_CUISINES,
     areas: parsed.areas?.length ? parsed.areas : DEFAULT_AREAS,
     cities: parsed.cities?.length

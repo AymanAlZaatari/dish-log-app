@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
 
 import { SECTION_CONTAINER, TOP_ACTION_BUTTON_STYLES } from "@/lib/app/constants";
@@ -57,6 +58,8 @@ export function SettingsTab(props) {
     exportJson,
     importJson,
     onLogout,
+    defaultRestaurantStatsView,
+    setDefaultRestaurantStatsView,
   } = props;
 
   return (
@@ -304,6 +307,24 @@ export function SettingsTab(props) {
                 })}
               </div>
             )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader><CardTitle className="font-bold">View Defaults</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-600">
+            <div>Choose the default stats view used when you open the Restaurants tab.</div>
+            <div className="max-w-xs">
+              <Select value={defaultRestaurantStatsView} onValueChange={setDefaultRestaurantStatsView}>
+                <SelectTrigger><SelectValue placeholder="Default restaurant stats view" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cards">KPI</SelectItem>
+                  <SelectItem value="rows">Rows</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
       </div>

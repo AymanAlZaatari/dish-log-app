@@ -1,5 +1,5 @@
 export const STORAGE_KEY = "dish-tracker-webapp-v2";
-export const APP_VERSION = "v0.2.21";
+export const APP_VERSION = "v0.2.23";
 export const CLOUD_DOC_VERSION = 1;
 export const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
 export const PORTION_SIZES = [

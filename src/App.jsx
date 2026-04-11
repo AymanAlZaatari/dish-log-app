@@ -121,6 +121,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const restaurantsById = useMemo(() => Object.fromEntries(data.restaurants.map((r) => [r.id, r])), [data.restaurants]);
   const branchesById = useMemo(() => Object.fromEntries(data.branches.map((b) => [b.id, b])), [data.branches]);
   const dishesById = useMemo(() => Object.fromEntries(data.dishes.map((d) => [d.id, d])), [data.dishes]);
+  const defaultRestaurantStatsView = data.settings?.defaultRestaurantStatsView === "rows" ? "rows" : "cards";
 
   const allDishTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.tags || []))].sort(), [data.dishes]);
   const allRecommendationTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.recommendations || []))].sort(), [data.dishes]);
@@ -822,6 +823,17 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setExperienceOpen(true);
   }
 
+  function setDefaultRestaurantStatsView(value) {
+    const nextValue = value === "rows" ? "rows" : "cards";
+    setData((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        defaultRestaurantStatsView: nextValue,
+      },
+    }));
+  }
+
   function importJson(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1342,6 +1354,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             prepareLogExperience={prepareLogExperience}
             editBranch={editBranch}
             deleteBranch={deleteBranch}
+            defaultStatsView={defaultRestaurantStatsView}
           />
 
           <DishesTab
@@ -1426,6 +1439,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             exportJson={() => exportData(data)}
             importJson={importJson}
             onLogout={onLogout}
+            defaultRestaurantStatsView={defaultRestaurantStatsView}
+            setDefaultRestaurantStatsView={setDefaultRestaurantStatsView}
           />
         </Tabs>
       </div>
