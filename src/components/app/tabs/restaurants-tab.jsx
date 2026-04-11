@@ -57,6 +57,7 @@ export function RestaurantsTab({
 }) {
   const [expandAllDishes, setExpandAllDishes] = useState(false);
   const [expandedDishRestaurantIds, setExpandedDishRestaurantIds] = useState([]);
+  const [statsView, setStatsView] = useState("cards");
 
   useEffect(() => {
     const visibleRestaurantIds = new Set(filteredRestaurants.map((restaurant) => restaurant.id));
@@ -130,7 +131,49 @@ export function RestaurantsTab({
               Search and filter restaurants by name, branch, dish, area, city, or cuisine.
             </p>
           </div>
-          <div className="md:shrink-0">
+          <div className="flex flex-col gap-3 md:items-end">
+            <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1">
+              <Button
+                type="button"
+                variant={statsView === "cards" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setStatsView("cards")}
+                aria-pressed={statsView === "cards"}
+              >
+                KPI
+              </Button>
+              <Button
+                type="button"
+                variant={statsView === "compact" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setStatsView("compact")}
+                aria-pressed={statsView === "compact"}
+              >
+                Compact
+              </Button>
+              <Button
+                type="button"
+                variant={statsView === "inline" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setStatsView("inline")}
+                aria-pressed={statsView === "inline"}
+              >
+                Inline
+              </Button>
+              <Button
+                type="button"
+                variant={statsView === "rows" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setStatsView("rows")}
+                aria-pressed={statsView === "rows"}
+              >
+                Rows
+              </Button>
+            </div>
             <Button
               type="button"
               variant="outline"
@@ -183,21 +226,96 @@ export function RestaurantsTab({
                   </div>
                 </CardHeader>
                 <CardContent className="px-6 pb-6 space-y-4 text-sm text-slate-600">
-                  <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
-                    <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
-                      <span>Rest. Score:</span>
-                      {restaurant.rating ? <><span>({Number(restaurant.rating).toFixed(1)})</span><Stars value={restaurant.rating} /></> : <span>—</span>}
-                    </div>
-                    <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(avgDishRating)}`}>
-                      <span>Avg Dish Rating:</span>
-                      {avgDishRating ? <><span>({avgDishRating.toFixed(1)})</span><Stars value={avgDishRating} /></> : <span>—</span>}
-                    </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.8rem] font-semibold text-emerald-800">
-                      <span>Avg Dish Price:</span>
-                      <span>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
-                    </div>
+                  <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:gap-3 sm:p-4">
+                    {statsView === "cards" ? (
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
+                          <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
+                          {restaurant.rating ? (
+                            <>
+                              <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{Number(restaurant.rating).toFixed(1)}</div>
+                              <div className="mt-2 hidden sm:flex sm:justify-center"><Stars value={restaurant.rating} /></div>
+                            </>
+                          ) : (
+                            <div className="mt-2 text-lg font-bold text-slate-400 sm:mt-3 sm:text-2xl">—</div>
+                          )}
+                        </div>
+                        <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(avgDishRating)}`}>
+                          <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
+                          {avgDishRating ? (
+                            <>
+                              <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating.toFixed(1)}</div>
+                              <div className="mt-2 hidden sm:flex sm:justify-center"><Stars value={avgDishRating} /></div>
+                            </>
+                          ) : (
+                            <div className="mt-2 text-lg font-bold text-slate-400 sm:mt-3 sm:text-2xl">—</div>
+                          )}
+                        </div>
+                        <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
+                          <div className="text-[0.68rem] font-semibold leading-tight text-emerald-700 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Price</div>
+                          <div className="mt-2 text-lg font-bold sm:mt-3 sm:text-2xl">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
+                        </div>
+                      </div>
+                    ) : statsView === "compact" ? (
+                      <div className="rounded-2xl border border-slate-200 bg-white">
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <div>
+                            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Restaurant Score</div>
+                            <div className="mt-1 text-xl font-bold text-slate-900">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
+                          </div>
+                          <div className="hidden sm:block">{restaurant.rating ? <Stars value={restaurant.rating} /> : null}</div>
+                        </div>
+                        <div className="border-t border-slate-200" />
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <div>
+                            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Avg Dish Rating</div>
+                            <div className="mt-1 text-xl font-bold text-slate-900">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
+                          </div>
+                          <div className="hidden sm:block">{avgDishRating ? <Stars value={avgDishRating} /> : null}</div>
+                        </div>
+                        <div className="border-t border-slate-200" />
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <div>
+                            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">Avg Dish Price</div>
+                            <div className="mt-1 text-xl font-bold text-emerald-900">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : statsView === "inline" ? (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className={`min-w-0 rounded-full border bg-white px-3 py-2 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
+                          <div className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Score</div>
+                          <div className="mt-1 truncate text-sm font-bold text-slate-900">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
+                        </div>
+                        <div className={`min-w-0 rounded-full border bg-white px-3 py-2 ${ratingPillClass(avgDishRating)}`}>
+                          <div className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Rating</div>
+                          <div className="mt-1 truncate text-sm font-bold text-slate-900">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
+                        </div>
+                        <div className="min-w-0 rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">
+                          <div className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">Price</div>
+                          <div className="mt-1 truncate text-sm font-bold">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-slate-200 bg-white">
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <span className="text-sm font-medium text-slate-500">Restaurant Score</span>
+                          <span className="text-base font-bold text-slate-900">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</span>
+                        </div>
+                        <div className="border-t border-slate-200" />
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <span className="text-sm font-medium text-slate-500">Avg Dish Rating</span>
+                          <span className="text-base font-bold text-slate-900">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</span>
+                        </div>
+                        <div className="border-t border-slate-200" />
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <span className="text-sm font-medium text-emerald-700">Avg Dish Price</span>
+                          <span className="text-base font-bold text-emerald-900">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
+                        </div>
+                      </div>
+                    )}
                     {(restaurant.fullAddress || restaurant.recommendedBy) && (
-                      <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:grid-cols-2">
                         {restaurant.fullAddress && <div><span className="font-medium text-slate-900">Full Address:</span> {restaurant.fullAddress}</div>}
                         {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended By:</span> {restaurant.recommendedBy}</div>}
                       </div>
