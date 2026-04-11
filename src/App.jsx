@@ -1291,7 +1291,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         </datalist>
 
         <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 gap-2 rounded-2xl bg-transparent p-0 md:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-1 gap-2 rounded-2xl bg-transparent p-0 md:grid-cols-5">
             <TabsTrigger value="dashboard" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.dashboard}`}>Dashboard</TabsTrigger>
             <TabsTrigger value="restaurants" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.restaurants}`}>Restaurants</TabsTrigger>
             <TabsTrigger value="dishes" className={`rounded-2xl border font-bold shadow-sm transition-colors ${TOP_NAV_STYLES.dishes}`}>Dishes</TabsTrigger>
