@@ -50,8 +50,12 @@ export function DashboardTab({
       </div>
 
       <div className={`${SECTION_CONTAINER} grid gap-6 xl:grid-cols-2`}>
+        <div className="rounded-2xl border border-slate-300 bg-slate-200/70 px-4 py-3 text-center xl:hidden">
+          <div className="text-base font-black uppercase tracking-[0.08em] text-slate-900">Recent Experiences</div>
+        </div>
+
         <Card className="rounded-3xl border-0 shadow-sm">
-          <CardHeader><CardTitle className="font-bold">Recent Experiences</CardTitle></CardHeader>
+          <CardHeader className="hidden xl:block"><CardTitle className="font-bold">Recent Experiences</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {recentExperiences.length === 0 ? <div className="text-sm text-slate-500">No experiences yet.</div> : recentExperiences.map((experience) => {
               const dish = dishesById[experience.dishId];
@@ -117,8 +121,12 @@ export function DashboardTab({
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-0 shadow-sm">
-          <CardHeader><CardTitle className="font-bold">Restaurants Overview</CardTitle></CardHeader>
+        <div className="rounded-2xl border border-slate-300 bg-slate-200/70 px-4 py-3 text-center xl:hidden">
+          <div className="text-base font-black uppercase tracking-[0.08em] text-slate-900">Restaurants Overview</div>
+        </div>
+
+        <Card className="rounded-3xl border-0 shadow-sm xl:col-start-auto">
+          <CardHeader className="hidden xl:block"><CardTitle className="font-bold">Restaurants Overview</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {restaurantSummaries.length === 0 ? <div className="text-sm text-slate-500">No restaurants yet.</div> : restaurantSummaries.map(({ restaurant, dishesCount, experiencesCount, avgDishRating, avgDishPrice }) => (
               <div key={restaurant.id} className="rounded-2xl border p-4">
