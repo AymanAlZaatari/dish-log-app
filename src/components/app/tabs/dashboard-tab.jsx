@@ -59,33 +59,58 @@ export function DashboardTab({
               const branch = experience.branchId ? branchesById[experience.branchId] : null;
               return (
                 <div key={experience.id} className="rounded-2xl border p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="font-semibold">{dish?.name || "Unknown dish"}</div>
-                      <div className="text-sm text-slate-500">{restaurant?.name} • {experience.orderType} • {experience.date}</div>
-                      {branch && <div className="mt-1 text-xs text-slate-500">Branch: {branch.name}</div>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Stars value={experience.rating} />
-                      <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editExperience(experience)}>
-                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                      </Button>
-                      <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteExperience(experience.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                      </Button>
-                    </div>
+                  <div className="min-w-0">
+                    <div className="font-semibold">{dish?.name || "Unknown dish"}</div>
+                    <div className="text-sm text-slate-500">{restaurant?.name} • {experience.orderType} • {experience.date}</div>
+                    {branch && <div className="mt-1 text-xs text-slate-500">Branch: {branch.name}</div>}
                   </div>
-                  {((experience.price != null && experience.price !== "") || experience.valueForMoney || experience.notes || experience.images?.length > 0) && (
+                  {((experience.price != null && experience.price !== "") || experience.valueForMoney || experience.notes || experience.images?.length > 0 || experience.rating != null) && (
                     <div className="mt-3 text-sm text-slate-600">
-                      {experience.price != null && experience.price !== "" ? (
-                        <><span className="font-semibold text-slate-900">Price:</span> {`$${Number(experience.price).toFixed(1)}`}</>
-                      ) : ""}
-                      {experience.price != null && experience.price !== "" && experience.valueForMoney ? " • " : ""}
-                      {experience.valueForMoney ? <><span className="font-semibold text-slate-900">Value:</span> {experience.valueForMoney}</> : ""}
-                      {experience.notes ? <div className="mt-2">{experience.notes}</div> : null}
+                      {((experience.price != null && experience.price !== "") || experience.valueForMoney) ? (
+                        <div>
+                          {experience.price != null && experience.price !== "" ? (
+                            <><span className="font-semibold text-slate-900">Price:</span> {`$${Number(experience.price).toFixed(1)}`}</>
+                          ) : ""}
+                          {experience.price != null && experience.price !== "" && experience.valueForMoney ? " • " : ""}
+                          {experience.valueForMoney ? <><span className="font-semibold text-slate-900">Value:</span> {experience.valueForMoney}</> : ""}
+                        </div>
+                      ) : null}
+                      {experience.rating != null ? (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="font-semibold text-slate-900">Rating:</span>
+                          <Stars value={experience.rating} />
+                        </div>
+                      ) : null}
+                      {experience.notes ? (
+                        <div className="mt-2 flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">{experience.notes}</div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${EDIT_BUTTON_STYLE}`} onClick={() => editExperience(experience)}>
+                              <Pencil className="h-4 w-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Edit</span>
+                            </Button>
+                            <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${DELETE_BUTTON_STYLE}`} onClick={() => deleteExperience(experience.id)}>
+                              <Trash2 className="h-4 w-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Delete</span>
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
                       {experience.images?.length > 0 ? <div className="mt-2 text-xs text-slate-500">{experience.images.length} image(s)</div> : null}
                     </div>
                   )}
+                  {!experience.notes ? (
+                    <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                      <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${EDIT_BUTTON_STYLE}`} onClick={() => editExperience(experience)}>
+                        <Pencil className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Edit</span>
+                      </Button>
+                      <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${DELETE_BUTTON_STYLE}`} onClick={() => deleteExperience(experience.id)}>
+                        <Trash2 className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Delete</span>
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
