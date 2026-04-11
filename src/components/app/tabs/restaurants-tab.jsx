@@ -143,15 +143,19 @@ export function RestaurantsTab({
                       {restaurant.rating ? <><span>({Number(restaurant.rating).toFixed(1)})</span><Stars value={restaurant.rating} /></> : <span>—</span>}
                     </div>
                     <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(avgDishRating)}`}>
-                      <span>Avg dish rating:</span>
+                      <span>Avg Dish Rating:</span>
                       {avgDishRating ? <><span>({avgDishRating.toFixed(1)})</span><Stars value={avgDishRating} /></> : <span>—</span>}
                     </div>
                     <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.8rem] font-semibold text-emerald-800">
-                      <span>Avg dish price:</span>
+                      <span>Avg Dish Price:</span>
                       <span>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</span>
                     </div>
-                    {restaurant.fullAddress && <div><span className="font-medium text-slate-900">Full address:</span> {restaurant.fullAddress}</div>}
-                    {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended by:</span> {restaurant.recommendedBy}</div>}
+                    {(restaurant.fullAddress || restaurant.recommendedBy) && (
+                      <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
+                        {restaurant.fullAddress && <div><span className="font-medium text-slate-900">Full Address:</span> {restaurant.fullAddress}</div>}
+                        {restaurant.recommendedBy && <div><span className="font-medium text-slate-900">Recommended By:</span> {restaurant.recommendedBy}</div>}
+                      </div>
+                    )}
                     {restaurant.mapsLink && <a href={restaurant.mapsLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-slate-900 underline"><MapPin className="h-5 w-5 text-red-500" /> Open Maps Link</a>}
                   </div>
                   {restaurant.notes && <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{restaurant.notes}</div>}

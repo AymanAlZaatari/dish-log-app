@@ -105,7 +105,7 @@ export function DashboardTab({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span>Avg dish rating</span>
+                    <span>Avg Dish Rating</span>
                     <Stars value={avgDishRating} />
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export function DashboardTab({
                   <Badge variant="secondary">{dishesCount} dishes</Badge>
                   <Badge variant="secondary">{experiencesCount} experiences</Badge>
                   <Badge variant="outline">Restaurant score: {restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</Badge>
-                  <Badge variant="outline">Avg dish price: {avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</Badge>
+                  <Badge variant="outline">Avg Dish Price: {avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</Badge>
                 </div>
               </div>
             ))}
