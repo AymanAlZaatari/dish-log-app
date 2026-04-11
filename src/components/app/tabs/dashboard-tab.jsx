@@ -26,7 +26,7 @@ export function DashboardTab({
 }) {
   return (
     <TabsContent value="dashboard" className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {[
           ["Restaurants", dashboardStats.restaurants, <Store className="h-5 w-5" key="a" />],
           ["Dishes", dashboardStats.dishes, <UtensilsCrossed className="h-5 w-5" key="b" />],
@@ -36,12 +36,14 @@ export function DashboardTab({
           ["Avg Dish Rating", dashboardStats.avgDishRating.toFixed(1), <Filter className="h-5 w-5" key="f" />],
         ].map(([label, value, icon]) => (
           <Card key={label} className={`rounded-3xl border shadow-sm ${DASHBOARD_CARD_STYLES[label] || "border-slate-200 bg-white"}`}>
-            <CardContent className="flex items-center justify-between p-5">
-              <div>
-                <div className="text-sm font-bold text-slate-600">{label}</div>
-                <div className="mt-1 text-2xl font-bold">{value}</div>
+            <CardContent className="flex flex-col items-center justify-center gap-2 p-4 text-center sm:p-5">
+              <div className="flex items-center justify-center gap-2 text-slate-500">
+                <span>{icon}</span>
+                <span className="text-xl font-bold text-slate-900 sm:text-2xl">{value}</span>
               </div>
-              <div className="text-slate-500">{icon}</div>
+              <div className="min-w-0">
+                <div className="text-xs font-extrabold leading-tight text-slate-700 sm:text-sm">{label}</div>
+              </div>
             </CardContent>
           </Card>
         ))}
