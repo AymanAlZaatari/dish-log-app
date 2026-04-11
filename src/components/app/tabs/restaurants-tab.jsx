@@ -1,4 +1,6 @@
-import { Eye, MapPin, NotebookText, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { ChevronDown, ChevronUp, Eye, MapPin, NotebookText, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,6 +55,32 @@ export function RestaurantsTab({
   editBranch,
   deleteBranch,
 }) {
+  const [expandAllDishes, setExpandAllDishes] = useState(false);
+  const [expandedDishRestaurantIds, setExpandedDishRestaurantIds] = useState([]);
+
+  useEffect(() => {
+    const visibleRestaurantIds = new Set(filteredRestaurants.map((restaurant) => restaurant.id));
+    setExpandedDishRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
+  }, [filteredRestaurants]);
+
+  const toggleRestaurantDishes = (restaurantId) => {
+    if (expandAllDishes) {
+      setExpandAllDishes(false);
+      setExpandedDishRestaurantIds(
+        filteredRestaurants
+          .map((restaurant) => restaurant.id)
+          .filter((id) => id !== restaurantId)
+      );
+      return;
+    }
+
+    setExpandedDishRestaurantIds((currentIds) =>
+      currentIds.includes(restaurantId)
+        ? currentIds.filter((id) => id !== restaurantId)
+        : [...currentIds, restaurantId]
+    );
+  };
+
   return (
     <TabsContent value="restaurants" className="space-y-6">
       <div className={SECTION_CONTAINER}>
@@ -95,11 +123,28 @@ export function RestaurantsTab({
       </div>
 
       <div className={SECTION_CONTAINER}>
-        <div className="mb-5">
-          <h2 className="text-xl font-semibold text-slate-900">Restaurant Library</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Search and filter restaurants by name, branch, dish, area, city, or cuisine.
-          </p>
+        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Restaurant Library</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Search and filter restaurants by name, branch, dish, area, city, or cuisine.
+            </p>
+          </div>
+          <div className="md:shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-2xl"
+              onClick={() => {
+                setExpandAllDishes((current) => !current);
+                setExpandedDishRestaurantIds([]);
+              }}
+              aria-pressed={expandAllDishes}
+            >
+              {expandAllDishes ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
+              {expandAllDishes ? "Collapse All Dishes" : "Expand All Dishes"}
+            </Button>
+          </div>
         </div>
 
         <div className="mb-5 grid gap-3 md:grid-cols-6">
@@ -118,6 +163,7 @@ export function RestaurantsTab({
             const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
             const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
             const avgDishPrice = average(dishes.map((dish) => dish.price));
+            const areDishesExpanded = expandAllDishes || expandedDishRestaurantIds.includes(restaurant.id);
             return (
               <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
                 <CardHeader className="px-6 pt-6 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
@@ -160,8 +206,19 @@ export function RestaurantsTab({
                   </div>
                   {restaurant.notes && <div className="rounded-2xl border border-slate-200 bg-white p-4"><div className="mb-1 font-medium text-slate-900">Notes</div>{restaurant.notes}</div>}
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="mb-3 font-medium text-slate-900">Dishes</div>
-                    {dishes.length === 0 ? (
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 text-left font-medium text-slate-900"
+                        onClick={() => toggleRestaurantDishes(restaurant.id)}
+                        aria-expanded={areDishesExpanded}
+                      >
+                        <span>Dishes</span>
+                        <Badge variant="outline">{dishes.length}</Badge>
+                        {areDishesExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                      </button>
+                    </div>
+                    {!areDishesExpanded ? null : dishes.length === 0 ? (
                       <div className="text-sm text-slate-500">No dishes added yet.</div>
                     ) : (
                       <div className="space-y-2">
