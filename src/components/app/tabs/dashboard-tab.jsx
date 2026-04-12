@@ -188,7 +188,12 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
     <div className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/60 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
-          <div className="text-base font-bold text-slate-900 sm:text-lg">{dish?.name || "Unknown dish"}</div>
+          <div className="flex items-center gap-2">
+            <div className="rounded-full bg-amber-100 p-2 text-amber-700">
+              <UtensilsCrossed className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 text-base font-bold text-slate-900 sm:text-lg">{dish?.name || "Unknown dish"}</div>
+          </div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
             {restaurant?.name ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
