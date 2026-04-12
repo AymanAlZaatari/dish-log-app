@@ -235,7 +235,18 @@ export function RestaurantsTab({
         <div className="grid gap-5 lg:grid-cols-2">
           {filteredRestaurants.map((restaurant) => {
             const branches = data.branches.filter((b) => b.restaurantId === restaurant.id);
-            const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
+            const dishes = data.dishes
+              .filter((d) => d.restaurantId === restaurant.id)
+              .sort((a, b) => {
+                const aRating = computedDishRating(a.id);
+                const bRating = computedDishRating(b.id);
+                if (a.isWishlist !== b.isWishlist) return a.isWishlist ? -1 : 1;
+                if (aRating == null && bRating == null) return a.name.localeCompare(b.name);
+                if (aRating == null) return -1;
+                if (bRating == null) return 1;
+                if (bRating !== aRating) return bRating - aRating;
+                return a.name.localeCompare(b.name);
+              });
             const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
             const avgDishPrice = average(dishes.map((dish) => dish.price));
             const areDishesExpanded = expandAllDishes || expandedDishRestaurantIds.includes(restaurant.id);
@@ -354,13 +365,16 @@ export function RestaurantsTab({
                                   {dish.portionSize && dish.portionSize !== "Adult" ? <Badge variant="outline">{dish.portionSize}</Badge> : null}
                                   {tagSummary.visible.map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}
                                   {tagSummary.hiddenCount > 0 ? <Badge variant="outline">+{tagSummary.hiddenCount} more</Badge> : null}
+                                  {dish.alerts?.map((item) => (
+                                    <Badge key={item} className="!border-red-200 !bg-red-100 !text-red-700">{item}</Badge>
+                                  ))}
                                 </div>
                                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-600">
                                   <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold ${ratingPillClass(dishAvgRating)}`}>
                                     <span>Rating:</span>
                                     {dishAvgRating ? <><span>({dishAvgRating.toFixed(1)})</span><Stars value={dishAvgRating} /></> : <span>—</span>}
                                   </div>
-                                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[0.8rem] font-semibold text-emerald-800">
+                                  <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[0.8rem] font-semibold text-slate-700">
                                     <span>Price:</span>
                                     <span>{dish.price != null ? `$${Number(dish.price).toFixed(1)}` : "—"}</span>
                                   </div>

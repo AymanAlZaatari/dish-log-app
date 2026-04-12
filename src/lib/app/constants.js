@@ -120,7 +120,7 @@ export const TOP_ACTION_BUTTON_STYLES = {
   export: "!border-violet-200 !bg-violet-50 !text-violet-900 hover:!bg-violet-100",
   auth: "!border-red-300 !bg-red-100 !text-red-800 hover:!bg-red-200",
 };
-export const SAVE_BUTTON_STYLE = "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700";
+export const SAVE_BUTTON_STYLE = "!border-emerald-600 !bg-emerald-600 !text-white hover:!border-emerald-700 hover:!bg-emerald-700";
 export const CANCEL_BUTTON_STYLE = "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200";
 export const EDIT_BUTTON_STYLE = "!border-blue-300 !bg-blue-100 !text-blue-800 hover:!bg-blue-200";
 export const DELETE_BUTTON_STYLE = "!border-red-300 !bg-red-100 !text-red-800 hover:!bg-red-200";

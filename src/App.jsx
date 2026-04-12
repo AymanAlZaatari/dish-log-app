@@ -1158,7 +1158,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                     onSave={saveRestaurant}
                     saveLabel={restaurantForm.id ? "Save Changes" : "Save Restaurant"}
                     cancelLabel={restaurantForm.id ? "Discard" : "Cancel"}
-                    saveClassName="!border-emerald-600 !bg-emerald-600 !text-white hover:!bg-emerald-700"
                   />
                 </DialogContent>
               </Dialog>
