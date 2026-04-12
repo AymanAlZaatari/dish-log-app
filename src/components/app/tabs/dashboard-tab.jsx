@@ -16,6 +16,11 @@ import { ratingPillClass, valuePillClass } from "@/lib/app/data";
 
 import { Stars } from "../shared";
 
+const MOBILE_CARD_TITLE_CLASS = "text-[1.12rem] font-bold text-slate-900 sm:text-lg";
+const MOBILE_CARD_META_CLASS = "text-[0.8rem] font-medium text-slate-500 sm:text-sm";
+const MOBILE_KPI_LABEL_CLASS = "text-[0.9rem] font-semibold leading-tight sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]";
+const MOBILE_KPI_VALUE_CLASS = "text-[1.2rem] font-bold sm:text-2xl";
+
 export function DashboardTab({
   dashboardStats,
   recentExperiences,
@@ -111,11 +116,11 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
               <Store className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="text-[1.05rem] font-bold text-slate-900 sm:text-lg">{restaurant.name}</div>
+              <div className={MOBILE_CARD_TITLE_CLASS}>{restaurant.name}</div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-[0.8rem] font-medium text-slate-500 sm:text-sm">
+          <div className={`flex flex-wrap items-center gap-2 ${MOBILE_CARD_META_CLASS}`}>
             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
               <MapPin className="h-3.5 w-3.5" />
               {hasLocation ? [restaurant.area, restaurant.city].filter(Boolean).join(", ") : "No location"}
@@ -156,20 +161,20 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-3">
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
-            <div className="text-[0.72rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
-            <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
+            <div className={`${MOBILE_KPI_LABEL_CLASS} text-slate-500`}>Restaurant Score</div>
+            <div className={`mt-2 text-slate-900 sm:mt-3 ${MOBILE_KPI_VALUE_CLASS}`}>{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
             {restaurant.rating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={restaurant.rating} size="sm" /></div> : null}
             {restaurant.rating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={restaurant.rating} /></div> : null}
           </div>
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(avgDishRating)}`}>
-            <div className="text-[0.72rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
-            <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
+            <div className={`${MOBILE_KPI_LABEL_CLASS} text-slate-500`}>Avg Dish Rating</div>
+            <div className={`mt-2 text-slate-900 sm:mt-3 ${MOBILE_KPI_VALUE_CLASS}`}>{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
             {avgDishRating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={avgDishRating} size="sm" /></div> : null}
             {avgDishRating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={avgDishRating} /></div> : null}
           </div>
           <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
-            <div className="text-[0.72rem] font-semibold leading-tight text-emerald-700 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Price</div>
-            <div className="mt-2 text-lg font-bold sm:mt-3 sm:text-2xl">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
+            <div className={`${MOBILE_KPI_LABEL_CLASS} text-emerald-700`}>Avg Dish Price</div>
+            <div className={`mt-2 sm:mt-3 ${MOBILE_KPI_VALUE_CLASS}`}>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
           </div>
         </div>
       )}
@@ -193,9 +198,9 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
             <div className="rounded-full bg-amber-100 p-2 text-amber-700">
               <UtensilsCrossed className="h-4 w-4" />
             </div>
-            <div className="min-w-0 text-[1.05rem] font-bold text-slate-900 sm:text-lg">{dish?.name || "Unknown dish"}</div>
+            <div className={`min-w-0 ${MOBILE_CARD_TITLE_CLASS}`}>{dish?.name || "Unknown dish"}</div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-[0.8rem] font-medium text-slate-500 sm:text-sm">
+          <div className={`flex flex-wrap items-center gap-2 ${MOBILE_CARD_META_CLASS}`}>
             {restaurant?.name ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
                 <Store className="h-3.5 w-3.5" />
@@ -319,11 +324,11 @@ function InlineMetricRow({ label, value, className = "", labelClassName = "text-
 function ExperienceMetricCard({ label, value, icon, className, labelClassName = "text-slate-500", children }) {
   return (
     <div className={`min-w-0 rounded-2xl border px-2 py-3 text-center sm:px-3 sm:p-4 ${className}`}>
-      <div className={`flex items-center justify-center gap-1 text-[0.62rem] font-semibold leading-tight sm:gap-1.5 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em] ${labelClassName}`}>
+      <div className={`flex items-center justify-center gap-1 sm:gap-1.5 ${MOBILE_KPI_LABEL_CLASS} ${labelClassName}`}>
         {icon}
         <span>{label}</span>
       </div>
-      <div className="mt-2 text-sm font-bold text-slate-900 sm:mt-3 sm:text-xl">{value}</div>
+      <div className={`mt-2 text-slate-900 sm:mt-3 sm:text-xl ${MOBILE_KPI_VALUE_CLASS}`}>{value}</div>
       {children ? <div className="mt-1 sm:mt-2">{children}</div> : null}
     </div>
   );
