@@ -58,11 +58,13 @@ export function RestaurantsTab({
 }) {
   const [expandAllDishes, setExpandAllDishes] = useState(false);
   const [expandedDishRestaurantIds, setExpandedDishRestaurantIds] = useState([]);
+  const [expandedBranchRestaurantIds, setExpandedBranchRestaurantIds] = useState([]);
   const statsView = defaultStatsView || "cards";
 
   useEffect(() => {
     const visibleRestaurantIds = new Set(filteredRestaurants.map((restaurant) => restaurant.id));
     setExpandedDishRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
+    setExpandedBranchRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
   }, [filteredRestaurants]);
 
   const toggleRestaurantDishes = (restaurantId) => {
@@ -77,6 +79,14 @@ export function RestaurantsTab({
     }
 
     setExpandedDishRestaurantIds((currentIds) =>
+      currentIds.includes(restaurantId)
+        ? currentIds.filter((id) => id !== restaurantId)
+        : [...currentIds, restaurantId]
+    );
+  };
+
+  const toggleRestaurantBranches = (restaurantId) => {
+    setExpandedBranchRestaurantIds((currentIds) =>
       currentIds.includes(restaurantId)
         ? currentIds.filter((id) => id !== restaurantId)
         : [...currentIds, restaurantId]
@@ -166,6 +176,7 @@ export function RestaurantsTab({
             const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
             const avgDishPrice = average(dishes.map((dish) => dish.price));
             const areDishesExpanded = expandAllDishes || expandedDishRestaurantIds.includes(restaurant.id);
+            const areBranchesExpanded = expandedBranchRestaurantIds.includes(restaurant.id);
             return (
               <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
                 <CardHeader className="px-6 pt-6 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
@@ -306,8 +317,19 @@ export function RestaurantsTab({
                     )}
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="mb-3 font-medium text-slate-900">Branches</div>
-                    {branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex items-center gap-2"><Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editBranch(branch)}><Pencil className="mr-2 h-4 w-4" /> Edit</Button><Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteBranch(branch.id)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button></div></div>)}</div>}
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 text-left font-medium text-slate-900"
+                        onClick={() => toggleRestaurantBranches(restaurant.id)}
+                        aria-expanded={areBranchesExpanded}
+                      >
+                        <span>Branches</span>
+                        <Badge variant="outline">{branches.length}</Badge>
+                        {areBranchesExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+                      </button>
+                    </div>
+                    {!areBranchesExpanded ? null : branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex items-center gap-2"><Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editBranch(branch)} aria-label={`Edit ${branch.name}`}><Pencil className="h-4 w-4" /></Button><Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteBranch(branch.id)} aria-label={`Delete ${branch.name}`}><Trash2 className="h-4 w-4" /></Button></div></div>)}</div>}
                   </div>
                 </CardContent>
               </Card>
