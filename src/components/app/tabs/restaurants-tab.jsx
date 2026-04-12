@@ -193,7 +193,7 @@ export function RestaurantsTab({
                           {restaurant.rating ? (
                             <>
                               <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{Number(restaurant.rating).toFixed(1)}</div>
-                              <div className="mt-2 hidden sm:flex sm:justify-center"><Stars value={restaurant.rating} /></div>
+                              <div className="mt-2 hidden lg:flex lg:justify-center"><Stars value={restaurant.rating} /></div>
                             </>
                           ) : (
                             <div className="mt-2 text-lg font-bold text-slate-400 sm:mt-3 sm:text-2xl">—</div>
@@ -204,7 +204,7 @@ export function RestaurantsTab({
                           {avgDishRating ? (
                             <>
                               <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating.toFixed(1)}</div>
-                              <div className="mt-2 hidden sm:flex sm:justify-center"><Stars value={avgDishRating} /></div>
+                              <div className="mt-2 hidden lg:flex lg:justify-center"><Stars value={avgDishRating} /></div>
                             </>
                           ) : (
                             <div className="mt-2 text-lg font-bold text-slate-400 sm:mt-3 sm:text-2xl">—</div>
@@ -219,12 +219,18 @@ export function RestaurantsTab({
                       <div className="rounded-2xl border border-slate-200 bg-white">
                         <div className={`flex items-center justify-between gap-4 px-4 py-3 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
                           <span className="text-sm font-medium text-slate-500">Restaurant Score</span>
-                          <span className="text-base font-bold text-slate-900">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</span>
+                          <div className="flex items-center gap-3">
+                            {restaurant.rating ? <div className="hidden lg:flex"><Stars value={restaurant.rating} /></div> : null}
+                            <span className="text-base font-bold text-slate-900">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</span>
+                          </div>
                         </div>
                         <div className="border-t border-slate-200" />
                         <div className={`flex items-center justify-between gap-4 px-4 py-3 ${ratingPillClass(avgDishRating)}`}>
                           <span className="text-sm font-medium text-slate-500">Avg Dish Rating</span>
-                          <span className="text-base font-bold text-slate-900">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</span>
+                          <div className="flex items-center gap-3">
+                            {avgDishRating ? <div className="hidden lg:flex"><Stars value={avgDishRating} /></div> : null}
+                            <span className="text-base font-bold text-slate-900">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</span>
+                          </div>
                         </div>
                         <div className="border-t border-slate-200" />
                         <div className="flex items-center justify-between gap-4 px-4 py-3">

@@ -136,9 +136,19 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
 
       {isInlineView ? (
         <div className="mt-4 rounded-2xl border border-slate-200 bg-white">
-          <InlineMetricRow label="Restaurant Score" value={restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"} className={ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)} />
+          <InlineMetricRow
+            label="Restaurant Score"
+            value={restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}
+            className={ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}
+            starsValue={restaurant.rating ? Number(restaurant.rating) : null}
+          />
           <div className="border-t border-slate-200" />
-          <InlineMetricRow label="Avg Dish Rating" value={avgDishRating ? avgDishRating.toFixed(1) : "—"} className={ratingPillClass(avgDishRating)} />
+          <InlineMetricRow
+            label="Avg Dish Rating"
+            value={avgDishRating ? avgDishRating.toFixed(1) : "—"}
+            className={ratingPillClass(avgDishRating)}
+            starsValue={avgDishRating || null}
+          />
           <div className="border-t border-slate-200" />
           <InlineMetricRow label="Avg Dish Price" value={avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"} className="text-emerald-900" labelClassName="text-emerald-700" />
         </div>
@@ -147,10 +157,12 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
             <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
             <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
+            {restaurant.rating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={restaurant.rating} /></div> : null}
           </div>
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(avgDishRating)}`}>
             <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
             <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
+            {avgDishRating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={avgDishRating} /></div> : null}
           </div>
           <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
             <div className="text-[0.68rem] font-semibold leading-tight text-emerald-700 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Price</div>
@@ -279,11 +291,14 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
   );
 }
 
-function InlineMetricRow({ label, value, className = "", labelClassName = "text-slate-500" }) {
+function InlineMetricRow({ label, value, className = "", labelClassName = "text-slate-500", starsValue = null }) {
   return (
     <div className={`flex items-center justify-between gap-4 px-4 py-3 ${className}`}>
       <span className={`text-sm font-medium ${labelClassName}`}>{label}</span>
-      <span className="text-base font-bold text-slate-900">{value}</span>
+      <div className="flex items-center gap-3">
+        {starsValue ? <div className="hidden lg:flex"><Stars value={starsValue} /></div> : null}
+        <span className="text-base font-bold text-slate-900">{value}</span>
+      </div>
     </div>
   );
 }
