@@ -1,4 +1,4 @@
-import { Filter, Heart, NotebookText, Pencil, Star, Store, Trash2, UtensilsCrossed } from "lucide-react";
+import { Filter, Heart, MapPin, NotebookText, Pencil, Star, Store, Trash2, UtensilsCrossed } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   EDIT_BUTTON_STYLE,
   SECTION_CONTAINER,
 } from "@/lib/app/constants";
+import { ratingPillClass } from "@/lib/app/data";
 
 import { Stars } from "../shared";
 
@@ -23,6 +24,7 @@ export function DashboardTab({
   editExperience,
   deleteExperience,
   restaurantSummaries,
+  defaultStatsView,
 }) {
   return (
     <TabsContent value="dashboard" className="space-y-6">
@@ -128,33 +130,88 @@ export function DashboardTab({
         <Card className="rounded-3xl border-0 shadow-sm xl:col-start-auto">
           <CardHeader className="hidden xl:block"><CardTitle className="font-bold">Restaurants Overview</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {restaurantSummaries.length === 0 ? <div className="text-sm text-slate-500">No restaurants yet.</div> : restaurantSummaries.map(({ restaurant, dishesCount, experiencesCount, avgDishRating, avgDishPrice }) => (
-              <div key={restaurant.id} className="rounded-2xl border p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="font-semibold">{restaurant.name}</div>
-                    <div className="text-sm text-slate-500">
-                      {restaurant.area || "No area"}
-                      {restaurant.city ? ` • ${restaurant.city}` : ""}
-                      {restaurant.cuisines?.length ? ` • ${restaurant.cuisines.join(", ")}` : " • No cuisine"}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span>Avg Dish Rating</span>
-                    <Stars value={avgDishRating} />
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-                  <Badge variant="secondary">{dishesCount} dishes</Badge>
-                  <Badge variant="secondary">{experiencesCount} experiences</Badge>
-                  <Badge variant="outline">Restaurant score: {restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</Badge>
-                  <Badge variant="outline">Avg Dish Price: {avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</Badge>
-                </div>
-              </div>
+            {restaurantSummaries.length === 0 ? <div className="text-sm text-slate-500">No restaurants yet.</div> : restaurantSummaries.map((summary) => (
+              <RestaurantOverviewCard key={summary.restaurant.id} statsView={defaultStatsView} {...summary} />
             ))}
           </CardContent>
         </Card>
       </div>
     </TabsContent>
+  );
+}
+
+function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avgDishRating, avgDishPrice, statsView }) {
+  const cuisines = restaurant.cuisines?.length ? restaurant.cuisines : ["No cuisine"];
+  const hasLocation = restaurant.area || restaurant.city;
+  const isInlineView = statsView === "rows";
+
+  return (
+    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/60 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="rounded-full bg-emerald-100 p-2 text-emerald-700">
+              <Store className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-base font-bold text-slate-900 sm:text-lg">{restaurant.name}</div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {hasLocation ? [restaurant.area, restaurant.city].filter(Boolean).join(", ") : "No location"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {cuisines.map((cuisine) => (
+              <Badge key={cuisine} variant="secondary" className="bg-amber-50 text-amber-800 border-amber-200">
+                {cuisine}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 sm:min-w-[10rem]">
+          <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">Overview</div>
+          <div className="mt-1 text-sm font-semibold text-slate-900">{dishesCount} dishes • {experiencesCount} experiences</div>
+        </div>
+      </div>
+
+      {isInlineView ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white">
+          <InlineMetricRow label="Restaurant Score" value={restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"} className={ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)} />
+          <div className="border-t border-slate-200" />
+          <InlineMetricRow label="Avg Dish Rating" value={avgDishRating ? avgDishRating.toFixed(1) : "—"} className={ratingPillClass(avgDishRating)} />
+          <div className="border-t border-slate-200" />
+          <InlineMetricRow label="Avg Dish Price" value={avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"} className="text-emerald-900" labelClassName="text-emerald-700" />
+        </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
+            <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
+            <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
+          </div>
+          <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(avgDishRating)}`}>
+            <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
+            <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
+          </div>
+          <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
+            <div className="text-[0.68rem] font-semibold leading-tight text-emerald-700 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Price</div>
+            <div className="mt-2 text-lg font-bold sm:mt-3 sm:text-2xl">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InlineMetricRow({ label, value, className = "", labelClassName = "text-slate-500" }) {
+  return (
+    <div className={`flex items-center justify-between gap-4 px-4 py-3 ${className}`}>
+      <span className={`text-sm font-medium ${labelClassName}`}>{label}</span>
+      <span className="text-base font-bold text-slate-900">{value}</span>
+    </div>
   );
 }

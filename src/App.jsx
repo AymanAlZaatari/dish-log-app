@@ -1320,6 +1320,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             editExperience={editExperience}
             deleteExperience={deleteExperience}
             restaurantSummaries={restaurantSummaries}
+            defaultStatsView={defaultRestaurantStatsView}
           />
 
           <RestaurantsTab
