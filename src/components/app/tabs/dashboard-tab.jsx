@@ -1,4 +1,4 @@
-import { Filter, Heart, MapPin, NotebookText, Pencil, Star, Store, Trash2, UtensilsCrossed } from "lucide-react";
+import { CalendarDays, Camera, Filter, Heart, MapPin, NotebookText, Pencil, Star, Store, Trash2, UtensilsCrossed } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,60 +64,15 @@ export function DashboardTab({
               const restaurant = dish ? restaurantsById[dish.restaurantId] : null;
               const branch = experience.branchId ? branchesById[experience.branchId] : null;
               return (
-                <div key={experience.id} className="rounded-2xl border p-4">
-                  <div className="min-w-0">
-                    <div className="font-semibold">{dish?.name || "Unknown dish"}</div>
-                    <div className="text-sm text-slate-500">{restaurant?.name} • {experience.orderType} • {experience.date}</div>
-                    {branch && <div className="mt-1 text-xs text-slate-500">Branch: {branch.name}</div>}
-                  </div>
-                  {((experience.price != null && experience.price !== "") || experience.valueForMoney || experience.notes || experience.images?.length > 0 || experience.rating != null) && (
-                    <div className="mt-3 text-sm text-slate-600">
-                      {((experience.price != null && experience.price !== "") || experience.valueForMoney) ? (
-                        <div>
-                          {experience.price != null && experience.price !== "" ? (
-                            <><span className="font-semibold text-slate-900">Price:</span> {`$${Number(experience.price).toFixed(1)}`}</>
-                          ) : ""}
-                          {experience.price != null && experience.price !== "" && experience.valueForMoney ? " • " : ""}
-                          {experience.valueForMoney ? <><span className="font-semibold text-slate-900">Value:</span> {experience.valueForMoney}</> : ""}
-                        </div>
-                      ) : null}
-                      {experience.rating != null ? (
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="font-semibold text-slate-900">Rating:</span>
-                          <Stars value={experience.rating} />
-                        </div>
-                      ) : null}
-                      {experience.notes ? (
-                        <div className="mt-2 flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">{experience.notes}</div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${EDIT_BUTTON_STYLE}`} onClick={() => editExperience(experience)}>
-                              <Pencil className="h-4 w-4 sm:mr-2" />
-                              <span className="hidden sm:inline">Edit</span>
-                            </Button>
-                            <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${DELETE_BUTTON_STYLE}`} onClick={() => deleteExperience(experience.id)}>
-                              <Trash2 className="h-4 w-4 sm:mr-2" />
-                              <span className="hidden sm:inline">Delete</span>
-                            </Button>
-                          </div>
-                        </div>
-                      ) : null}
-                      {experience.images?.length > 0 ? <div className="mt-2 text-xs text-slate-500">{experience.images.length} image(s)</div> : null}
-                    </div>
-                  )}
-                  {!experience.notes ? (
-                    <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${EDIT_BUTTON_STYLE}`} onClick={() => editExperience(experience)}>
-                        <Pencil className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Edit</span>
-                      </Button>
-                      <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${DELETE_BUTTON_STYLE}`} onClick={() => deleteExperience(experience.id)}>
-                        <Trash2 className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Delete</span>
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
+                <RecentExperienceCard
+                  key={experience.id}
+                  experience={experience}
+                  dish={dish}
+                  restaurant={restaurant}
+                  branch={branch}
+                  editExperience={editExperience}
+                  deleteExperience={deleteExperience}
+                />
               );
             })}
           </CardContent>
@@ -202,6 +157,96 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function RecentExperienceCard({ experience, dish, restaurant, branch, editExperience, deleteExperience }) {
+  const hasPrice = experience.price != null && experience.price !== "";
+  const hasValue = Boolean(experience.valueForMoney);
+  const hasRating = experience.rating != null;
+  const hasNotes = Boolean(experience.notes);
+  const imageCount = experience.images?.length || 0;
+
+  return (
+    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/60 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="text-base font-bold text-slate-900 sm:text-lg">{dish?.name || "Unknown dish"}</div>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
+            {restaurant?.name ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
+                <Store className="h-3.5 w-3.5" />
+                {restaurant.name}
+              </span>
+            ) : null}
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {experience.date}
+            </span>
+            <Badge variant="secondary" className="gap-1.5 bg-sky-50 text-sky-800 border-sky-200">
+              <NotebookText className="h-3.5 w-3.5" />
+              <span>{experience.orderType}</span>
+            </Badge>
+            {branch ? (
+              <Badge variant="secondary" className="gap-1.5 bg-amber-50 text-amber-800 border-amber-200">
+                <MapPin className="h-3.5 w-3.5" />
+                <span>{branch.name}</span>
+              </Badge>
+            ) : null}
+          </div>
+        </div>
+
+        {hasRating ? (
+          <div className={`rounded-2xl border px-3 py-2 ${ratingPillClass(Number(experience.rating))}`}>
+            <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">Rating</div>
+            <div className="mt-1 flex items-center gap-2">
+              <Stars value={experience.rating} />
+              <span className="text-sm font-semibold text-slate-900">{Number(experience.rating).toFixed(1)}</span>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {(hasPrice || hasValue || imageCount > 0) ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {hasPrice ? (
+            <Badge variant="secondary" className="gap-1.5 bg-emerald-50 text-emerald-800 border-emerald-200">
+              <span className="font-semibold">Price</span>
+              <span>{`$${Number(experience.price).toFixed(1)}`}</span>
+            </Badge>
+          ) : null}
+          {hasValue ? (
+            <Badge variant="secondary" className="gap-1.5 bg-violet-50 text-violet-800 border-violet-200">
+              <span className="font-semibold">Value</span>
+              <span>{experience.valueForMoney}</span>
+            </Badge>
+          ) : null}
+          {imageCount > 0 ? (
+            <Badge variant="secondary" className="gap-1.5 bg-rose-50 text-rose-800 border-rose-200">
+              <Camera className="h-3.5 w-3.5" />
+              <span>{imageCount} image{imageCount === 1 ? "" : "s"}</span>
+            </Badge>
+          ) : null}
+        </div>
+      ) : null}
+
+      {hasNotes ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          {experience.notes}
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+        <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${EDIT_BUTTON_STYLE}`} onClick={() => editExperience(experience)}>
+          <Pencil className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Edit</span>
+        </Button>
+        <Button variant="outline" size="sm" className={`px-2 sm:px-3 ${DELETE_BUTTON_STYLE}`} onClick={() => deleteExperience(experience.id)}>
+          <Trash2 className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Delete</span>
+        </Button>
+      </div>
     </div>
   );
 }
