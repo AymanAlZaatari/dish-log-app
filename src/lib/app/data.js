@@ -716,7 +716,7 @@ export function summarizeTags(tags = [], maxChars = 24, maxItems = 3) {
 
 export function ratingPillClass(value) {
   if (value == null) return "border-slate-200 bg-slate-50 text-slate-700";
-  if (value >= 4.75) return "border-emerald-300 bg-emerald-100 text-emerald-900";
+  if (value >= 4.5) return "border-emerald-300 bg-emerald-100 text-emerald-900";
   if (value >= 3.75) return "border-emerald-200 bg-emerald-50 text-emerald-800";
   if (value >= 2.75) return "border-amber-200 bg-amber-50 text-amber-800";
   if (value >= 1.75) return "border-rose-200 bg-rose-50 text-rose-800";
