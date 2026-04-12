@@ -193,6 +193,7 @@ export function RestaurantsTab({
                           {restaurant.rating ? (
                             <>
                               <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{Number(restaurant.rating).toFixed(1)}</div>
+                              <div className="mt-2 flex justify-center lg:hidden"><Stars value={restaurant.rating} size="sm" /></div>
                               <div className="mt-2 hidden lg:flex lg:justify-center"><Stars value={restaurant.rating} /></div>
                             </>
                           ) : (
@@ -204,6 +205,7 @@ export function RestaurantsTab({
                           {avgDishRating ? (
                             <>
                               <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating.toFixed(1)}</div>
+                              <div className="mt-2 flex justify-center lg:hidden"><Stars value={avgDishRating} size="sm" /></div>
                               <div className="mt-2 hidden lg:flex lg:justify-center"><Stars value={avgDishRating} /></div>
                             </>
                           ) : (

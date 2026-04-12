@@ -47,12 +47,14 @@ export function ModalActions({ onCancel, onSave, saveLabel, cancelLabel = "Cance
   );
 }
 
-export function Stars({ value }) {
+export function Stars({ value, size = "md" }) {
   const n = Number(value || 0);
+  const starSizeClass = size === "sm" ? "h-3 w-3" : "h-4 w-4";
+  const gapClass = size === "sm" ? "gap-0.5" : "gap-1";
   return (
-    <div className="flex items-center gap-1">
+    <div className={`flex items-center ${gapClass}`}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < Math.round(n) ? "fill-current text-yellow-500" : "text-slate-300"}`} />
+        <Star key={i} className={`${starSizeClass} ${i < Math.round(n) ? "fill-current text-yellow-500" : "text-slate-300"}`} />
       ))}
     </div>
   );

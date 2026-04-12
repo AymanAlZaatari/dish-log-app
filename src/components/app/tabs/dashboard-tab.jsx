@@ -157,11 +157,13 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
             <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
             <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
+            {restaurant.rating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={restaurant.rating} size="sm" /></div> : null}
             {restaurant.rating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={restaurant.rating} /></div> : null}
           </div>
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(avgDishRating)}`}>
             <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
             <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
+            {avgDishRating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={avgDishRating} size="sm" /></div> : null}
             {avgDishRating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={avgDishRating} /></div> : null}
           </div>
           <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
@@ -252,6 +254,7 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
                 icon={<Star className="h-4 w-4" />}
                 className={ratingPillClass(hasRating ? Number(experience.rating) : null)}
               >
+                {hasRating ? <div className="mt-2 flex justify-center sm:hidden"><Stars value={experience.rating} size="sm" /></div> : null}
                 {hasRating ? <div className="mt-2 hidden justify-center sm:flex"><Stars value={experience.rating} /></div> : null}
               </ExperienceMetricCard>
               <ExperienceMetricCard
