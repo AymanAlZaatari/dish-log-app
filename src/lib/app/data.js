@@ -23,12 +23,17 @@ export function createSampleData() {
   const cedarBiteAchrafiehBranchId = uid();
   const falafelHubId = uid();
   const falafelHubVerdunBranchId = uid();
+  const falafelHubHamraBranchId = uid();
+  const falafelHubMarMikhaelBranchId = uid();
   const nonaSliceId = uid();
   const nonaSliceDbayehBranchId = uid();
   const sushiLoopId = uid();
   const sushiLoopJalElDibBranchId = uid();
+  const sushiLoopHamraBranchId = uid();
   const burgerYardId = uid();
   const burgerYardJouniehBranchId = uid();
+  const burgerYardHamraBranchId = uid();
+  const burgerYardDbayehBranchId = uid();
   const sweetLeafId = uid();
   const sweetLeafBadaroBranchId = uid();
 
@@ -67,10 +72,6 @@ export function createSampleData() {
       {
         id: cedarBiteId,
         name: "Cedar Bite",
-        area: "Mar Mikhael",
-        city: "Beirut",
-        fullAddress: "Mar Mikhael, Beirut",
-        mapsLink: "",
         cuisines: ["Lebanese"],
         rating: 4,
         notes: "Reliable for breakfast and quick late-night orders.",
@@ -81,10 +82,6 @@ export function createSampleData() {
       {
         id: falafelHubId,
         name: "Falafel Hub",
-        area: "Hamra",
-        city: "Beirut",
-        fullAddress: "Hamra, Beirut",
-        mapsLink: "",
         cuisines: ["Middle Eastern"],
         rating: 5,
         notes: "Fast service and very consistent wraps.",
@@ -95,10 +92,6 @@ export function createSampleData() {
       {
         id: nonaSliceId,
         name: "Nona Slice",
-        area: "Dbayeh",
-        city: "Metn",
-        fullAddress: "Dbayeh, Metn",
-        mapsLink: "",
         cuisines: ["Italian", "Pizza"],
         rating: 4,
         notes: "Good spot for pizza nights and dessert.",
@@ -109,10 +102,6 @@ export function createSampleData() {
       {
         id: sushiLoopId,
         name: "Sushi Loop",
-        area: "Jal El Dib",
-        city: "Metn",
-        fullAddress: "Jal El Dib, Metn",
-        mapsLink: "",
         cuisines: ["Japanese", "Sushi"],
         rating: 4,
         notes: "Clean flavors and good rice texture.",
@@ -123,10 +112,6 @@ export function createSampleData() {
       {
         id: burgerYardId,
         name: "Burger Yard",
-        area: "Jounieh",
-        city: "Keserwan",
-        fullAddress: "Jounieh, Keserwan",
-        mapsLink: "",
         cuisines: ["American", "Burgers"],
         rating: 4,
         notes: "Strong smash burgers and late-night fries.",
@@ -137,10 +122,6 @@ export function createSampleData() {
       {
         id: sweetLeafId,
         name: "Sweet Leaf",
-        area: "Badaro",
-        city: "Beirut",
-        fullAddress: "Badaro, Beirut",
-        mapsLink: "",
         cuisines: ["Cafe", "Dessert"],
         rating: 5,
         notes: "Excellent breakfast and dessert stop.",
@@ -153,8 +134,11 @@ export function createSampleData() {
       {
         id: cedarBiteHamraBranchId,
         restaurantId: cedarBiteId,
-        name: "Hamra Branch",
+        isDefault: true,
+        name: "Default Branch",
         area: "Hamra",
+        city: "Beirut",
+        fullAddress: "Hamra, Beirut",
         locationText: "Main street near AUB",
         mapsLink: "",
         notes: "Best dine-in experience.",
@@ -162,8 +146,11 @@ export function createSampleData() {
       {
         id: cedarBiteAchrafiehBranchId,
         restaurantId: cedarBiteId,
+        isDefault: false,
         name: "Achrafieh Branch",
         area: "Achrafieh",
+        city: "Beirut",
+        fullAddress: "Near Sassine Square, Achrafieh",
         locationText: "Near Sassine Square",
         mapsLink: "",
         notes: "Usually faster for takeaway.",
@@ -171,17 +158,47 @@ export function createSampleData() {
       {
         id: falafelHubVerdunBranchId,
         restaurantId: falafelHubId,
-        name: "Verdun Branch",
+        isDefault: true,
+        name: "Default Branch",
         area: "Verdun",
+        city: "Beirut",
+        fullAddress: "Verdun, Beirut",
         locationText: "Facing the mall entrance",
         mapsLink: "",
         notes: "",
       },
       {
+        id: falafelHubHamraBranchId,
+        restaurantId: falafelHubId,
+        isDefault: false,
+        name: "Hamra Branch",
+        area: "Hamra",
+        city: "Beirut",
+        fullAddress: "Makdessi Street, Hamra",
+        locationText: "Next to the old cinema",
+        mapsLink: "",
+        notes: "Good late-night stop.",
+      },
+      {
+        id: falafelHubMarMikhaelBranchId,
+        restaurantId: falafelHubId,
+        isDefault: false,
+        name: "Mar Mikhael Branch",
+        area: "Mar Mikhael",
+        city: "Beirut",
+        fullAddress: "Armenia Street, Mar Mikhael",
+        locationText: "Near the main bar strip",
+        mapsLink: "",
+        notes: "Usually busiest on weekends.",
+      },
+      {
         id: nonaSliceDbayehBranchId,
         restaurantId: nonaSliceId,
-        name: "Waterfront Branch",
+        isDefault: true,
+        name: "Default Branch",
         area: "Dbayeh",
+        city: "Metn",
+        fullAddress: "Waterfront, Dbayeh",
         locationText: "Near the marina",
         mapsLink: "",
         notes: "Parking is easier on weekdays.",
@@ -189,26 +206,71 @@ export function createSampleData() {
       {
         id: sushiLoopJalElDibBranchId,
         restaurantId: sushiLoopId,
-        name: "Main Branch",
+        isDefault: true,
+        name: "Default Branch",
         area: "Jal El Dib",
+        city: "Metn",
+        fullAddress: "Jal El Dib, Metn",
         locationText: "Near the highway exit",
         mapsLink: "",
         notes: "Quieter on weekday lunches.",
       },
       {
+        id: sushiLoopHamraBranchId,
+        restaurantId: sushiLoopId,
+        isDefault: false,
+        name: "Hamra Branch",
+        area: "Hamra",
+        city: "Beirut",
+        fullAddress: "Bliss Street, Hamra",
+        locationText: "Across from the university gate",
+        mapsLink: "",
+        notes: "Best for delivery coverage.",
+      },
+      {
         id: burgerYardJouniehBranchId,
         restaurantId: burgerYardId,
-        name: "Seaside Branch",
+        isDefault: true,
+        name: "Default Branch",
         area: "Jounieh",
+        city: "Keserwan",
+        fullAddress: "Jounieh, Keserwan",
         locationText: "Next to the coastal road",
         mapsLink: "",
         notes: "Best for dine-in burgers.",
       },
       {
+        id: burgerYardHamraBranchId,
+        restaurantId: burgerYardId,
+        isDefault: false,
+        name: "Hamra Branch",
+        area: "Hamra",
+        city: "Beirut",
+        fullAddress: "Hamra Main Street",
+        locationText: "Across from the pharmacy",
+        mapsLink: "",
+        notes: "Smaller branch but fast service.",
+      },
+      {
+        id: burgerYardDbayehBranchId,
+        restaurantId: burgerYardId,
+        isDefault: false,
+        name: "Dbayeh Branch",
+        area: "Dbayeh",
+        city: "Metn",
+        fullAddress: "Dbayeh Highway Frontage",
+        locationText: "Near the shopping complex",
+        mapsLink: "",
+        notes: "Convenient parking.",
+      },
+      {
         id: sweetLeafBadaroBranchId,
         restaurantId: sweetLeafId,
-        name: "Garden Branch",
+        isDefault: true,
+        name: "Default Branch",
         area: "Badaro",
+        city: "Beirut",
+        fullAddress: "Badaro, Beirut",
         locationText: "Behind the main strip",
         mapsLink: "",
         notes: "Nice outdoor seating in the morning.",
@@ -617,18 +679,37 @@ export function migrateData(parsed) {
   }));
 
   const restaurants = (parsed.restaurants || []).map((r) => ({
-    ...r,
-    halalChecked: r.halalChecked ?? true,
-    kidsFriendly: r.kidsFriendly ?? false,
-    recommendedBy: r.recommendedBy || "",
-    city: r.city || "",
-    fullAddress: r.fullAddress || r.locationText || "",
+    id: r.id,
+    name: r.name || "",
     cuisines: Array.isArray(r.cuisines)
       ? r.cuisines
       : typeof r.cuisine === "string"
         ? [r.cuisine].filter(Boolean)
         : [],
+    rating: r.rating ?? null,
+    notes: r.notes || "",
+    recommendedBy: r.recommendedBy || "",
+    halalChecked: r.halalChecked ?? true,
+    kidsFriendly: r.kidsFriendly ?? false,
   }));
+
+  const branches = (parsed.branches || []).map((branch) => ({
+    ...branch,
+    isDefault: !!branch.isDefault,
+    city: branch.city || "",
+    fullAddress: branch.fullAddress || "",
+    locationText: branch.locationText || "",
+    mapsLink: branch.mapsLink || "",
+    notes: branch.notes || "",
+  })).map((branch, _index, allBranches) => {
+    const restaurantBranches = allBranches.filter((candidate) => candidate.restaurantId === branch.restaurantId);
+    const hasExplicitDefault = restaurantBranches.some((candidate) => candidate.isDefault);
+    if (hasExplicitDefault) return branch;
+    return {
+      ...branch,
+      isDefault: restaurantBranches[0]?.id === branch.id,
+    };
+  });
 
   const dishes = (parsed.dishes || []).map((d) => ({
     price: d.price ?? [...experiences]
@@ -662,10 +743,10 @@ export function migrateData(parsed) {
     areas: parsed.areas?.length ? parsed.areas : DEFAULT_AREAS,
     cities: parsed.cities?.length
       ? parsed.cities
-      : [...new Set((parsed.restaurants || []).map((restaurant) => restaurant.city).filter(Boolean).concat(DEFAULT_CITIES))].sort(),
+      : [...new Set(branches.map((branch) => branch.city).filter(Boolean).concat(DEFAULT_CITIES))].sort(),
     tagColors: parsed.tagColors || {},
     restaurants,
-    branches: parsed.branches || [],
+    branches,
     dishes,
     experiences,
   };

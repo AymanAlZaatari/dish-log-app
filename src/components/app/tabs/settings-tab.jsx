@@ -169,7 +169,9 @@ export function SettingsTab(props) {
             ) : (
               <div className="flex flex-wrap gap-3">
                 {data.cuisines.map((cuisine) => {
-                  const cuisineRestaurants = data.restaurants.filter((restaurant) => (restaurant.cuisines || []).includes(cuisine));
+                  const cuisineRestaurants = data.restaurants
+                    .map((restaurant) => restaurantsById[restaurant.id] || restaurant)
+                    .filter((restaurant) => (restaurant.cuisines || []).includes(cuisine));
                   const isExpanded = expandedCuisine === cuisine;
                   return (
                     <div key={cuisine} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
@@ -231,7 +233,9 @@ export function SettingsTab(props) {
             ) : (
               <div className="flex flex-wrap gap-3">
                 {cityOptions.map((city) => {
-                  const cityRestaurants = data.restaurants.filter((restaurant) => restaurant.city === city);
+                  const cityRestaurants = data.restaurants
+                    .map((restaurant) => restaurantsById[restaurant.id] || restaurant)
+                    .filter((restaurant) => restaurant.city === city);
                   const isExpanded = expandedCity === city;
                   return (
                     <div key={city} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>
@@ -293,7 +297,9 @@ export function SettingsTab(props) {
             ) : (
               <div className="flex flex-wrap gap-3">
                 {areaOptions.map((area) => {
-                  const areaRestaurants = data.restaurants.filter((restaurant) => restaurant.area === area);
+                  const areaRestaurants = data.restaurants
+                    .map((restaurant) => restaurantsById[restaurant.id] || restaurant)
+                    .filter((restaurant) => restaurant.area === area);
                   const isExpanded = expandedArea === area;
                   return (
                     <div key={area} className={`rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 ${isExpanded ? "min-w-[18rem]" : ""}`}>

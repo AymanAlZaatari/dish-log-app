@@ -120,19 +120,44 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
   const previousExperienceDishIdRef = useRef("");
 
-  const restaurantsById = useMemo(() => Object.fromEntries(data.restaurants.map((r) => [r.id, r])), [data.restaurants]);
+  const defaultBranchByRestaurantId = useMemo(() => {
+    const entries = data.restaurants.map((restaurant) => {
+      const restaurantBranches = data.branches.filter((branch) => branch.restaurantId === restaurant.id);
+      const defaultBranch = restaurantBranches.find((branch) => branch.isDefault) || restaurantBranches[0] || null;
+      return [restaurant.id, defaultBranch];
+    });
+    return Object.fromEntries(entries);
+  }, [data.branches, data.restaurants]);
+
+  const restaurantsById = useMemo(() => Object.fromEntries(data.restaurants.map((restaurant) => {
+    const defaultBranch = defaultBranchByRestaurantId[restaurant.id];
+    return [restaurant.id, {
+      ...restaurant,
+      area: defaultBranch?.area || restaurant.area || "",
+      city: defaultBranch?.city || restaurant.city || "",
+      fullAddress: defaultBranch?.fullAddress || defaultBranch?.locationText || restaurant.fullAddress || "",
+      mapsLink: defaultBranch?.mapsLink || restaurant.mapsLink || "",
+      defaultBranchId: defaultBranch?.id || null,
+    }];
+  })), [data.restaurants, defaultBranchByRestaurantId]);
+  const branchCountByRestaurantId = useMemo(() => Object.fromEntries(data.restaurants.map((restaurant) => [
+    restaurant.id,
+    data.branches.filter((branch) => branch.restaurantId === restaurant.id).length,
+  ])), [data.branches, data.restaurants]);
   const branchesById = useMemo(() => Object.fromEntries(data.branches.map((b) => [b.id, b])), [data.branches]);
   const dishesById = useMemo(() => Object.fromEntries(data.dishes.map((d) => [d.id, d])), [data.dishes]);
   const defaultRestaurantStatsView = data.settings?.defaultRestaurantStatsView === "rows" ? "rows" : "cards";
+  const restaurantFormBranchCount = restaurantForm.id ? (branchCountByRestaurantId[restaurantForm.id] || 0) : 0;
+  const canEditRestaurantAddressFields = !restaurantForm.id || restaurantFormBranchCount <= 1;
 
   const allDishTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.tags || []))].sort(), [data.dishes]);
   const allRecommendationTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.recommendations || []))].sort(), [data.dishes]);
   const allAlertTags = useMemo(() => [...new Set(data.dishes.flatMap((d) => d.alerts || []))].sort(), [data.dishes]);
 
-  const areaOptions = useMemo(() => [...new Set([...(data.areas || []), ...data.restaurants.map((r) => r.area).filter(Boolean), ...data.branches.map((b) => b.area).filter(Boolean)])].sort(), [data]);
-  const cityOptions = useMemo(() => [...new Set([...(data.cities || []), ...data.restaurants.map((r) => r.city).filter(Boolean)])].sort(), [data]);
-  const restaurantFilterAreaOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.area).filter(Boolean))].sort(), [data.restaurants]);
-  const restaurantFilterCityOptions = useMemo(() => [...new Set(data.restaurants.map((r) => r.city).filter(Boolean))].sort(), [data.restaurants]);
+  const areaOptions = useMemo(() => [...new Set([...(data.areas || []), ...Object.values(restaurantsById).map((r) => r.area).filter(Boolean), ...data.branches.map((b) => b.area).filter(Boolean)])].sort(), [data.areas, data.branches, restaurantsById]);
+  const cityOptions = useMemo(() => [...new Set([...(data.cities || []), ...Object.values(restaurantsById).map((r) => r.city).filter(Boolean), ...data.branches.map((b) => b.city).filter(Boolean)])].sort(), [data.cities, data.branches, restaurantsById]);
+  const restaurantFilterAreaOptions = useMemo(() => [...new Set(Object.values(restaurantsById).map((r) => r.area).filter(Boolean))].sort(), [restaurantsById]);
+  const restaurantFilterCityOptions = useMemo(() => [...new Set(Object.values(restaurantsById).map((r) => r.city).filter(Boolean))].sort(), [restaurantsById]);
   const restaurantFilterCuisineOptions = useMemo(() => [...new Set(data.restaurants.flatMap((r) => r.cuisines || []))].sort(), [data.restaurants]);
   const dishFilterRestaurantOptions = useMemo(
     () => [...new Set(data.dishes.map((dish) => restaurantsById[dish.restaurantId]?.name).filter(Boolean))].sort(),
@@ -280,7 +305,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const filteredRestaurants = useMemo(() => {
     const q = restaurantSearch.trim().toLowerCase();
 
-    return data.restaurants.filter((restaurant) => {
+    return data.restaurants.map((restaurant) => restaurantsById[restaurant.id] || restaurant).filter((restaurant) => {
       const restaurantBranches = data.branches.filter((branch) => branch.restaurantId === restaurant.id);
       const restaurantDishes = data.dishes.filter((dish) => dish.restaurantId === restaurant.id);
 
@@ -292,7 +317,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         restaurant.fullAddress,
         restaurant.notes,
         restaurant.recommendedBy,
-        ...restaurantBranches.flatMap((branch) => [branch.name, branch.area, branch.locationText, branch.notes]),
+        ...restaurantBranches.flatMap((branch) => [branch.name, branch.area, branch.city, branch.fullAddress, branch.locationText, branch.notes]),
         ...restaurantDishes.flatMap((dish) => [dish.name, dish.notes, dish.recommendedBy, ...(dish.tags || [])]),
       ].join(" ").toLowerCase();
 
@@ -303,7 +328,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       if (restaurantKidsFilter === "kids" && !restaurant.kidsFriendly) return false;
       return true;
     });
-  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCityFilter, restaurantCuisineFilter, restaurantKidsFilter, restaurantSearch]);
+  }, [data.branches, data.dishes, data.restaurants, restaurantAreaFilter, restaurantCityFilter, restaurantCuisineFilter, restaurantKidsFilter, restaurantSearch, restaurantsById]);
 
   const dashboardStats = useMemo(() => {
     const triedDishes = data.dishes.filter((d) => !d.isWishlist).length;
@@ -323,14 +348,15 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
 
   const restaurantSummaries = useMemo(() => {
     return data.restaurants.map((restaurant) => {
+      const displayRestaurant = restaurantsById[restaurant.id] || restaurant;
       const dishes = data.dishes.filter((d) => d.restaurantId === restaurant.id);
       const dishIds = new Set(dishes.map((dish) => dish.id));
       const experiences = data.experiences.filter((e) => dishIds.has(e.dishId));
       const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
       const avgDishPrice = average(dishes.map((dish) => dish.price));
-      return { restaurant, dishesCount: dishes.length, experiencesCount: experiences.length, avgDishRating, avgDishPrice };
+      return { restaurant: displayRestaurant, dishesCount: dishes.length, experiencesCount: experiences.length, avgDishRating, avgDishPrice };
     });
-  }, [data, dishExperienceMap]);
+  }, [data, dishExperienceMap, restaurantsById]);
 
   function resetRestaurantForm() { setRestaurantForm(emptyRestaurantForm); }
   function resetBranchForm() { setBranchForm(emptyBranchForm); setBranchFormError(""); }
@@ -376,10 +402,10 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     return {
       id: uid(),
       name: form.name.trim(),
-      area: form.area.trim(),
-      city: form.city.trim(),
-      fullAddress: form.fullAddress.trim(),
-      mapsLink: form.mapsLink.trim(),
+      area: "",
+      city: "",
+      fullAddress: "",
+      mapsLink: "",
       cuisines: form.cuisines,
       rating: form.rating ? Number(form.rating) : null,
       notes: form.notes.trim(),
@@ -389,15 +415,37 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     };
   }
 
+  function createDefaultBranchRecord(form, restaurantId, existingBranchId = null) {
+    const area = form.area.trim();
+    const city = form.city.trim();
+    const fullAddress = form.fullAddress.trim();
+    const mapsLink = form.mapsLink.trim();
+    const hasAddressData = area || city || fullAddress || mapsLink;
+    if (!hasAddressData) return null;
+
+    return {
+      id: existingBranchId || uid(),
+      restaurantId,
+      isDefault: true,
+      name: "Default Branch",
+      area,
+      city,
+      fullAddress,
+      locationText: fullAddress,
+      mapsLink,
+      notes: "",
+    };
+  }
+
   function saveRestaurant() {
     if (!restaurantForm.name.trim()) return;
     const payload = {
       id: restaurantForm.id || uid(),
       name: restaurantForm.name.trim(),
-      area: restaurantForm.area.trim(),
-      city: restaurantForm.city.trim(),
-      fullAddress: restaurantForm.fullAddress.trim(),
-      mapsLink: restaurantForm.mapsLink.trim(),
+      area: "",
+      city: "",
+      fullAddress: "",
+      mapsLink: "",
       cuisines: restaurantForm.cuisines,
       rating: restaurantForm.rating ? Number(restaurantForm.rating) : null,
       notes: restaurantForm.notes.trim(),
@@ -406,14 +454,33 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       kidsFriendly: !!restaurantForm.kidsFriendly,
     };
 
-    setData((prev) => ({
-      ...prev,
-      restaurants: restaurantForm.id
-        ? prev.restaurants.map((r) => (r.id === restaurantForm.id ? payload : r))
-        : [payload, ...prev.restaurants],
-      areas: payload.area && !prev.areas.includes(payload.area) ? [...prev.areas, payload.area].sort() : prev.areas,
-      cities: payload.city && !prev.cities?.includes(payload.city) ? [...(prev.cities || []), payload.city].sort() : (prev.cities || []),
-    }));
+    setData((prev) => {
+      const existingBranches = prev.branches.filter((branch) => branch.restaurantId === payload.id);
+      const existingDefaultBranch = existingBranches.find((branch) => branch.isDefault) || existingBranches[0] || null;
+      const shouldPersistAddressFromRestaurantForm = !restaurantForm.id || existingBranches.length <= 1;
+      const defaultBranch = shouldPersistAddressFromRestaurantForm
+        ? createDefaultBranchRecord(restaurantForm, payload.id, existingDefaultBranch?.id || null)
+        : null;
+      const nextBranches = shouldPersistAddressFromRestaurantForm
+        ? defaultBranch
+          ? existingDefaultBranch
+            ? prev.branches.map((branch) => branch.id === existingDefaultBranch.id ? defaultBranch : branch)
+            : [defaultBranch, ...prev.branches]
+          : existingDefaultBranch
+            ? prev.branches.map((branch) => branch.id === existingDefaultBranch.id ? { ...branch, isDefault: true, area: "", city: "", fullAddress: "", locationText: "", mapsLink: "" } : branch)
+            : prev.branches
+        : prev.branches;
+
+      return {
+        ...prev,
+        restaurants: restaurantForm.id
+          ? prev.restaurants.map((r) => (r.id === restaurantForm.id ? payload : r))
+          : [payload, ...prev.restaurants],
+        branches: nextBranches,
+        areas: shouldPersistAddressFromRestaurantForm && restaurantForm.area.trim() && !prev.areas.includes(restaurantForm.area.trim()) ? [...prev.areas, restaurantForm.area.trim()].sort() : prev.areas,
+        cities: shouldPersistAddressFromRestaurantForm && restaurantForm.city.trim() && !prev.cities?.includes(restaurantForm.city.trim()) ? [...(prev.cities || []), restaurantForm.city.trim()].sort() : (prev.cities || []),
+      };
+    });
     resetRestaurantForm();
     setRestaurantOpen(false);
   }
@@ -430,8 +497,11 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     const payload = {
       id: branchForm.id || uid(),
       restaurantId: branchForm.restaurantId,
+      isDefault: !!branchForm.isDefault,
       name: branchForm.name.trim(),
       area: branchForm.area.trim(),
+      city: branchForm.city.trim(),
+      fullAddress: branchForm.fullAddress.trim(),
       locationText: branchForm.locationText.trim(),
       mapsLink: branchForm.mapsLink.trim(),
       notes: branchForm.notes.trim(),
@@ -442,6 +512,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
         ? prev.branches.map((b) => (b.id === branchForm.id ? payload : b))
         : [payload, ...prev.branches],
       areas: payload.area && !prev.areas.includes(payload.area) ? [...prev.areas, payload.area].sort() : prev.areas,
+      cities: payload.city && !prev.cities?.includes(payload.city) ? [...(prev.cities || []), payload.city].sort() : (prev.cities || []),
     }));
     resetBranchForm();
     setBranchOpen(false);
@@ -453,13 +524,15 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (showInlineRestaurantForDish) {
       if (!inlineRestaurantForDish.name.trim()) return;
       const newRestaurant = createRestaurantRecord(inlineRestaurantForDish);
+      const defaultBranch = createDefaultBranchRecord(inlineRestaurantForDish, newRestaurant.id);
       restaurantId = newRestaurant.id;
 
       setData((prev) => ({
         ...prev,
         restaurants: [newRestaurant, ...prev.restaurants],
+        branches: defaultBranch ? [defaultBranch, ...prev.branches] : prev.branches,
         areas: newRestaurant.area && !prev.areas.includes(newRestaurant.area) ? [...prev.areas, newRestaurant.area].sort() : prev.areas,
-        cities: newRestaurant.city && !prev.cities?.includes(newRestaurant.city) ? [...(prev.cities || []), newRestaurant.city].sort() : (prev.cities || []),
+        cities: inlineRestaurantForDish.city.trim() && !prev.cities?.includes(inlineRestaurantForDish.city.trim()) ? [...(prev.cities || []), inlineRestaurantForDish.city.trim()].sort() : (prev.cities || []),
       }));
     }
 
@@ -533,11 +606,13 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (showInlineRestaurantForExperience) {
       if (!inlineRestaurantForExperience.name.trim()) return;
       const newRestaurant = createRestaurantRecord(inlineRestaurantForExperience);
+      const defaultBranch = createDefaultBranchRecord(inlineRestaurantForExperience, newRestaurant.id);
       setData((prev) => ({
         ...prev,
         restaurants: [newRestaurant, ...prev.restaurants],
-        areas: newRestaurant.area && !prev.areas.includes(newRestaurant.area) ? [...prev.areas, newRestaurant.area].sort() : prev.areas,
-        cities: newRestaurant.city && !prev.cities?.includes(newRestaurant.city) ? [...(prev.cities || []), newRestaurant.city].sort() : (prev.cities || []),
+        branches: defaultBranch ? [defaultBranch, ...prev.branches] : prev.branches,
+        areas: inlineRestaurantForExperience.area.trim() && !prev.areas.includes(inlineRestaurantForExperience.area.trim()) ? [...prev.areas, inlineRestaurantForExperience.area.trim()].sort() : prev.areas,
+        cities: inlineRestaurantForExperience.city.trim() && !prev.cities?.includes(inlineRestaurantForExperience.city.trim()) ? [...(prev.cities || []), inlineRestaurantForExperience.city.trim()].sort() : (prev.cities || []),
       }));
     }
 
@@ -666,9 +741,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({
       ...prev,
       areas: [...new Set(prev.areas.map((existingArea) => (existingArea === area ? nextArea : existingArea)).concat(nextArea))].sort(),
-      restaurants: prev.restaurants.map((restaurant) => (
-        restaurant.area === area ? { ...restaurant, area: nextArea } : restaurant
-      )),
       branches: prev.branches.map((branch) => (
         branch.area === area ? { ...branch, area: nextArea } : branch
       )),
@@ -688,9 +760,6 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({
       ...prev,
       areas: prev.areas.filter((existingArea) => existingArea !== area),
-      restaurants: prev.restaurants.map((restaurant) => (
-        restaurant.area === area ? { ...restaurant, area: "" } : restaurant
-      )),
       branches: prev.branches.map((branch) => (
         branch.area === area ? { ...branch, area: "" } : branch
       )),
@@ -710,8 +779,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({
       ...prev,
       cities: [...new Set((prev.cities || []).map((existingCity) => (existingCity === city ? nextCity : existingCity)).concat(nextCity))].sort(),
-      restaurants: prev.restaurants.map((restaurant) => (
-        restaurant.city === city ? { ...restaurant, city: nextCity } : restaurant
+      branches: prev.branches.map((branch) => (
+        branch.city === city ? { ...branch, city: nextCity } : branch
       )),
     }));
   }
@@ -728,8 +797,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({
       ...prev,
       cities: (prev.cities || []).filter((existingCity) => existingCity !== city),
-      restaurants: prev.restaurants.map((restaurant) => (
-        restaurant.city === city ? { ...restaurant, city: "" } : restaurant
+      branches: prev.branches.map((branch) => (
+        branch.city === city ? { ...branch, city: "" } : branch
       )),
     }));
   }
@@ -798,12 +867,23 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   function deleteBranch(id) {
     const branch = data.branches.find((b) => b.id === id);
     if (!confirmDelete(`Delete branch "${branch?.name || "this branch"}"? Dishes and experiences will keep their records but lose this branch link.`)) return;
-    setData((prev) => ({
-      ...prev,
-      branches: prev.branches.filter((b) => b.id !== id),
-      dishes: prev.dishes.map((d) => (d.branchId === id ? { ...d, branchId: null } : d)),
-      experiences: prev.experiences.map((e) => (e.branchId === id ? { ...e, branchId: null } : e)),
-    }));
+    setData((prev) => {
+      const remainingBranches = prev.branches.filter((b) => b.id !== id);
+      const nextBranches = branch?.isDefault
+        ? remainingBranches.map((candidate) => {
+          if (candidate.restaurantId !== branch.restaurantId) return candidate;
+          const firstRemainingId = remainingBranches.find((b) => b.restaurantId === branch.restaurantId)?.id;
+          return { ...candidate, isDefault: candidate.id === firstRemainingId };
+        })
+        : remainingBranches;
+
+      return {
+        ...prev,
+        branches: nextBranches,
+        dishes: prev.dishes.map((d) => (d.branchId === id ? { ...d, branchId: null } : d)),
+        experiences: prev.experiences.map((e) => (e.branchId === id ? { ...e, branchId: null } : e)),
+      };
+    });
   }
 
   function deleteExperience(id) {
@@ -811,7 +891,31 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     setData((prev) => ({ ...prev, experiences: prev.experiences.filter((e) => e.id !== id) }));
   }
 
-  function editRestaurant(r) { setRestaurantForm({ ...emptyRestaurantForm, ...r, cuisineInput: "", rating: r.rating ?? "" }); setRestaurantOpen(true); }
+  function setDefaultBranch(restaurantId, branchId) {
+    setData((prev) => ({
+      ...prev,
+      branches: prev.branches.map((branch) => (
+        branch.restaurantId === restaurantId
+          ? { ...branch, isDefault: branch.id === branchId }
+          : branch
+      )),
+    }));
+  }
+
+  function editRestaurant(r) {
+    const defaultBranch = defaultBranchByRestaurantId[r.id];
+    setRestaurantForm({
+      ...emptyRestaurantForm,
+      ...r,
+      area: defaultBranch?.area || "",
+      city: defaultBranch?.city || "",
+      fullAddress: defaultBranch?.fullAddress || "",
+      mapsLink: defaultBranch?.mapsLink || "",
+      cuisineInput: "",
+      rating: r.rating ?? "",
+    });
+    setRestaurantOpen(true);
+  }
   function editBranch(b) { setBranchFormError(""); setBranchForm({ ...emptyBranchForm, ...b }); setBranchOpen(true); }
   function editDish(d) {
     setDishForm({ ...emptyDishForm, ...d, branchId: d.branchId || "none", price: d.price ?? "", recommendationInput: "", alertInput: "", tagInput: "" });
@@ -983,10 +1087,47 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                   <ModalHeader title={restaurantForm.id ? "Edit Restaurant" : "Add Restaurant"} onClose={() => { setRestaurantOpen(false); resetRestaurantForm(); }} />
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="md:col-span-2"><Field label="Name"><Input value={restaurantForm.name} onChange={(e) => setRestaurantForm({ ...restaurantForm, name: e.target.value })} /></Field></div>
-                    <Field label="City"><Input list="restaurant-city-options" value={restaurantForm.city} onChange={(e) => setRestaurantForm({ ...restaurantForm, city: e.target.value })} placeholder="Select or type a city" /></Field>
-                    <Field label="Area"><Input list="restaurant-area-options" value={restaurantForm.area} onChange={(e) => setRestaurantForm({ ...restaurantForm, area: e.target.value })} placeholder="Select or type an area" /></Field>
-                    <Field label="Full address"><Input value={restaurantForm.fullAddress} onChange={(e) => setRestaurantForm({ ...restaurantForm, fullAddress: e.target.value })} /></Field>
-                    <Field label="Google Maps link"><Input value={restaurantForm.mapsLink} onChange={(e) => setRestaurantForm({ ...restaurantForm, mapsLink: e.target.value })} /></Field>
+                    <Field label="Default branch city">
+                      <Input
+                        list="restaurant-city-options"
+                        value={restaurantForm.city}
+                        onChange={(e) => setRestaurantForm({ ...restaurantForm, city: e.target.value })}
+                        placeholder="Select or type a city"
+                        readOnly={!canEditRestaurantAddressFields}
+                        className={!canEditRestaurantAddressFields ? "bg-slate-50 text-slate-500" : ""}
+                      />
+                    </Field>
+                    <Field label="Default branch area">
+                      <Input
+                        list="restaurant-area-options"
+                        value={restaurantForm.area}
+                        onChange={(e) => setRestaurantForm({ ...restaurantForm, area: e.target.value })}
+                        placeholder="Select or type an area"
+                        readOnly={!canEditRestaurantAddressFields}
+                        className={!canEditRestaurantAddressFields ? "bg-slate-50 text-slate-500" : ""}
+                      />
+                    </Field>
+                    <Field label="Default branch full address">
+                      <Input
+                        value={restaurantForm.fullAddress}
+                        onChange={(e) => setRestaurantForm({ ...restaurantForm, fullAddress: e.target.value })}
+                        readOnly={!canEditRestaurantAddressFields}
+                        className={!canEditRestaurantAddressFields ? "bg-slate-50 text-slate-500" : ""}
+                      />
+                    </Field>
+                    <Field label="Default branch Google Maps link">
+                      <Input
+                        value={restaurantForm.mapsLink}
+                        onChange={(e) => setRestaurantForm({ ...restaurantForm, mapsLink: e.target.value })}
+                        readOnly={!canEditRestaurantAddressFields}
+                        className={!canEditRestaurantAddressFields ? "bg-slate-50 text-slate-500" : ""}
+                      />
+                    </Field>
+                    {!canEditRestaurantAddressFields && (
+                      <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        This restaurant has multiple branches. Edit address details from Manage Branches.
+                      </div>
+                    )}
                     <div className="md:col-span-2">
                       <TagInput
                         label="Cuisines"
@@ -1378,6 +1519,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
             prepareLogExperience={prepareLogExperience}
             editBranch={editBranch}
             deleteBranch={deleteBranch}
+            setDefaultBranch={setDefaultBranch}
             defaultStatsView={defaultRestaurantStatsView}
           />
 

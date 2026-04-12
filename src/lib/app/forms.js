@@ -17,8 +17,11 @@ export const emptyRestaurantForm = {
 export const emptyBranchForm = {
   id: null,
   restaurantId: "",
+  isDefault: false,
   name: "",
   area: "",
+  city: "",
+  fullAddress: "",
   locationText: "",
   mapsLink: "",
   notes: "",

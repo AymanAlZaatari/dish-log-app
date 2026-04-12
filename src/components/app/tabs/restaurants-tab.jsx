@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, Eye, MapPin, NotebookText, Pencil, Plus, Search
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
@@ -54,17 +54,18 @@ export function RestaurantsTab({
   prepareLogExperience,
   editBranch,
   deleteBranch,
+  setDefaultBranch,
   defaultStatsView,
 }) {
   const [expandAllDishes, setExpandAllDishes] = useState(false);
   const [expandedDishRestaurantIds, setExpandedDishRestaurantIds] = useState([]);
-  const [expandedBranchRestaurantIds, setExpandedBranchRestaurantIds] = useState([]);
+  const [branchManagerRestaurantId, setBranchManagerRestaurantId] = useState(null);
   const statsView = defaultStatsView || "cards";
 
   useEffect(() => {
     const visibleRestaurantIds = new Set(filteredRestaurants.map((restaurant) => restaurant.id));
     setExpandedDishRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
-    setExpandedBranchRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
+    setBranchManagerRestaurantId((currentId) => (currentId && visibleRestaurantIds.has(currentId) ? currentId : null));
   }, [filteredRestaurants]);
 
   const toggleRestaurantDishes = (restaurantId) => {
@@ -85,54 +86,116 @@ export function RestaurantsTab({
     );
   };
 
-  const toggleRestaurantBranches = (restaurantId) => {
-    setExpandedBranchRestaurantIds((currentIds) =>
-      currentIds.includes(restaurantId)
-        ? currentIds.filter((id) => id !== restaurantId)
-        : [...currentIds, restaurantId]
-    );
-  };
+  const branchManagerRestaurant = branchManagerRestaurantId
+    ? data.restaurants.find((restaurant) => restaurant.id === branchManagerRestaurantId) || null
+    : null;
+  const branchManagerBranches = branchManagerRestaurantId
+    ? data.branches.filter((branch) => branch.restaurantId === branchManagerRestaurantId)
+    : [];
 
   return (
     <TabsContent value="restaurants" className="space-y-6">
-      <div className={SECTION_CONTAINER}>
-        <div className="flex flex-wrap gap-2">
-          <Dialog open={branchOpen} onOpenChange={(open) => { setBranchOpen(open); if (!open) resetBranchForm(); }}>
-            <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Branch</Button></DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-              <ModalHeader title={branchForm.id ? "Edit Branch" : "Add Branch"} onClose={() => { setBranchOpen(false); resetBranchForm(); }} />
-              {branchFormError ? <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{branchFormError}</div> : null}
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Restaurant">
-                  <Select value={branchForm.restaurantId || "__none"} onValueChange={(value) => { setBranchForm({ ...branchForm, restaurantId: value === "__none" ? "" : value }); setBranchFormError(""); }}>
-                    <SelectTrigger><SelectValue placeholder="Select restaurant" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none">Select restaurant</SelectItem>
-                      {data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field label="Branch name"><Input value={branchForm.name} onChange={(e) => { setBranchForm({ ...branchForm, name: e.target.value }); setBranchFormError(""); }} /></Field>
-                <Field label="Area">
-                  <Select value={branchForm.area || "__none"} onValueChange={(value) => { setBranchForm({ ...branchForm, area: value === "__none" ? "" : value }); setBranchFormError(""); }}>
-                    <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
-                    <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
-                  </Select>
-                </Field>
-                <Field label="Location text"><Input value={branchForm.locationText} onChange={(e) => { setBranchForm({ ...branchForm, locationText: e.target.value }); setBranchFormError(""); }} /></Field>
-                <Field label="Google Maps link"><Input value={branchForm.mapsLink} onChange={(e) => { setBranchForm({ ...branchForm, mapsLink: e.target.value }); setBranchFormError(""); }} /></Field>
-                <div className="md:col-span-2"><Field label="Notes"><Textarea value={branchForm.notes} onChange={(e) => { setBranchForm({ ...branchForm, notes: e.target.value }); setBranchFormError(""); }} rows={4} /></Field></div>
+      <Dialog open={branchOpen} onOpenChange={(open) => { setBranchOpen(open); if (!open) resetBranchForm(); }}>
+        <DialogContent className="sm:max-w-2xl">
+          <ModalHeader title={branchForm.id ? "Edit Branch" : "Add Branch"} onClose={() => { setBranchOpen(false); resetBranchForm(); }} />
+          {branchFormError ? <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{branchFormError}</div> : null}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Restaurant">
+              <Select value={branchForm.restaurantId || "__none"} onValueChange={(value) => { setBranchForm({ ...branchForm, restaurantId: value === "__none" ? "" : value }); setBranchFormError(""); }}>
+                <SelectTrigger><SelectValue placeholder="Select restaurant" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">Select restaurant</SelectItem>
+                  {data.restaurants.map((restaurant) => <SelectItem key={restaurant.id} value={restaurant.id}>{restaurant.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Branch name"><Input value={branchForm.name} onChange={(e) => { setBranchForm({ ...branchForm, name: e.target.value }); setBranchFormError(""); }} /></Field>
+            <Field label="Area">
+              <Select value={branchForm.area || "__none"} onValueChange={(value) => { setBranchForm({ ...branchForm, area: value === "__none" ? "" : value }); setBranchFormError(""); }}>
+                <SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
+                <SelectContent><SelectItem value="__none">No area</SelectItem>{areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}</SelectContent>
+              </Select>
+            </Field>
+            <Field label="City"><Input list="restaurant-city-options" value={branchForm.city} onChange={(e) => { setBranchForm({ ...branchForm, city: e.target.value }); setBranchFormError(""); }} placeholder="Select or type a city" /></Field>
+            <div className="md:col-span-2"><Field label="Full address"><Input value={branchForm.fullAddress} onChange={(e) => { setBranchForm({ ...branchForm, fullAddress: e.target.value }); setBranchFormError(""); }} /></Field></div>
+            <Field label="Location text"><Input value={branchForm.locationText} onChange={(e) => { setBranchForm({ ...branchForm, locationText: e.target.value }); setBranchFormError(""); }} /></Field>
+            <Field label="Google Maps link"><Input value={branchForm.mapsLink} onChange={(e) => { setBranchForm({ ...branchForm, mapsLink: e.target.value }); setBranchFormError(""); }} /></Field>
+            <div className="md:col-span-2"><Field label="Notes"><Textarea value={branchForm.notes} onChange={(e) => { setBranchForm({ ...branchForm, notes: e.target.value }); setBranchFormError(""); }} rows={4} /></Field></div>
+          </div>
+          <ModalActions
+            onCancel={() => { setBranchOpen(false); resetBranchForm(); }}
+            onSave={saveBranch}
+            saveLabel={branchForm.id ? "Save Changes" : "Save Branch"}
+            cancelLabel={branchForm.id ? "Discard" : "Cancel"}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!branchManagerRestaurant} onOpenChange={(open) => { if (!open) setBranchManagerRestaurantId(null); }}>
+        <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-2xl">
+          <ModalHeader title={branchManagerRestaurant ? `${branchManagerRestaurant.name} Branches` : "Branches"} onClose={() => setBranchManagerRestaurantId(null)} />
+          {branchManagerRestaurant ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm text-slate-600">
+                  Manage branch-specific address and location details here.
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setBranchForm({ id: null, restaurantId: branchManagerRestaurant.id, isDefault: false, name: "", area: "", city: "", fullAddress: "", locationText: "", mapsLink: "", notes: "" });
+                    setBranchFormError("");
+                    setBranchManagerRestaurantId(null);
+                    setBranchOpen(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add Branch
+                </Button>
               </div>
-              <ModalActions
-                onCancel={() => { setBranchOpen(false); resetBranchForm(); }}
-                onSave={saveBranch}
-                saveLabel={branchForm.id ? "Save Changes" : "Save Branch"}
-                cancelLabel={branchForm.id ? "Discard" : "Cancel"}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+              {branchManagerBranches.length === 0 ? (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">No branches added yet.</div>
+              ) : (
+                <div className="space-y-3">
+                  {branchManagerBranches.map((branch) => (
+                    <div key={branch.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="font-semibold text-slate-900">{branch.name}</div>
+                            {branch.isDefault ? <Badge variant="secondary" className="!border-emerald-300 !bg-emerald-100 !text-emerald-800">Default</Badge> : null}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-600">{[branch.area, branch.city].filter(Boolean).join(", ") || branch.locationText || "No location"}</div>
+                          {branch.fullAddress ? <div className="mt-1 text-sm text-slate-500">{branch.fullAddress}</div> : branch.locationText && branch.area ? <div className="mt-1 text-sm text-slate-500">{branch.locationText}</div> : null}
+                          {branch.mapsLink ? <a href={branch.mapsLink} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 text-sm text-slate-900 underline"><MapPin className="h-4 w-4 text-red-500" /> Open Maps Link</a> : null}
+                          {branch.notes ? <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">{branch.notes}</div> : null}
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {!branch.isDefault ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setDefaultBranch(branch.restaurantId, branch.id)}
+                            >
+                              Set Default
+                            </Button>
+                          ) : null}
+                          <Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => { setBranchManagerRestaurantId(null); editBranch(branch); }} aria-label={`Edit ${branch.name}`}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteBranch(branch.id)} aria-label={`Delete ${branch.name}`}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <div className={SECTION_CONTAINER}>
         <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -176,7 +239,6 @@ export function RestaurantsTab({
             const avgDishRating = average(dishes.map((d) => computedDishRating(d.id)));
             const avgDishPrice = average(dishes.map((dish) => dish.price));
             const areDishesExpanded = expandAllDishes || expandedDishRestaurantIds.includes(restaurant.id);
-            const areBranchesExpanded = expandedBranchRestaurantIds.includes(restaurant.id);
             return (
               <Card key={restaurant.id} className="rounded-3xl border-2 border-slate-200 bg-white shadow-sm">
                 <CardHeader className="px-6 pt-6 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
@@ -317,19 +379,17 @@ export function RestaurantsTab({
                     )}
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 text-left font-medium text-slate-900"
-                        onClick={() => toggleRestaurantBranches(restaurant.id)}
-                        aria-expanded={areBranchesExpanded}
-                      >
-                        <span>Branches</span>
-                        <Badge variant="outline">{branches.length}</Badge>
-                        {areBranchesExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
-                      </button>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-medium text-slate-900">Branches</div>
+                        <div className="mt-1 text-sm text-slate-500">
+                          {branches.length === 0 ? "No branches added yet." : `${branches.length} branch${branches.length === 1 ? "" : "es"} available`}
+                        </div>
+                      </div>
+                      <Button type="button" variant="outline" onClick={() => setBranchManagerRestaurantId(restaurant.id)}>
+                        Manage
+                      </Button>
                     </div>
-                    {!areBranchesExpanded ? null : branches.length === 0 ? <div className="text-sm text-slate-500">No branches added.</div> : <div className="space-y-2">{branches.map((branch) => <div key={branch.id} className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-3"><div><div className="font-medium text-slate-900">{branch.name}</div><div>{branch.area || branch.locationText || "No location"}</div></div><div className="flex items-center gap-2"><Button variant="outline" size="sm" className={EDIT_BUTTON_STYLE} onClick={() => editBranch(branch)} aria-label={`Edit ${branch.name}`}><Pencil className="h-4 w-4" /></Button><Button variant="outline" size="sm" className={DELETE_BUTTON_STYLE} onClick={() => deleteBranch(branch.id)} aria-label={`Delete ${branch.name}`}><Trash2 className="h-4 w-4" /></Button></div></div>)}</div>}
                   </div>
                 </CardContent>
               </Card>
