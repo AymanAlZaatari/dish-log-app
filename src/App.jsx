@@ -891,7 +891,14 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   function selectDishNameSuggestion(dish) {
     if (dish.restaurantId === dishForm.restaurantId) {
       setShowDishNameSuggestions(false);
-      editDish(dish);
+      const shouldLogExperience = window.confirm(
+        `"${dish.name}" already exists in this restaurant. Do you want to log a new experience for it?`
+      );
+      if (shouldLogExperience) {
+        setDishOpen(false);
+        resetDishForm();
+        prepareLogExperience(dish.restaurantId, dish.id);
+      }
       return;
     }
 
@@ -1082,8 +1089,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                 <div>
                                   <div className="flex flex-wrap items-center gap-2">
                                     <span className="font-medium text-slate-900">{dish.name}</span>
-                                    {isCurrentRestaurant && <Badge variant="secondary">Current restaurant</Badge>}
-                                    {!isCurrentRestaurant && <Badge variant="outline">Use name here</Badge>}
+                                    {isCurrentRestaurant && <Badge variant="secondary">Dish exists here</Badge>}
+                                    {!isCurrentRestaurant && <Badge variant="outline">Add dish here</Badge>}
                                     {dish.isWishlist && <Badge>Wishlist</Badge>}
                                   </div>
                                   <div className="mt-1 text-sm text-slate-600">
@@ -1093,7 +1100,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                                   </div>
                                 </div>
                                 <div className="shrink-0 text-xs text-slate-500">
-                                  {isCurrentRestaurant ? "Open existing" : "Copy name"}
+                                  {isCurrentRestaurant ? "Log experience" : "Copy name"}
                                 </div>
                               </button>
                             );
