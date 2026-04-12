@@ -4,6 +4,11 @@ export const STORAGE_KEY = "dish-tracker-webapp-v2";
 export const APP_VERSION = `v${packageJson.version}`;
 export const CLOUD_DOC_VERSION = 1;
 export const ORDER_TYPES = ["Dine-in", "Delivery", "Takeaway"];
+export const ORDER_TYPE_BADGE_STYLES = {
+  "Dine-in": "bg-emerald-50 text-emerald-800 border-emerald-200",
+  Delivery: "bg-sky-50 text-sky-800 border-sky-200",
+  Takeaway: "bg-amber-50 text-amber-800 border-amber-200",
+};
 export const PORTION_SIZES = [
   "Taster",
   "Kids",

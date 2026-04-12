@@ -25,7 +25,7 @@ export function ModalHeader({ title, onClose }) {
         type="button"
         variant="ghost"
         size="icon"
-        className="absolute right-4 top-4 h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+        className="absolute right-4 top-4 h-9 w-9 rounded-full border border-slate-400 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900"
         onClick={onClose}
       >
         <span className="text-sm font-semibold leading-none">X</span>

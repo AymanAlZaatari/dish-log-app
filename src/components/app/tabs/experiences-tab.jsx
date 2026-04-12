@@ -8,6 +8,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import {
   DELETE_BUTTON_STYLE,
   EDIT_BUTTON_STYLE,
+  ORDER_TYPE_BADGE_STYLES,
   SECTION_CONTAINER,
 } from "@/lib/app/constants";
 import { ratingPillClass, valuePillClass } from "@/lib/app/data";
@@ -51,7 +52,12 @@ export function ExperiencesTab({
                           <div className="text-sm text-slate-500">{experience.date}</div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary">{experience.orderType}</Badge>
+                          <Badge
+                            variant="secondary"
+                            className={ORDER_TYPE_BADGE_STYLES[experience.orderType] || "bg-slate-100 text-slate-700 border-slate-200"}
+                          >
+                            {experience.orderType}
+                          </Badge>
                           {branch && <Badge variant="secondary">{branch.name}</Badge>}
                         </div>
                         {(experience.notes || experience.images?.length > 0) && (

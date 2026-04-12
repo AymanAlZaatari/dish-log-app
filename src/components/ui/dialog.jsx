@@ -28,7 +28,7 @@ export function DialogContent({ className = '', children, showCloseButton = true
         {showCloseButton ? (
           <button
             type="button"
-            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+            className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-400 bg-white text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
             onClick={() => ctx.onOpenChange?.(false)}
           >
             X

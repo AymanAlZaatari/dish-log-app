@@ -9,6 +9,7 @@ import {
   DASHBOARD_CARD_STYLES,
   DELETE_BUTTON_STYLE,
   EDIT_BUTTON_STYLE,
+  ORDER_TYPE_BADGE_STYLES,
   SECTION_CONTAINER,
 } from "@/lib/app/constants";
 import { ratingPillClass, valuePillClass } from "@/lib/app/data";
@@ -205,7 +206,10 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
               <CalendarDays className="h-3.5 w-3.5" />
               {experience.date}
             </span>
-            <Badge variant="secondary" className="gap-1.5 bg-sky-50 text-sky-800 border-sky-200">
+            <Badge
+              variant="secondary"
+              className={`gap-1.5 ${ORDER_TYPE_BADGE_STYLES[experience.orderType] || "bg-slate-100 text-slate-700 border-slate-200"}`}
+            >
               <NotebookText className="h-3.5 w-3.5" />
               <span>{experience.orderType}</span>
             </Badge>
