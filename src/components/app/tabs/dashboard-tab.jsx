@@ -98,7 +98,7 @@ export function DashboardTab({
 }
 
 function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avgDishRating, avgDishPrice, statsView }) {
-  const cuisines = restaurant.cuisines?.length ? restaurant.cuisines : ["No cuisine"];
+  const cuisines = restaurant.cuisines?.length ? restaurant.cuisines : [];
   const hasLocation = restaurant.area || restaurant.city;
   const isInlineView = statsView === "rows";
 
@@ -111,11 +111,11 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
               <Store className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="text-base font-bold text-slate-900 sm:text-lg">{restaurant.name}</div>
+              <div className="text-[1.05rem] font-bold text-slate-900 sm:text-lg">{restaurant.name}</div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-[0.8rem] font-medium text-slate-500 sm:text-sm">
             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
               <MapPin className="h-3.5 w-3.5" />
               {hasLocation ? [restaurant.area, restaurant.city].filter(Boolean).join(", ") : "No location"}
@@ -131,7 +131,7 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 sm:min-w-[10rem]">
           <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">Overview</div>
-          <div className="mt-1 text-sm font-semibold text-slate-900">{dishesCount} dishes • {experiencesCount} experiences</div>
+          <div className="mt-1 text-[0.8rem] font-semibold text-slate-900 sm:text-sm">{dishesCount} dishes • {experiencesCount} experiences</div>
         </div>
       </div>
 
@@ -156,19 +156,19 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-3">
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
-            <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
+            <div className="text-[0.72rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Restaurant Score</div>
             <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</div>
             {restaurant.rating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={restaurant.rating} size="sm" /></div> : null}
             {restaurant.rating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={restaurant.rating} /></div> : null}
           </div>
           <div className={`min-w-0 rounded-xl border p-3 text-center sm:rounded-2xl sm:p-4 ${ratingPillClass(avgDishRating)}`}>
-            <div className="text-[0.68rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
+            <div className="text-[0.72rem] font-semibold leading-tight text-slate-500 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Rating</div>
             <div className="mt-2 text-lg font-bold text-slate-900 sm:mt-3 sm:text-2xl">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</div>
             {avgDishRating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={avgDishRating} size="sm" /></div> : null}
             {avgDishRating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={avgDishRating} /></div> : null}
           </div>
           <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
-            <div className="text-[0.68rem] font-semibold leading-tight text-emerald-700 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Price</div>
+            <div className="text-[0.72rem] font-semibold leading-tight text-emerald-700 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em]">Avg Dish Price</div>
             <div className="mt-2 text-lg font-bold sm:mt-3 sm:text-2xl">{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
           </div>
         </div>
@@ -193,9 +193,9 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
             <div className="rounded-full bg-amber-100 p-2 text-amber-700">
               <UtensilsCrossed className="h-4 w-4" />
             </div>
-            <div className="min-w-0 text-base font-bold text-slate-900 sm:text-lg">{dish?.name || "Unknown dish"}</div>
+            <div className="min-w-0 text-[1.05rem] font-bold text-slate-900 sm:text-lg">{dish?.name || "Unknown dish"}</div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-[0.8rem] font-medium text-slate-500 sm:text-sm">
             {restaurant?.name ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-slate-700">
                 <Store className="h-3.5 w-3.5" />
