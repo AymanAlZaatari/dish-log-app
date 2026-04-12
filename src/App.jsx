@@ -412,6 +412,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       recommendedBy: form.recommendedBy.trim(),
       halalChecked: !!form.halalChecked,
       kidsFriendly: !!form.kidsFriendly,
+      noAlcohol: !!form.noAlcohol,
+      noPork: !!form.noPork,
     };
   }
 
@@ -452,6 +454,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
       recommendedBy: restaurantForm.recommendedBy.trim(),
       halalChecked: !!restaurantForm.halalChecked,
       kidsFriendly: !!restaurantForm.kidsFriendly,
+      noAlcohol: !!restaurantForm.noAlcohol,
+      noPork: !!restaurantForm.noPork,
     };
 
     setData((prev) => {
@@ -1141,8 +1145,12 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                     </div>
                     <Field label="Restaurant rating (1-5)"><Input type="number" min="1" max="5" value={restaurantForm.rating} onChange={(e) => setRestaurantForm({ ...restaurantForm, rating: e.target.value })} /></Field>
                     <Field label="Recommended by"><Input value={restaurantForm.recommendedBy} onChange={(e) => setRestaurantForm({ ...restaurantForm, recommendedBy: e.target.value })} /></Field>
-                    <div className="flex items-center gap-3 pt-8"><Checkbox checked={restaurantForm.halalChecked} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
-                    <div className="flex items-center gap-3 pt-8"><Checkbox checked={restaurantForm.kidsFriendly} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
+                    <div className="md:col-span-2 flex flex-wrap items-center gap-x-5 gap-y-3">
+                      <div className="flex items-center gap-3"><Checkbox checked={restaurantForm.halalChecked} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
+                      <div className="flex items-center gap-3"><Checkbox checked={restaurantForm.kidsFriendly} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
+                      <div className="flex items-center gap-3"><Checkbox checked={restaurantForm.noAlcohol} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, noAlcohol: !!checked })} /><Label>No alcohol</Label></div>
+                      <div className="flex items-center gap-3"><Checkbox checked={restaurantForm.noPork} onCheckedChange={(checked) => setRestaurantForm({ ...restaurantForm, noPork: !!checked })} /><Label>No pork</Label></div>
+                    </div>
                     <div className="md:col-span-2"><Field label="Notes"><Textarea value={restaurantForm.notes} onChange={(e) => setRestaurantForm({ ...restaurantForm, notes: e.target.value })} rows={4} /></Field></div>
                   </div>
                   <ModalActions
@@ -1150,6 +1158,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                     onSave={saveRestaurant}
                     saveLabel={restaurantForm.id ? "Save Changes" : "Save Restaurant"}
                     cancelLabel={restaurantForm.id ? "Discard" : "Cancel"}
+                    saveClassName="!border-emerald-600 !bg-emerald-600 !text-white hover:!bg-emerald-700"
                   />
                 </DialogContent>
               </Dialog>
@@ -1192,6 +1201,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                           <div className="flex gap-4">
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForDish.halalChecked} onCheckedChange={(checked) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForDish.kidsFriendly} onCheckedChange={(checked) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForDish.noAlcohol} onCheckedChange={(checked) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, noAlcohol: !!checked })} /><Label>No alcohol</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForDish.noPork} onCheckedChange={(checked) => setInlineRestaurantForDish({ ...inlineRestaurantForDish, noPork: !!checked })} /><Label>No pork</Label></div>
                           </div>
                           <button type="button" className="text-sm text-slate-600 underline" onClick={() => { setShowInlineRestaurantForDish(false); setInlineRestaurantForDish(inlineRestaurantFormDefault); }}>
                             Back to existing restaurants
@@ -1381,6 +1392,8 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
                           <div className="flex gap-4">
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForExperience.halalChecked} onCheckedChange={(checked) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, halalChecked: !!checked })} /><Label>Halal checked</Label></div>
                             <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForExperience.kidsFriendly} onCheckedChange={(checked) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, kidsFriendly: !!checked })} /><Label>Kids friendly</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForExperience.noAlcohol} onCheckedChange={(checked) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, noAlcohol: !!checked })} /><Label>No alcohol</Label></div>
+                            <div className="flex items-center gap-2"><Checkbox checked={inlineRestaurantForExperience.noPork} onCheckedChange={(checked) => setInlineRestaurantForExperience({ ...inlineRestaurantForExperience, noPork: !!checked })} /><Label>No pork</Label></div>
                           </div>
                           <button type="button" className="text-sm text-slate-600 underline" onClick={() => { setShowInlineRestaurantForExperience(false); setInlineRestaurantForExperience(inlineRestaurantFormDefault); }}>
                             Back to existing restaurants

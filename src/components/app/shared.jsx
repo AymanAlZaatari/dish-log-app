@@ -34,13 +34,13 @@ export function ModalHeader({ title, onClose }) {
   );
 }
 
-export function ModalActions({ onCancel, onSave, saveLabel, cancelLabel = "Cancel" }) {
+export function ModalActions({ onCancel, onSave, saveLabel, cancelLabel = "Cancel", saveClassName = SAVE_BUTTON_STYLE }) {
   return (
     <div className="mt-6 flex justify-end gap-3">
       <Button type="button" variant="outline" className={CANCEL_BUTTON_STYLE} onClick={onCancel}>
         {cancelLabel}
       </Button>
-      <Button type="button" className={SAVE_BUTTON_STYLE} onClick={onSave}>
+      <Button type="button" className={saveClassName} onClick={onSave}>
         {saveLabel}
       </Button>
     </div>

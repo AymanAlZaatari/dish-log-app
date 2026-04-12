@@ -78,6 +78,8 @@ export function createSampleData() {
         recommendedBy: "Rami",
         halalChecked: true,
         kidsFriendly: true,
+        noAlcohol: true,
+        noPork: true,
       },
       {
         id: falafelHubId,
@@ -88,6 +90,8 @@ export function createSampleData() {
         recommendedBy: "Nadine",
         halalChecked: true,
         kidsFriendly: false,
+        noAlcohol: true,
+        noPork: true,
       },
       {
         id: nonaSliceId,
@@ -98,6 +102,8 @@ export function createSampleData() {
         recommendedBy: "Karim",
         halalChecked: false,
         kidsFriendly: true,
+        noAlcohol: false,
+        noPork: false,
       },
       {
         id: sushiLoopId,
@@ -108,6 +114,8 @@ export function createSampleData() {
         recommendedBy: "Lea",
         halalChecked: false,
         kidsFriendly: true,
+        noAlcohol: false,
+        noPork: true,
       },
       {
         id: burgerYardId,
@@ -118,6 +126,8 @@ export function createSampleData() {
         recommendedBy: "Ziad",
         halalChecked: true,
         kidsFriendly: true,
+        noAlcohol: true,
+        noPork: false,
       },
       {
         id: sweetLeafId,
@@ -128,6 +138,8 @@ export function createSampleData() {
         recommendedBy: "Tala",
         halalChecked: true,
         kidsFriendly: true,
+        noAlcohol: true,
+        noPork: true,
       },
     ],
     branches: [
@@ -691,6 +703,8 @@ export function migrateData(parsed) {
     recommendedBy: r.recommendedBy || "",
     halalChecked: r.halalChecked ?? true,
     kidsFriendly: r.kidsFriendly ?? false,
+    noAlcohol: r.noAlcohol ?? false,
+    noPork: r.noPork ?? false,
   }));
 
   const branches = (parsed.branches || []).map((branch) => ({

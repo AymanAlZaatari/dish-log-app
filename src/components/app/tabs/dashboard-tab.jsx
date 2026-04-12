@@ -131,6 +131,8 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
                 <span>{cuisine}</span>
               </Badge>
             ))}
+            {!restaurant.noAlcohol ? <Badge className="!border-red-200 !bg-red-100 !text-red-700">Alcohol</Badge> : null}
+            {!restaurant.noPork ? <Badge className="!border-red-200 !bg-red-100 !text-red-700">Pork</Badge> : null}
           </div>
         </div>
 

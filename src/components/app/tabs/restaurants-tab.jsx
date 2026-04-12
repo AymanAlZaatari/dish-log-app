@@ -250,6 +250,8 @@ export function RestaurantsTab({
                       {(restaurant.cuisines || []).map((cuisine) => <Badge key={cuisine} variant="secondary">{cuisine}</Badge>)}
                       {restaurant.halalChecked && <Badge variant="outline">Halal checked</Badge>}
                       {restaurant.kidsFriendly && <Badge className="!border-blue-200 !bg-blue-100 !text-blue-700">Kids friendly</Badge>}
+                      {!restaurant.noAlcohol && <Badge className="!border-red-200 !bg-red-100 !text-red-700">Alcohol</Badge>}
+                      {!restaurant.noPork && <Badge className="!border-red-200 !bg-red-100 !text-red-700">Pork</Badge>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

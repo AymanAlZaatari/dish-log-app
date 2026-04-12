@@ -12,6 +12,8 @@ export const emptyRestaurantForm = {
   recommendedBy: "",
   halalChecked: true,
   kidsFriendly: false,
+  noAlcohol: true,
+  noPork: true,
 };
 
 export const emptyBranchForm = {
@@ -72,4 +74,6 @@ export const inlineRestaurantFormDefault = {
   recommendedBy: "",
   halalChecked: true,
   kidsFriendly: false,
+  noAlcohol: true,
+  noPork: true,
 };
