@@ -1,4 +1,4 @@
-import { CalendarDays, Camera, Filter, Heart, MapPin, NotebookText, Pencil, Star, Store, Trash2, UtensilsCrossed } from "lucide-react";
+import { CalendarDays, Camera, DollarSign, Filter, Heart, MapPin, NotebookText, Pencil, Sparkles, Star, Store, Trash2, UtensilsCrossed } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   EDIT_BUTTON_STYLE,
   SECTION_CONTAINER,
 } from "@/lib/app/constants";
-import { ratingPillClass } from "@/lib/app/data";
+import { ratingPillClass, valuePillClass } from "@/lib/app/data";
 
 import { Stars } from "../shared";
 
@@ -70,6 +70,7 @@ export function DashboardTab({
                   dish={dish}
                   restaurant={restaurant}
                   branch={branch}
+                  statsView={defaultStatsView}
                   editExperience={editExperience}
                   deleteExperience={deleteExperience}
                 />
@@ -161,12 +162,13 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
   );
 }
 
-function RecentExperienceCard({ experience, dish, restaurant, branch, editExperience, deleteExperience }) {
+function RecentExperienceCard({ experience, dish, restaurant, branch, statsView, editExperience, deleteExperience }) {
   const hasPrice = experience.price != null && experience.price !== "";
   const hasValue = Boolean(experience.valueForMoney);
   const hasRating = experience.rating != null;
   const hasNotes = Boolean(experience.notes);
   const imageCount = experience.images?.length || 0;
+  const isInlineView = statsView === "rows";
 
   return (
     <div className="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/60 sm:p-5">
@@ -197,31 +199,57 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, editExperi
           </div>
         </div>
 
-        {hasRating ? (
-          <div className={`rounded-2xl border px-3 py-2 ${ratingPillClass(Number(experience.rating))}`}>
-            <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">Rating</div>
-            <div className="mt-1 flex items-center gap-2">
-              <Stars value={experience.rating} />
-              <span className="text-sm font-semibold text-slate-900">{Number(experience.rating).toFixed(1)}</span>
-            </div>
-          </div>
-        ) : null}
       </div>
 
-      {(hasPrice || hasValue || imageCount > 0) ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {hasPrice ? (
-            <Badge variant="secondary" className="gap-1.5 bg-emerald-50 text-emerald-800 border-emerald-200">
-              <span className="font-semibold">Price</span>
-              <span>{`$${Number(experience.price).toFixed(1)}`}</span>
-            </Badge>
-          ) : null}
-          {hasValue ? (
-            <Badge variant="secondary" className="gap-1.5 bg-violet-50 text-violet-800 border-violet-200">
-              <span className="font-semibold">Value</span>
-              <span>{experience.valueForMoney}</span>
-            </Badge>
-          ) : null}
+      {(hasPrice || hasValue || hasRating || imageCount > 0) ? (
+        <div className="mt-4 space-y-3">
+          {isInlineView ? (
+            <div className="rounded-2xl border border-slate-200 bg-white">
+              <InlineMetricRow
+                label="Price"
+                value={hasPrice ? `$${Number(experience.price).toFixed(1)}` : "—"}
+                className="text-emerald-900"
+                labelClassName="text-emerald-700"
+              />
+              <div className="border-t border-slate-200" />
+              <InlineMetricRow
+                label="Rating"
+                value={hasRating ? Number(experience.rating).toFixed(1) : "—"}
+                className={ratingPillClass(hasRating ? Number(experience.rating) : null)}
+              />
+              <div className="border-t border-slate-200" />
+              <InlineMetricRow
+                label="Value"
+                value={hasValue ? experience.valueForMoney : "—"}
+                className={valuePillClass(experience.valueForMoney)}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              <ExperienceMetricCard
+                label="Price"
+                value={hasPrice ? `$${Number(experience.price).toFixed(1)}` : "—"}
+                icon={<DollarSign className="h-4 w-4" />}
+                className="border-emerald-200 bg-emerald-50 text-emerald-900"
+                labelClassName="text-emerald-700"
+              />
+              <ExperienceMetricCard
+                label="Rating"
+                value={hasRating ? Number(experience.rating).toFixed(1) : "—"}
+                icon={<Star className="h-4 w-4" />}
+                className={ratingPillClass(hasRating ? Number(experience.rating) : null)}
+              >
+                {hasRating ? <div className="mt-2 hidden justify-center sm:flex"><Stars value={experience.rating} /></div> : null}
+              </ExperienceMetricCard>
+              <ExperienceMetricCard
+                label="Value"
+                value={hasValue ? experience.valueForMoney : "—"}
+                icon={<Sparkles className="h-4 w-4" />}
+                className={valuePillClass(experience.valueForMoney)}
+              />
+            </div>
+          )}
+
           {imageCount > 0 ? (
             <Badge variant="secondary" className="gap-1.5 bg-rose-50 text-rose-800 border-rose-200">
               <Camera className="h-3.5 w-3.5" />
@@ -256,6 +284,19 @@ function InlineMetricRow({ label, value, className = "", labelClassName = "text-
     <div className={`flex items-center justify-between gap-4 px-4 py-3 ${className}`}>
       <span className={`text-sm font-medium ${labelClassName}`}>{label}</span>
       <span className="text-base font-bold text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+function ExperienceMetricCard({ label, value, icon, className, labelClassName = "text-slate-500", children }) {
+  return (
+    <div className={`min-w-0 rounded-2xl border px-2 py-3 text-center sm:px-3 sm:p-4 ${className}`}>
+      <div className={`flex items-center justify-center gap-1 text-[0.62rem] font-semibold leading-tight sm:gap-1.5 sm:text-[0.82rem] sm:uppercase sm:tracking-[0.18em] ${labelClassName}`}>
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 text-sm font-bold text-slate-900 sm:mt-3 sm:text-xl">{value}</div>
+      {children ? <div className="mt-1 sm:mt-2">{children}</div> : null}
     </div>
   );
 }
