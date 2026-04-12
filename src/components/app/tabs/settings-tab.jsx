@@ -66,6 +66,24 @@ export function SettingsTab(props) {
     <TabsContent value="settings" className="space-y-6">
       <div className={SECTION_CONTAINER}>
         <Card className="rounded-3xl border-0 shadow-sm">
+          <CardHeader><CardTitle className="font-bold">View Defaults</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-600">
+            <div>Choose the default stats view used when you open the Restaurants tab.</div>
+            <div className="max-w-xs">
+              <Select value={defaultRestaurantStatsView} onValueChange={setDefaultRestaurantStatsView}>
+                <SelectTrigger><SelectValue placeholder="Default restaurant stats view" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cards">KPI</SelectItem>
+                  <SelectItem value="rows">Rows</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className={SECTION_CONTAINER}>
+        <Card className="rounded-3xl border-0 shadow-sm">
           <CardHeader><CardTitle className="font-bold">Dish Tags</CardTitle></CardHeader>
           <CardContent>
             {allDishTags.length === 0 ? (
@@ -307,24 +325,6 @@ export function SettingsTab(props) {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className={SECTION_CONTAINER}>
-        <Card className="rounded-3xl border-0 shadow-sm">
-          <CardHeader><CardTitle className="font-bold">View Defaults</CardTitle></CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-600">
-            <div>Choose the default stats view used when you open the Restaurants tab.</div>
-            <div className="max-w-xs">
-              <Select value={defaultRestaurantStatsView} onValueChange={setDefaultRestaurantStatsView}>
-                <SelectTrigger><SelectValue placeholder="Default restaurant stats view" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cards">KPI</SelectItem>
-                  <SelectItem value="rows">Rows</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </CardContent>
         </Card>
       </div>
