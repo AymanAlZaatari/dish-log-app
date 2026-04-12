@@ -20,6 +20,11 @@ export function SettingsTab(props) {
   const {
     allDishTags,
     data,
+    tagOpen,
+    setTagOpen,
+    newTag,
+    setNewTag,
+    addTag,
     expandedTag,
     setExpandedTag,
     renameTag,
@@ -84,7 +89,19 @@ export function SettingsTab(props) {
 
       <div className={SECTION_CONTAINER}>
         <Card className="rounded-3xl border-0 shadow-sm">
-          <CardHeader><CardTitle className="font-bold">Dish Tags</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="font-bold">Dish Tags</CardTitle>
+            <Dialog open={tagOpen} onOpenChange={setTagOpen}>
+              <DialogTrigger asChild><Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Tag</Button></DialogTrigger>
+              <DialogContent>
+                <ModalHeader title="Add Tag" onClose={() => setTagOpen(false)} />
+                <div className="space-y-4">
+                  <Input value={newTag} onChange={(e) => setNewTag(e.target.value)} placeholder="Enter tag name" />
+                  <ModalActions onCancel={() => setTagOpen(false)} onSave={addTag} saveLabel="Save" />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </CardHeader>
           <CardContent>
             {allDishTags.length === 0 ? (
               <div className="text-sm text-slate-500">No dish tags yet.</div>

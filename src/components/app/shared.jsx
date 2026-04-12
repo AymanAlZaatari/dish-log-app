@@ -19,13 +19,13 @@ export function Field({ label, children }) {
 
 export function ModalHeader({ title, onClose }) {
   return (
-    <DialogHeader className="relative pr-10">
+    <DialogHeader className="pr-12">
       <DialogTitle className="text-xl font-bold tracking-tight">{title}</DialogTitle>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="absolute right-0 top-0 h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+        className="absolute right-4 top-4 h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900"
         onClick={onClose}
       >
         <span className="text-sm font-semibold leading-none">X</span>

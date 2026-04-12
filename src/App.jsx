@@ -94,6 +94,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [cuisineOpen, setCuisineOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
 
   const [restaurantForm, setRestaurantForm] = useState(emptyRestaurantForm);
   const [branchForm, setBranchForm] = useState(emptyBranchForm);
@@ -105,6 +106,7 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
   const [newCuisine, setNewCuisine] = useState("");
   const [newArea, setNewArea] = useState("");
   const [newCity, setNewCity] = useState("");
+  const [newTag, setNewTag] = useState("");
   const [duplicateDishSuggestion, setDuplicateDishSuggestion] = useState(null);
   const [showInlineRestaurantForDish, setShowInlineRestaurantForDish] = useState(false);
   const [showInlineRestaurantForExperience, setShowInlineRestaurantForExperience] = useState(false);
@@ -581,6 +583,20 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
     if (!value || data.cuisines.includes(value)) return;
     setData((prev) => ({ ...prev, cuisines: [...prev.cuisines, value].sort() }));
     setNewCuisine("");
+  }
+
+  function addTag() {
+    const value = newTag.trim();
+    if (!value || allDishTags.some((tag) => tag.toLowerCase() === value.toLowerCase())) return;
+    setData((prev) => ({
+      ...prev,
+      tagColors: {
+        ...(prev.tagColors || {}),
+        [value]: prev.tagColors?.[value] || "#64748b",
+      },
+    }));
+    setNewTag("");
+    setTagOpen(false);
   }
 
   function renameCuisine(cuisine) {
@@ -1402,6 +1418,11 @@ function DishTrackerAppContent({ data, setData, userEmail, cloudStatus, onLogout
           <SettingsTab
             allDishTags={allDishTags}
             data={data}
+            tagOpen={tagOpen}
+            setTagOpen={setTagOpen}
+            newTag={newTag}
+            setNewTag={setNewTag}
+            addTag={addTag}
             expandedTag={expandedTag}
             setExpandedTag={setExpandedTag}
             renameTag={renameTag}
