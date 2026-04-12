@@ -58,16 +58,12 @@ export function RestaurantsTab({
 }) {
   const [expandAllDishes, setExpandAllDishes] = useState(false);
   const [expandedDishRestaurantIds, setExpandedDishRestaurantIds] = useState([]);
-  const [statsView, setStatsView] = useState(defaultStatsView || "cards");
+  const statsView = defaultStatsView || "cards";
 
   useEffect(() => {
     const visibleRestaurantIds = new Set(filteredRestaurants.map((restaurant) => restaurant.id));
     setExpandedDishRestaurantIds((currentIds) => currentIds.filter((id) => visibleRestaurantIds.has(id)));
   }, [filteredRestaurants]);
-
-  useEffect(() => {
-    setStatsView(defaultStatsView || "cards");
-  }, [defaultStatsView]);
 
   const toggleRestaurantDishes = (restaurantId) => {
     if (expandAllDishes) {
@@ -137,28 +133,6 @@ export function RestaurantsTab({
             </p>
           </div>
           <div className="flex flex-col gap-3 md:items-end">
-            <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1">
-              <Button
-                type="button"
-                variant={statsView === "cards" ? "secondary" : "ghost"}
-                size="sm"
-                className="rounded-xl"
-                onClick={() => setStatsView("cards")}
-                aria-pressed={statsView === "cards"}
-              >
-                KPI
-              </Button>
-              <Button
-                type="button"
-                variant={statsView === "rows" ? "secondary" : "ghost"}
-                size="sm"
-                className="rounded-xl"
-                onClick={() => setStatsView("rows")}
-                aria-pressed={statsView === "rows"}
-              >
-                Rows
-              </Button>
-            </div>
             <Button
               type="button"
               variant="outline"
