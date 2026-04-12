@@ -220,7 +220,7 @@ export function RestaurantsTab({
                         <div className={`flex items-center justify-between gap-4 px-4 py-3 ${ratingPillClass(restaurant.rating ? Number(restaurant.rating) : null)}`}>
                           <span className="text-sm font-medium text-slate-500">Restaurant Score</span>
                           <div className="flex items-center gap-3">
-                            {restaurant.rating ? <div className="hidden lg:flex"><Stars value={restaurant.rating} /></div> : null}
+                            {restaurant.rating ? <div className="flex"><Stars value={restaurant.rating} /></div> : null}
                             <span className="text-base font-bold text-slate-900">{restaurant.rating ? Number(restaurant.rating).toFixed(1) : "—"}</span>
                           </div>
                         </div>
@@ -228,7 +228,7 @@ export function RestaurantsTab({
                         <div className={`flex items-center justify-between gap-4 px-4 py-3 ${ratingPillClass(avgDishRating)}`}>
                           <span className="text-sm font-medium text-slate-500">Avg Dish Rating</span>
                           <div className="flex items-center gap-3">
-                            {avgDishRating ? <div className="hidden lg:flex"><Stars value={avgDishRating} /></div> : null}
+                            {avgDishRating ? <div className="flex"><Stars value={avgDishRating} /></div> : null}
                             <span className="text-base font-bold text-slate-900">{avgDishRating ? avgDishRating.toFixed(1) : "—"}</span>
                           </div>
                         </div>

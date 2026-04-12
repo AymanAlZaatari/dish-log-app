@@ -228,6 +228,7 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
                 label="Rating"
                 value={hasRating ? Number(experience.rating).toFixed(1) : "—"}
                 className={ratingPillClass(hasRating ? Number(experience.rating) : null)}
+                starsValue={hasRating ? Number(experience.rating) : null}
               />
               <div className="border-t border-slate-200" />
               <InlineMetricRow
@@ -296,7 +297,7 @@ function InlineMetricRow({ label, value, className = "", labelClassName = "text-
     <div className={`flex items-center justify-between gap-4 px-4 py-3 ${className}`}>
       <span className={`text-sm font-medium ${labelClassName}`}>{label}</span>
       <div className="flex items-center gap-3">
-        {starsValue ? <div className="hidden lg:flex"><Stars value={starsValue} /></div> : null}
+        {starsValue ? <div className="flex"><Stars value={starsValue} /></div> : null}
         <span className="text-base font-bold text-slate-900">{value}</span>
       </div>
     </div>
