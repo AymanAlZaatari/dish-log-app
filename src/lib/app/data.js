@@ -496,7 +496,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 4,
         price: 8,
-        valueForMoney: "Good value",
+        valueForMoney: "A win",
         notes: "Crispy edges and generous cheese.",
         images: [],
       },
@@ -509,7 +509,7 @@ export function createSampleData() {
         orderType: "Takeaway",
         rating: 3,
         price: 7.5,
-        valueForMoney: "Okay value",
+        valueForMoney: "Fairly priced",
         notes: "Still solid, but less crisp.",
         images: [],
       },
@@ -522,7 +522,7 @@ export function createSampleData() {
         orderType: "Delivery",
         rating: 4,
         price: 11,
-        valueForMoney: "Good value",
+        valueForMoney: "A win",
         notes: "Juicy chicken, bread held up well.",
         images: [],
       },
@@ -535,7 +535,7 @@ export function createSampleData() {
         orderType: "Takeaway",
         rating: 5,
         price: 4,
-        valueForMoney: "Excellent value",
+        valueForMoney: "Hidden gem",
         notes: "Still the benchmark.",
         images: [],
       },
@@ -548,7 +548,7 @@ export function createSampleData() {
         orderType: "Takeaway",
         rating: 4,
         price: 3.5,
-        valueForMoney: "Great value",
+        valueForMoney: "Hidden gem",
         notes: "Extra coriander and chili.",
         images: [],
       },
@@ -561,7 +561,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 4,
         price: 18,
-        valueForMoney: "Okay value",
+        valueForMoney: "Fairly priced",
         notes: "Rich but satisfying for two people.",
         images: [],
       },
@@ -574,7 +574,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 5,
         price: 6.5,
-        valueForMoney: "Good value",
+        valueForMoney: "A win",
         notes: "Light texture, not too sweet.",
         images: [],
       },
@@ -587,7 +587,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 4,
         price: 7,
-        valueForMoney: "Okay value",
+        valueForMoney: "Fairly priced",
         notes: "Fresh fish and neat cuts.",
         images: [],
       },
@@ -600,7 +600,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 4,
         price: 13,
-        valueForMoney: "Okay value",
+        valueForMoney: "Fairly priced",
         notes: "Good texture contrast, slightly sweet sauce.",
         images: [],
       },
@@ -613,7 +613,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 5,
         price: 14,
-        valueForMoney: "Good value",
+        valueForMoney: "A win",
         notes: "Excellent crust and still juicy.",
         images: [],
       },
@@ -626,7 +626,7 @@ export function createSampleData() {
         orderType: "Delivery",
         rating: 4,
         price: 14,
-        valueForMoney: "Okay value",
+        valueForMoney: "Fairly priced",
         notes: "Still good, but fries were softer.",
         images: [],
       },
@@ -639,7 +639,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 4,
         price: 6,
-        valueForMoney: "Great value",
+        valueForMoney: "Hidden gem",
         notes: "Good to share with burgers.",
         images: [],
       },
@@ -652,7 +652,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 4,
         price: 9.5,
-        valueForMoney: "Okay value",
+        valueForMoney: "Fairly priced",
         notes: "Fresh ingredients and good bread.",
         images: [],
       },
@@ -665,7 +665,7 @@ export function createSampleData() {
         orderType: "Dine-in",
         rating: 5,
         price: 7,
-        valueForMoney: "Good value",
+        valueForMoney: "A win",
         notes: "One of the best desserts in the seed set.",
         images: [],
       },
@@ -820,11 +820,10 @@ export function ratingPillClass(value) {
 
 export function valuePillClass(value) {
   if (!value) return "border-slate-200 bg-slate-50 text-slate-700";
-  if (value === "Excellent value") return "border-emerald-300 bg-emerald-100 text-emerald-900";
-  if (value === "Great value") return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  if (value === "Good value") return "border-sky-200 bg-sky-50 text-sky-800";
-  if (value === "Okay value") return "border-amber-200 bg-amber-50 text-amber-800";
-  if (value === "Bad value") return "border-rose-200 bg-rose-50 text-rose-800";
+  if (value === "Hidden gem") return "border-emerald-300 bg-emerald-100 text-emerald-900";
+  if (value === "A win") return "border-sky-200 bg-sky-50 text-sky-800";
+  if (value === "Fairly priced") return "border-amber-200 bg-amber-50 text-amber-800";
+  if (value === "Overpriced") return "border-rose-200 bg-rose-50 text-rose-800";
   return "border-red-300 bg-red-100 text-red-900";
 }
 

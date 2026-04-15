@@ -250,7 +250,7 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
               />
               <div className="border-t border-slate-200" />
               <InlineMetricRow
-                label="Value"
+                label="$ Worth"
                 value={hasValue ? experience.valueForMoney : "—"}
                 className={valuePillClass(experience.valueForMoney)}
               />
@@ -274,7 +274,7 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
                 {hasRating ? <div className="mt-2 hidden justify-center sm:flex"><Stars value={experience.rating} /></div> : null}
               </ExperienceMetricCard>
               <ExperienceMetricCard
-                label="Value"
+                label="$ Worth"
                 value={hasValue ? experience.valueForMoney : "—"}
                 icon={<Sparkles className="h-4 w-4" />}
                 className={valuePillClass(experience.valueForMoney)}

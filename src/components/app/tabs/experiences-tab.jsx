@@ -33,7 +33,7 @@ export function ExperiencesTab({
                 <th className="px-5 py-3">Dish</th>
                 <th className="px-5 py-3">Restaurant</th>
                 <th className="px-5 py-3">Price</th>
-                <th className="px-5 py-3">Value</th>
+                <th className="px-5 py-3">$ Worth</th>
                 <th className="px-5 py-3">Rating</th>
                 <th className="px-5 py-3 text-center">Actions</th>
               </tr>

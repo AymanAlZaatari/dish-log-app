@@ -89,12 +89,11 @@ export const DEFAULT_CITIES = [
   "Mount Lebanon",
 ];
 export const VALUE_OPTIONS = [
-  "Very bad value",
-  "Bad value",
-  "Okay value",
-  "Good value",
-  "Great value",
-  "Excellent value",
+  "Hidden gem",
+  "A win",
+  "Fairly priced",
+  "Overpriced",
+  "Rip-off",
 ];
 export const TOP_NAV_STYLES = {
   dashboard: "bg-sky-50 text-sky-900 border-sky-200 data-[state=active]:bg-sky-100 data-[state=active]:text-sky-950 data-[state=active]:ring-2 data-[state=active]:ring-sky-300",
