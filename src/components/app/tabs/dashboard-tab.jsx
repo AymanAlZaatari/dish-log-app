@@ -158,7 +158,7 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
             starsValue={avgDishRating || null}
           />
           <div className="border-t border-slate-200" />
-          <InlineMetricRow label="Avg Dish Price" value={avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"} className="text-emerald-900" labelClassName="text-emerald-700" />
+          <InlineMetricRow label="Avg Dish Price" value={avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"} className="text-[#415162]" labelClassName="text-slate-500" />
         </div>
       ) : (
         <div className="mt-4 grid grid-cols-3 gap-3">
@@ -174,8 +174,8 @@ function RestaurantOverviewCard({ restaurant, dishesCount, experiencesCount, avg
             {avgDishRating ? <div className="mt-2 flex justify-center lg:hidden"><Stars value={avgDishRating} size="sm" /></div> : null}
             {avgDishRating ? <div className="mt-2 hidden justify-center lg:flex"><Stars value={avgDishRating} /></div> : null}
           </div>
-          <div className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3 text-center text-emerald-900 sm:rounded-2xl sm:p-4">
-            <div className={`${MOBILE_KPI_LABEL_CLASS} text-emerald-700`}>Avg Dish Price</div>
+          <div className="min-w-0 rounded-xl border border-[#d7dfe9] bg-[#ebeff4] p-3 text-center text-[#415162] sm:rounded-2xl sm:p-4">
+            <div className={`${MOBILE_KPI_LABEL_CLASS} text-slate-500`}>Avg Dish Price</div>
             <div className={`mt-2 sm:mt-3 ${MOBILE_KPI_VALUE_CLASS}`}>{avgDishPrice ? `$${avgDishPrice.toFixed(1)}` : "—"}</div>
           </div>
         </div>
@@ -238,8 +238,8 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
               <InlineMetricRow
                 label="Price"
                 value={hasPrice ? `$${Number(experience.price).toFixed(1)}` : "—"}
-                className="text-emerald-900"
-                labelClassName="text-emerald-700"
+                className="text-[#415162]"
+                labelClassName="text-slate-500"
               />
               <div className="border-t border-slate-200" />
               <InlineMetricRow
@@ -261,8 +261,8 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
                 label="Price"
                 value={hasPrice ? `$${Number(experience.price).toFixed(1)}` : "—"}
                 icon={<DollarSign className="h-4 w-4" />}
-                className="border-emerald-200 bg-emerald-50 text-emerald-900"
-                labelClassName="text-emerald-700"
+                className="border-[#d7dfe9] bg-[#ebeff4] text-[#415162]"
+                labelClassName="text-slate-500"
               />
               <ExperienceMetricCard
                 label="Rating"
@@ -278,6 +278,7 @@ function RecentExperienceCard({ experience, dish, restaurant, branch, statsView,
                 value={hasValue ? experience.valueForMoney : "—"}
                 icon={<Sparkles className="h-4 w-4" />}
                 className={valuePillClass(experience.valueForMoney)}
+                valueClassName="text-[1.08rem] sm:text-lg"
               />
             </div>
           )}
@@ -323,14 +324,14 @@ function InlineMetricRow({ label, value, className = "", labelClassName = "text-
   );
 }
 
-function ExperienceMetricCard({ label, value, icon, className, labelClassName = "text-slate-500", children }) {
+function ExperienceMetricCard({ label, value, icon, className, labelClassName = "text-slate-500", valueClassName = "", children }) {
   return (
     <div className={`min-w-0 rounded-2xl border px-2 py-3 text-center sm:px-3 sm:p-4 ${className}`}>
       <div className={`flex items-center justify-center gap-1 sm:gap-1.5 ${MOBILE_KPI_LABEL_CLASS} ${labelClassName}`}>
         {icon}
         <span>{label}</span>
       </div>
-      <div className={`mt-2 text-slate-900 sm:mt-3 sm:text-xl ${MOBILE_KPI_VALUE_CLASS}`}>{value}</div>
+      <div className={`mt-2 text-slate-900 sm:mt-3 sm:text-xl ${MOBILE_KPI_VALUE_CLASS} ${valueClassName}`}>{value}</div>
       {children ? <div className="mt-1 sm:mt-2">{children}</div> : null}
     </div>
   );

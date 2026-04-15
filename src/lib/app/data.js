@@ -821,8 +821,8 @@ export function ratingPillClass(value) {
 export function valuePillClass(value) {
   if (!value) return "border-slate-200 bg-slate-50 text-slate-700";
   if (value === "Hidden gem") return "border-emerald-300 bg-emerald-100 text-emerald-900";
-  if (value === "A win") return "border-sky-200 bg-sky-50 text-sky-800";
-  if (value === "Fairly priced") return "border-amber-200 bg-amber-50 text-amber-800";
+  if (value === "A win") return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  if (value === "Fairly priced") return "border-sky-200 bg-sky-50 text-sky-800";
   if (value === "Overpriced") return "border-rose-200 bg-rose-50 text-rose-800";
   return "border-red-300 bg-red-100 text-red-900";
 }
